@@ -20,3 +20,13 @@ public protocol BTVendor {
     static var eddystone: String { get }
     static var vendorId: Int { get }
 }
+
+public enum BTScannerState : Int {
+    case unknown
+    case resetting
+    case unsupported
+    case unauthorized
+    case poweredOff
+    case poweredOn
+}
+

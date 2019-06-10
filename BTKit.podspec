@@ -3,7 +3,7 @@ Pod::Spec.new do |spec|
   spec.version      = "0.0.1"
   spec.summary      = "Hardcoded bluetooth devices API"
   spec.description  = <<-DESC
-                        Hardcoded bluetooth devices API
+                        Use to scan for bluetooth devices. Very limited set of devices is available.
                         DESC
 
   spec.homepage     = "https://github.com/rinat-enikeev/BTKit"
@@ -17,32 +17,19 @@ Pod::Spec.new do |spec|
 
   spec.source_files  = "BTKit/Source/**/*.{swift,h}"
 
-  spec.subspec 'Contract' do |ss|
-    ss.source_files = 'BTKit/Source/Contract/**/*.{swift,h}'
-  end
-
   spec.subspec 'Devices' do |ss|
     ss.source_files = 'BTKit/Source/Devices/**/*.{swift,h}'
-    ss.dependency 'BTKit/Contract'
-    ss.dependency 'BTKit/Observation'
-  end
-
-  spec.subspec 'Observation' do |ss|
-    ss.source_files = 'BTKit/Source/Observation/**/*.{swift,h}'
   end
 
   spec.subspec 'Scanner' do |ss|
     ss.source_files = 'BTKit/Source/Scanner/**/*.{swift,h}'
     ss.dependency 'BTKit/Devices'
-    ss.dependency 'BTKit/Contract'
-    ss.dependency 'BTKit/Observation'
   end
 
   spec.subspec 'Ruuvi' do |ss|
     ss.source_files = 'BTKit/Source/Vendor/Ruuvi/**/*.{swift,h}'
     ss.dependency 'BTKit/Devices'
-    ss.dependency 'BTKit/Contract'
-    ss.dependency 'BTKit/Observation'
+    ss.dependency 'BTKit/Scanner'
   end
 
 

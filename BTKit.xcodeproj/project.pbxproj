@@ -17,7 +17,6 @@
 		0E375F0E22ACFE7C0092D269 /* RuuviData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E375F0D22ACFE7C0092D269 /* RuuviData.swift */; };
 		0E375F1122ACFF070092D269 /* BTContract.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E375F1022ACFF070092D269 /* BTContract.swift */; };
 		0E375F1322ACFF2F0092D269 /* Data+Ruuvi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E375F1222ACFF2F0092D269 /* Data+Ruuvi.swift */; };
-		0E375F1622ACFFFD0092D269 /* BTScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E375F1522ACFFFD0092D269 /* BTScanner.swift */; };
 		0E375F1922AD00600092D269 /* BTScanneriOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E375F1822AD00600092D269 /* BTScanneriOS.swift */; };
 		0E375F1C22AD01000092D269 /* RuuviDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E375F1B22AD01000092D269 /* RuuviDevice.swift */; };
 		0E375F1F22AD046A0092D269 /* ObservationToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E375F1E22AD046A0092D269 /* ObservationToken.swift */; };
@@ -85,7 +84,6 @@
 		0E375F0D22ACFE7C0092D269 /* RuuviData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RuuviData.swift; sourceTree = "<group>"; };
 		0E375F1022ACFF070092D269 /* BTContract.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTContract.swift; sourceTree = "<group>"; };
 		0E375F1222ACFF2F0092D269 /* Data+Ruuvi.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Data+Ruuvi.swift"; sourceTree = "<group>"; };
-		0E375F1522ACFFFD0092D269 /* BTScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTScanner.swift; sourceTree = "<group>"; };
 		0E375F1822AD00600092D269 /* BTScanneriOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTScanneriOS.swift; sourceTree = "<group>"; };
 		0E375F1B22AD01000092D269 /* RuuviDevice.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RuuviDevice.swift; sourceTree = "<group>"; };
 		0E375F1E22AD046A0092D269 /* ObservationToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObservationToken.swift; sourceTree = "<group>"; };
@@ -182,19 +180,9 @@
 			isa = PBXGroup;
 			children = (
 				0E375F2222AD5EB60092D269 /* iOS */,
-				0E375F0322ACFE470092D269 /* Firmware */,
 				0E375F1222ACFF2F0092D269 /* Data+Ruuvi.swift */,
 			);
 			path = Decoder;
-			sourceTree = "<group>";
-		};
-		0E375F0322ACFE470092D269 /* Firmware */ = {
-			isa = PBXGroup;
-			children = (
-				0E375F0422ACFE4F0092D269 /* Versions */,
-				0E375F0D22ACFE7C0092D269 /* RuuviData.swift */,
-			);
-			path = Firmware;
 			sourceTree = "<group>";
 		};
 		0E375F0422ACFE4F0092D269 /* Versions */ = {
@@ -208,19 +196,10 @@
 			path = Versions;
 			sourceTree = "<group>";
 		};
-		0E375F0F22ACFEF20092D269 /* Contract */ = {
-			isa = PBXGroup;
-			children = (
-				0E375F1022ACFF070092D269 /* BTContract.swift */,
-			);
-			path = Contract;
-			sourceTree = "<group>";
-		};
 		0E375F1422ACFFD20092D269 /* Scanner */ = {
 			isa = PBXGroup;
 			children = (
 				0E375F1722AD004F0092D269 /* iOS */,
-				0E375F1522ACFFFD0092D269 /* BTScanner.swift */,
 			);
 			path = Scanner;
 			sourceTree = "<group>";
@@ -231,14 +210,6 @@
 				0E375F1822AD00600092D269 /* BTScanneriOS.swift */,
 			);
 			path = iOS;
-			sourceTree = "<group>";
-		};
-		0E375F1D22AD04510092D269 /* Observation */ = {
-			isa = PBXGroup;
-			children = (
-				0E375F1E22AD046A0092D269 /* ObservationToken.swift */,
-			);
-			path = Observation;
 			sourceTree = "<group>";
 		};
 		0E375F2222AD5EB60092D269 /* iOS */ = {
@@ -254,6 +225,8 @@
 			children = (
 				0E375F2622AD65180092D269 /* Ruuvi */,
 				0E375F2422AD650F0092D269 /* BTDevice.swift */,
+				0E375F1022ACFF070092D269 /* BTContract.swift */,
+				0E375F1E22AD046A0092D269 /* ObservationToken.swift */,
 			);
 			path = Devices;
 			sourceTree = "<group>";
@@ -261,6 +234,7 @@
 		0E375F2622AD65180092D269 /* Ruuvi */ = {
 			isa = PBXGroup;
 			children = (
+				0E375F9E22AE455E0092D269 /* Tag */,
 				0E375F1B22AD01000092D269 /* RuuviDevice.swift */,
 			);
 			path = Ruuvi;
@@ -315,13 +289,28 @@
 			isa = PBXGroup;
 			children = (
 				0E375F0122ACFDA20092D269 /* BTKit.swift */,
-				0E375F0F22ACFEF20092D269 /* Contract */,
 				0E375F2322AD64970092D269 /* Devices */,
-				0E375F1D22AD04510092D269 /* Observation */,
 				0E375F1422ACFFD20092D269 /* Scanner */,
 				0E375EFC22ACFD260092D269 /* Vendor */,
 			);
 			path = Source;
+			sourceTree = "<group>";
+		};
+		0E375F9E22AE455E0092D269 /* Tag */ = {
+			isa = PBXGroup;
+			children = (
+				0E375F9F22AE45650092D269 /* Firmware */,
+			);
+			path = Tag;
+			sourceTree = "<group>";
+		};
+		0E375F9F22AE45650092D269 /* Firmware */ = {
+			isa = PBXGroup;
+			children = (
+				0E375F0422ACFE4F0092D269 /* Versions */,
+				0E375F0D22ACFE7C0092D269 /* RuuviData.swift */,
+			);
+			path = Firmware;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -481,7 +470,6 @@
 				0E375F1922AD00600092D269 /* BTScanneriOS.swift in Sources */,
 				0E375F1C22AD01000092D269 /* RuuviDevice.swift in Sources */,
 				0E375F0922ACFE760092D269 /* RuuviData3.swift in Sources */,
-				0E375F1622ACFFFD0092D269 /* BTScanner.swift in Sources */,
 				0E375F1F22AD046A0092D269 /* ObservationToken.swift in Sources */,
 				0E375F0E22ACFE7C0092D269 /* RuuviData.swift in Sources */,
 			);
