@@ -2,7 +2,7 @@ public enum RuuviDevice {
     case tag(RuuviTag)
 }
 
-extension RuuviDevice {
+public extension RuuviDevice {
     var tag: RuuviTag? {
         if case let .tag(tag) = self {
             return tag
@@ -20,6 +20,38 @@ public enum RuuviTag {
 }
 
 public extension RuuviTag {
+    
+    var v2: RuuviData2? {
+        if case let .v2(data) = self {
+            return data
+        } else {
+            return nil
+        }
+    }
+    
+    var v3: RuuviData3? {
+        if case let .v3(data) = self {
+            return data
+        } else {
+            return nil
+        }
+    }
+    
+    var v4: RuuviData4? {
+        if case let .v4(data) = self {
+            return data
+        } else {
+            return nil
+        }
+    }
+    
+    var v5: RuuviData5? {
+        if case let .v5(data) = self {
+            return data
+        } else {
+            return nil
+        }
+    }
     
     var uuid: String {
         switch self {
@@ -97,6 +129,10 @@ public extension RuuviTag {
         case .v5(let data):
             return data.temperature
         }
+    }
+    
+    var mac: String? {
+        return v5?.mac
     }
     
     var fahrenheit: Double {
