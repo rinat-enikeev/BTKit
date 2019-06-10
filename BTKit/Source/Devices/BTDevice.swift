@@ -10,4 +10,24 @@ public extension BTDevice {
             return nil
         }
     }
+    
+    var uuid: String {
+        switch self {
+        case .ruuvi(let ruuviDevice):
+            switch ruuviDevice {
+            case .tag(let ruuviTag):
+                return ruuviTag.uuid
+            }
+        }
+    }
+    
+    var rssi: Int {
+        switch self {
+        case .ruuvi(let ruuviDevice):
+            switch ruuviDevice {
+            case .tag(let ruuviTag):
+                return ruuviTag.rssi
+            }
+        }
+    }
 }
