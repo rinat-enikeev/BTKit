@@ -154,14 +154,9 @@
 		0E375EEF22ACFB8F0092D269 /* BTKit */ = {
 			isa = PBXGroup;
 			children = (
+				0E375F9D22AE373D0092D269 /* Source */,
 				0E375EF022ACFB8F0092D269 /* BTKit.h */,
 				0E375EF122ACFB8F0092D269 /* Info.plist */,
-				0E375F0122ACFDA20092D269 /* BTKit.swift */,
-				0E375F0F22ACFEF20092D269 /* Contract */,
-				0E375F2322AD64970092D269 /* Devices */,
-				0E375F1D22AD04510092D269 /* Observation */,
-				0E375F1422ACFFD20092D269 /* Scanner */,
-				0E375EFC22ACFD260092D269 /* Vendor */,
 			);
 			path = BTKit;
 			sourceTree = "<group>";
@@ -314,6 +309,19 @@
 			children = (
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		0E375F9D22AE373D0092D269 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				0E375F0122ACFDA20092D269 /* BTKit.swift */,
+				0E375F0F22ACFEF20092D269 /* Contract */,
+				0E375F2322AD64970092D269 /* Devices */,
+				0E375F1D22AD04510092D269 /* Observation */,
+				0E375F1422ACFFD20092D269 /* Scanner */,
+				0E375EFC22ACFD260092D269 /* Vendor */,
+			);
+			path = Source;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

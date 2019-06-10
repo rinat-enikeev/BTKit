@@ -4,4 +4,7 @@
    <FileRef
       location = "group:BTKit.xcodeproj">
    </FileRef>
+   <FileRef
+      location = "group:BTKit.podspec">
+   </FileRef>
 </Workspace>
