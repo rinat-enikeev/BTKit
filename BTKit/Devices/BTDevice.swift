@@ -1,11 +1,11 @@
 public enum BTDevice {
-    case ruuviTag(RuuviTag)
+    case ruuvi(RuuviDevice)
 }
 
 public extension BTDevice {
-    var ruuviTag: RuuviTag? {
-        if case let .ruuviTag(ruuviTag) = self {
-            return ruuviTag
+    var ruuvi: RuuviDevice? {
+        if case let .ruuvi(device) = self {
+            return device
         } else {
             return nil
         }

@@ -1,3 +1,17 @@
+public enum RuuviDevice {
+    case tag(RuuviTag)
+}
+
+extension RuuviDevice {
+    var tag: RuuviTag? {
+        if case let .tag(tag) = self {
+            return tag
+        } else {
+            return nil
+        }
+    }
+}
+
 public enum RuuviTag {
     case v2(RuuviData2)
     case v3(RuuviData3)

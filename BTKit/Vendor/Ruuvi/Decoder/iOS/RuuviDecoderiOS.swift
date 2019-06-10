@@ -17,11 +17,11 @@ public struct RuuviDecoderiOS: BTDecoder {
             case 2:
                 let ruuvi = data.ruuvi2()
                 let tag = RuuviData2(uuid: uuid, rssi: rssi.intValue, version: ruuvi.version, temperature: ruuvi.temperature, humidity: ruuvi.humidity, pressure: ruuvi.pressure)
-                return .ruuviTag(.v2(tag))
+                return .ruuvi(.tag(.v2(tag)))
             case 4:
                 let ruuvi = data.ruuvi4()
                 let tag = RuuviData4(uuid: uuid, rssi: rssi.intValue, version: ruuvi.version, temperature: ruuvi.temperature, humidity: ruuvi.humidity, pressure: ruuvi.pressure)
-                return .ruuviTag(.v4(tag))
+                return .ruuvi(.tag(.v4(tag)))
             default:
                 return nil
             }
@@ -35,12 +35,12 @@ public struct RuuviDecoderiOS: BTDecoder {
                 guard manufacturerData.count > 14 else { return nil }
                 let ruuvi = manufacturerData.ruuvi3()
                 let tag = RuuviData3(uuid: uuid, rssi: rssi.intValue, version: Int(version), humidity: ruuvi.humidity, temperature: ruuvi.temperature, pressure: ruuvi.pressure, accelerationX: ruuvi.accelerationX, accelerationY: ruuvi.accelerationY, accelerationZ: ruuvi.accelerationZ, voltage: ruuvi.voltage)
-                return .ruuviTag(.v3(tag))
+                return .ruuvi(.tag(.v3(tag)))
             case 5:
                 guard manufacturerData.count > 25 else { return nil }
                 let ruuvi = manufacturerData.ruuvi5()
                 let tag = RuuviData5(uuid: uuid, rssi: rssi.intValue, version: Int(version), humidity: ruuvi.humidity, temperature: ruuvi.temperature, pressure: ruuvi.pressure, accelerationX: ruuvi.accelerationX, accelerationY: ruuvi.accelerationY, accelerationZ: ruuvi.accelerationZ, voltage: ruuvi.voltage, movementCounter: ruuvi.movementCounter, measurementSequenceNumber: ruuvi.measurementSequenceNumber, txPower: ruuvi.txPower, mac: ruuvi.mac)
-                return .ruuviTag(.v5(tag))
+                return .ruuvi(.tag(.v5(tag)))
             default:
                 return nil
             }

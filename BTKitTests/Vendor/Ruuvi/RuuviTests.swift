@@ -10,7 +10,7 @@ class RuuviTests: XCTestCase {
         let e = expectation(description: "Found 3 tags")
         e.expectedFulfillmentCount = 3
         scanner.observeDevice(self) { (observer, device) in
-            if let ruuviTag = device.ruuviTag {
+            if let ruuviTag = device.ruuvi?.tag {
                 if !observer.tags.contains(ruuviTag) {
                     e.fulfill()
                     observer.tags.insert(ruuviTag)
