@@ -5,7 +5,7 @@ public class ObservationToken {
         self.cancellationClosure = cancellationClosure
     }
     
-    func invalidate() {
+    public func invalidate() {
         cancellationClosure()
     }
 }
