@@ -7,9 +7,16 @@ public protocol BTScanner {
     init(decoders: [BTDecoder])
     
     @discardableResult
-    func observeDevice<T: AnyObject>(_ observer: T, closure: @escaping (T, BTDevice) -> Void) -> ObservationToken
+    func observeDevice<T: AnyObject>(_ observer: T, options: BTScannerOptionsInfo?, closure: @escaping (T, BTDevice) -> Void) -> ObservationToken
     @discardableResult
     func observeState<T: AnyObject>(_ observer: T, closure: @escaping (T, BTScannerState) -> Void) -> ObservationToken
+}
+
+public extension BTScanner {
+    @discardableResult
+    func observeDevice<T: AnyObject>(_ observer: T, closure: @escaping (T, BTDevice) -> Void) -> ObservationToken {
+        return observeDevice(observer, options: nil, closure: closure)
+    }
 }
 
 public protocol BTDecoder {

@@ -31,6 +31,8 @@
 		0E375F4A22AD6CDD0092D269 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0E375F4822AD6CDD0092D269 /* LaunchScreen.storyboard */; };
 		0E375F6222AD74880092D269 /* BTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E375EED22ACFB8F0092D269 /* BTKit.framework */; };
 		0E375F6322AD74880092D269 /* BTKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0E375EED22ACFB8F0092D269 /* BTKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0E70A45822AF821D006CB87C /* CallbackQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45722AF821D006CB87C /* CallbackQueue.swift */; };
+		0E70A45A22AF8313006CB87C /* BTScannerOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45922AF8313006CB87C /* BTScannerOptions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -99,6 +101,8 @@
 		0E375F4622AD6CDD0092D269 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0E375F4922AD6CDD0092D269 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		0E375F4B22AD6CDD0092D269 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0E70A45722AF821D006CB87C /* CallbackQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallbackQueue.swift; sourceTree = "<group>"; };
+		0E70A45922AF8313006CB87C /* BTScannerOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTScannerOptions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -227,6 +231,8 @@
 				0E375F2422AD650F0092D269 /* BTDevice.swift */,
 				0E375F1022ACFF070092D269 /* BTContract.swift */,
 				0E375F1E22AD046A0092D269 /* ObservationToken.swift */,
+				0E70A45722AF821D006CB87C /* CallbackQueue.swift */,
+				0E70A45922AF8313006CB87C /* BTScannerOptions.swift */,
 			);
 			path = Devices;
 			sourceTree = "<group>";
@@ -459,6 +465,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0E375F0A22ACFE760092D269 /* RuuviData4.swift in Sources */,
+				0E70A45822AF821D006CB87C /* CallbackQueue.swift in Sources */,
 				0E375F2522AD650F0092D269 /* BTDevice.swift in Sources */,
 				0E375F1122ACFF070092D269 /* BTContract.swift in Sources */,
 				0E375F0B22ACFE760092D269 /* RuuviData5.swift in Sources */,
@@ -470,6 +477,7 @@
 				0E375F1922AD00600092D269 /* BTScanneriOS.swift in Sources */,
 				0E375F1C22AD01000092D269 /* RuuviDevice.swift in Sources */,
 				0E375F0922ACFE760092D269 /* RuuviData3.swift in Sources */,
+				0E70A45A22AF8313006CB87C /* BTScannerOptions.swift in Sources */,
 				0E375F1F22AD046A0092D269 /* ObservationToken.swift in Sources */,
 				0E375F0E22ACFE7C0092D269 /* RuuviData.swift in Sources */,
 			);

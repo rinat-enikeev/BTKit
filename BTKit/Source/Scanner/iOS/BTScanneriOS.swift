@@ -11,9 +11,16 @@ class BTScanneriOS: NSObject, BTScanner {
     )
     private var isReady = false { didSet { startStopIfNeeded() } }
     private var decoders: [BTDecoder]
+    private var defaultOptions = BTScannerOptionsInfo.empty
+    private var currentDefaultOptions: BTScannerOptionsInfo {
+        return [] + defaultOptions
+    }
+    private var processingQueue: CallbackQueue
     
     required init(decoders: [BTDecoder]) {
         self.decoders = decoders
+        let processQueueName = "io.btkit.BTKit.BTScneersiOS.processQueue.\(UUID().uuidString)"
+        self.processingQueue = .dispatch(DispatchQueue(label: processQueueName))
         super.init()
     }
     
@@ -87,17 +94,26 @@ extension BTScanneriOS {
     @discardableResult
     func observeDevice<T: AnyObject>(
         _ observer: T,
+        options: BTScannerOptionsInfo? = nil,
         closure: @escaping (T, BTDevice) -> Void
         ) -> ObservationToken {
+        
+        let options = currentDefaultOptions + (options ?? .empty)
+        let info = BTKitParsedOptionsInfo(options)
+        
         let id = UUID()
         observations.device[id] = { [weak self, weak observer] device in
-            // If the observer has been deallocated, we can
-            // automatically remove the observation closure.
             guard let observer = observer else {
                 self?.observations.device.removeValue(forKey: id)
                 return
             }
-            closure(observer, device)
+            info.callbackQueue.execute { [weak observer, weak self] in
+                guard let observer = observer else {
+                    self?.observations.device.removeValue(forKey: id)
+                    return
+                }
+                closure(observer, device)
+            }
         }
         
         startStopIfNeeded()
