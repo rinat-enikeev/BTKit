@@ -33,6 +33,7 @@
 		0E375F6322AD74880092D269 /* BTKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0E375EED22ACFB8F0092D269 /* BTKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		0E70A45822AF821D006CB87C /* CallbackQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45722AF821D006CB87C /* CallbackQueue.swift */; };
 		0E70A45A22AF8313006CB87C /* BTScannerOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45922AF8313006CB87C /* BTScannerOptions.swift */; };
+		0E70A45C22AF8C58006CB87C /* BTScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45B22AF8C58006CB87C /* BTScanner.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -103,6 +104,7 @@
 		0E375F4B22AD6CDD0092D269 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0E70A45722AF821D006CB87C /* CallbackQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallbackQueue.swift; sourceTree = "<group>"; };
 		0E70A45922AF8313006CB87C /* BTScannerOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTScannerOptions.swift; sourceTree = "<group>"; };
+		0E70A45B22AF8C58006CB87C /* BTScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTScanner.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -229,6 +231,7 @@
 			children = (
 				0E375F2622AD65180092D269 /* Ruuvi */,
 				0E375F2422AD650F0092D269 /* BTDevice.swift */,
+				0E70A45B22AF8C58006CB87C /* BTScanner.swift */,
 				0E375F1022ACFF070092D269 /* BTContract.swift */,
 				0E375F1E22AD046A0092D269 /* ObservationToken.swift */,
 				0E70A45722AF821D006CB87C /* CallbackQueue.swift */,
@@ -473,6 +476,7 @@
 				0E375F2122AD5D1E0092D269 /* RuuviDecoderiOS.swift in Sources */,
 				0E375EFF22ACFD410092D269 /* Ruuvi.swift in Sources */,
 				0E375F0C22ACFE760092D269 /* RuuviData2.swift in Sources */,
+				0E70A45C22AF8C58006CB87C /* BTScanner.swift in Sources */,
 				0E375F0222ACFDA20092D269 /* BTKit.swift in Sources */,
 				0E375F1922AD00600092D269 /* BTScanneriOS.swift in Sources */,
 				0E375F1C22AD01000092D269 /* RuuviDevice.swift in Sources */,
