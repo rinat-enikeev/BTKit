@@ -70,17 +70,27 @@ extension BTScanneriOS {
     @discardableResult
     func state<T: AnyObject>(
         _ observer: T,
+        options: BTScannerOptionsInfo? = nil,
         closure: @escaping (T, BTScannerState) -> Void
         ) -> ObservationToken {
+        
+        let options = currentDefaultOptions + (options ?? .empty)
+        let info = BTKitParsedOptionsInfo(options)
+        
         let id = UUID()
         observations.state[id] = { [weak self, weak observer] state in
-            // If the observer has been deallocated, we can
-            // automatically remove the observation closure.
             guard let observer = observer else {
                 self?.observations.state.removeValue(forKey: id)
                 return
             }
-            closure(observer, state)
+            info.callbackQueue.execute { [weak self, weak observer] in
+                guard let observer = observer else {
+                    self?.observations.state.removeValue(forKey: id)
+                    return
+                }
+                closure(observer, state)
+
+            }
         }
         
         startStopIfNeeded()
