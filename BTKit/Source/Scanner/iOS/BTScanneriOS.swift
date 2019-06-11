@@ -68,7 +68,7 @@ extension BTScanneriOS: CBCentralManagerDelegate {
 
 extension BTScanneriOS {
     @discardableResult
-    func observeState<T: AnyObject>(
+    func state<T: AnyObject>(
         _ observer: T,
         closure: @escaping (T, BTScannerState) -> Void
         ) -> ObservationToken {
@@ -92,7 +92,7 @@ extension BTScanneriOS {
     }
     
     @discardableResult
-    func observeDevice<T: AnyObject>(
+    func scan<T: AnyObject>(
         _ observer: T,
         options: BTScannerOptionsInfo? = nil,
         closure: @escaping (T, BTDevice) -> Void
