@@ -45,12 +45,6 @@ class BTScanneriOS: NSObject, BTScanner {
             manager.stopScan()
         }
     }
-    
-    private func notifyLostDevices() {
-        for (device,lastSeen) in lastSeen {
-            
-        }
-    }
 }
 
 extension BTScanneriOS: CBCentralManagerDelegate {
