@@ -1,6 +1,12 @@
 import CoreBluetooth
 
 class BTScanneriOS: NSObject, BTScanner {
+    
+    private struct LostObservation {
+        var closure: (BTDevice) -> Void
+        var lostDeviceDelay: TimeInterval
+    }
+    
     private let queue = DispatchQueue(label: "CBCentralManager")
     private lazy var manager: CBCentralManager = {
         return CBCentralManager(delegate: self, queue: queue)
@@ -8,7 +14,7 @@ class BTScanneriOS: NSObject, BTScanner {
     private var observations = (
         state: [UUID : (BTScannerState) -> Void](),
         device: [UUID : (BTDevice) -> Void](),
-        lost: [UUID: (BTDevice) -> Void]()
+        lost: [UUID: LostObservation]()
     )
     private var isReady = false { didSet { startStopIfNeeded() } }
     private var decoders: [BTDecoder]
@@ -17,24 +23,45 @@ class BTScanneriOS: NSObject, BTScanner {
         return [] + defaultOptions
     }
     private var lastSeen = [BTDevice: Date]()
-    private var lastSeenTimer: Timer?
-    private var lostCheckInterval: TimeInterval = 1
-    
+    private var timer: DispatchSourceTimer?
+
     deinit {
-        lastSeenTimer?.invalidate()
+        timer?.cancel()
     }
     
     required init(decoders: [BTDecoder]) {
         self.decoders = decoders
         super.init()
-        self.lastSeenTimer = Timer.scheduledTimer(withTimeInterval: lostCheckInterval, repeats: true, block: { [weak self] (timer) in
-            guard let sSelf = self else { return }
-            sSelf.observations.lost.values.forEach { (closure) in
-                for device in sSelf.lastSeen.keys {
-                    closure(device)
+    }
+    
+    func startLostDevicesTimer() {
+        timer = DispatchSource.makeTimerSource(queue: queue)
+        timer?.schedule(deadline: .now(), repeating: .seconds(1))
+        timer?.setEventHandler { [weak self] in
+            self?.notifyLostDevices()
+        }
+        timer?.resume()
+    }
+    
+    func stopLostDevicesTimer() {
+        timer?.cancel()
+        timer = nil
+    }
+    
+    private func notifyLostDevices() {
+        observations.lost.values.forEach { (observation) in
+            var lostDevices = [BTDevice]()
+            for (device,seen) in lastSeen {
+                let elapsed = Date().timeIntervalSince(seen)
+                if elapsed > observation.lostDeviceDelay {
+                    lostDevices.append(device)
                 }
             }
-        })
+            for lostDevice in lostDevices {
+                lastSeen.removeValue(forKey: lostDevice)
+                observation.closure(lostDevice)
+            }
+        }
     }
     
     private func startStopIfNeeded() {
@@ -43,6 +70,13 @@ class BTScanneriOS: NSObject, BTScanner {
             manager.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: NSNumber(value: true)])
         } else if !shouldBeRunning && manager.isScanning {
             manager.stopScan()
+        }
+        
+        let shouldObserveLostDevices = observations.lost.count > 0
+        if shouldObserveLostDevices {
+            startLostDevicesTimer()
+        } else {
+            stopLostDevicesTimer()
         }
     }
 }
@@ -89,26 +123,20 @@ extension BTScanneriOS {
         
         let id = UUID()
         
-        observations.lost[id] = { [weak self, weak observer] device in
+        observations.lost[id] = LostObservation(closure: { [weak self, weak observer] (device) in
             guard let observer = observer else {
                 self?.observations.lost.removeValue(forKey: id)
                 return
             }
             
-            if let lastSeen = self?.lastSeen[device] {
-                let elapsed = Date().timeIntervalSince(lastSeen)
-                if elapsed > info.lostDeviceDelay {
-                    self?.lastSeen.removeValue(forKey: device)
-                    info.callbackQueue.execute { [weak self, weak observer] in
-                        guard let observer = observer else {
-                            self?.observations.lost.removeValue(forKey: id)
-                            return
-                        }
-                        closure(observer, device)
-                    }
+            info.callbackQueue.execute { [weak self, weak observer] in
+                guard let observer = observer else {
+                    self?.observations.lost.removeValue(forKey: id)
+                    return
                 }
+                closure(observer, device)
             }
-        }
+        }, lostDeviceDelay: info.lostDeviceDelay)
         
         startStopIfNeeded()
         
