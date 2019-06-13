@@ -7,7 +7,8 @@ class BTScanneriOS: NSObject, BTScanner {
     }()
     private var observations = (
         state: [UUID : (BTScannerState) -> Void](),
-        device: [UUID : (BTDevice) -> Void]()
+        device: [UUID : (BTDevice) -> Void](),
+        lost: [UUID: (BTDevice) -> Void]()
     )
     private var isReady = false { didSet { startStopIfNeeded() } }
     private var decoders: [BTDecoder]
@@ -15,13 +16,25 @@ class BTScanneriOS: NSObject, BTScanner {
     private var currentDefaultOptions: BTScannerOptionsInfo {
         return [] + defaultOptions
     }
-    private var processingQueue: CallbackQueue
+    private var lastSeen = [BTDevice: Date]()
+    private var lastSeenTimer: Timer?
+    private var lostCheckInterval: TimeInterval = 1
+    
+    deinit {
+        lastSeenTimer?.invalidate()
+    }
     
     required init(decoders: [BTDecoder]) {
         self.decoders = decoders
-        let processQueueName = "io.btkit.BTKit.BTScneersiOS.processQueue.\(UUID().uuidString)"
-        self.processingQueue = .dispatch(DispatchQueue(label: processQueueName))
         super.init()
+        self.lastSeenTimer = Timer.scheduledTimer(withTimeInterval: lostCheckInterval, repeats: true, block: { [weak self] (timer) in
+            guard let sSelf = self else { return }
+            sSelf.observations.lost.values.forEach { (closure) in
+                for device in sSelf.lastSeen.keys {
+                    closure(device)
+                }
+            }
+        })
     }
     
     private func startStopIfNeeded() {
@@ -30,6 +43,12 @@ class BTScanneriOS: NSObject, BTScanner {
             manager.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: NSNumber(value: true)])
         } else if !shouldBeRunning && manager.isScanning {
             manager.stopScan()
+        }
+    }
+    
+    private func notifyLostDevices() {
+        for (device,lastSeen) in lastSeen {
+            
         }
     }
 }
@@ -51,6 +70,7 @@ extension BTScanneriOS: CBCentralManagerDelegate {
                 observations.device.values.forEach { (closure) in
                     closure(device)
                 }
+                lastSeen[device] = Date()
             }
         }
     }
@@ -67,6 +87,44 @@ extension BTScanneriOS: CBCentralManagerDelegate {
 }
 
 extension BTScanneriOS {
+    @discardableResult
+    func lost<T: AnyObject>(_ observer: T, options: BTScannerOptionsInfo?, closure: @escaping (T, BTDevice) -> Void) -> ObservationToken {
+        
+        let options = currentDefaultOptions + (options ?? .empty)
+        let info = BTKitParsedOptionsInfo(options)
+        
+        let id = UUID()
+        
+        observations.lost[id] = { [weak self, weak observer] device in
+            guard let observer = observer else {
+                self?.observations.lost.removeValue(forKey: id)
+                return
+            }
+            
+            if let lastSeen = self?.lastSeen[device] {
+                let elapsed = Date().timeIntervalSince(lastSeen)
+                if elapsed > info.lostDeviceDelay {
+                    self?.lastSeen.removeValue(forKey: device)
+                    info.callbackQueue.execute { [weak self, weak observer] in
+                        guard let observer = observer else {
+                            self?.observations.lost.removeValue(forKey: id)
+                            return
+                        }
+                        closure(observer, device)
+                    }
+                }
+            }
+        }
+        
+        startStopIfNeeded()
+        
+        return ObservationToken { [weak self] in
+            self?.observations.lost.removeValue(forKey: id)
+            self?.startStopIfNeeded()
+        }
+    }
+    
+    
     @discardableResult
     func state<T: AnyObject>(
         _ observer: T,

@@ -31,3 +31,15 @@ public extension BTDevice {
         }
     }
 }
+
+extension BTDevice: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(uuid)
+    }
+}
+
+extension BTDevice: Equatable {
+    public static func ==(lhs: BTDevice, rhs: BTDevice) -> Bool {
+        return lhs.uuid == rhs.uuid
+    }
+}
