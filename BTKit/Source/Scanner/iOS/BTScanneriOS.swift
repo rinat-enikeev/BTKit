@@ -7,6 +7,11 @@ class BTScanneriOS: NSObject, BTScanner {
         var lostDeviceDelay: TimeInterval
     }
     
+    private struct ObserveObservation {
+        var closure: (BTDevice) -> Void
+        var uuid: String
+    }
+    
     private let queue = DispatchQueue(label: "CBCentralManager")
     private lazy var manager: CBCentralManager = {
         return CBCentralManager(delegate: self, queue: queue)
@@ -14,7 +19,8 @@ class BTScanneriOS: NSObject, BTScanner {
     private var observations = (
         state: [UUID : (BTScannerState) -> Void](),
         device: [UUID : (BTDevice) -> Void](),
-        lost: [UUID: LostObservation]()
+        lost: [UUID: LostObservation](),
+        observe: [UUID: ObserveObservation]()
     )
     private var isReady = false { didSet { startStopIfNeeded() } }
     private var decoders: [BTDecoder]
@@ -65,7 +71,11 @@ class BTScanneriOS: NSObject, BTScanner {
     }
     
     private func startStopIfNeeded() {
-        let shouldBeRunning = observations.state.count > 0 || observations.device.count > 0
+        let shouldBeRunning = observations.state.count > 0
+                            || observations.device.count > 0
+                            || observations.lost.count > 0
+                            || observations.observe.count > 0
+        
         if shouldBeRunning && !manager.isScanning && isReady {
             manager.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: NSNumber(value: true)])
         } else if !shouldBeRunning && manager.isScanning {
@@ -99,6 +109,7 @@ extension BTScanneriOS: CBCentralManagerDelegate {
                     closure(device)
                 }
                 lastSeen[device] = Date()
+                observations.observe.values.filter({ $0.uuid == device.uuid}).forEach( { $0.closure(device) } )
             }
         }
     }
@@ -210,6 +221,34 @@ extension BTScanneriOS {
         
         return ObservationToken { [weak self] in
             self?.observations.device.removeValue(forKey: id)
+            self?.startStopIfNeeded()
+        }
+    }
+    
+    @discardableResult
+    func observe<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, closure: @escaping (T, BTDevice) -> Void) -> ObservationToken {
+        let options = currentDefaultOptions + (options ?? .empty)
+        let info = BTKitParsedOptionsInfo(options)
+        
+        let id = UUID()
+        observations.observe[id] = ObserveObservation(closure: { [weak self, weak observer] device in
+            guard let observer = observer else {
+                self?.observations.observe.removeValue(forKey: id)
+                return
+            }
+            info.callbackQueue.execute { [weak observer, weak self] in
+                guard let observer = observer else {
+                    self?.observations.observe.removeValue(forKey: id)
+                    return
+                }
+                closure(observer, device)
+            }
+        }, uuid: uuid)
+        
+        startStopIfNeeded()
+        
+        return ObservationToken { [weak self] in
+            self?.observations.observe.removeValue(forKey: id)
             self?.startStopIfNeeded()
         }
     }
