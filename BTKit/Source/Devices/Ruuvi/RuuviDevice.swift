@@ -105,6 +105,18 @@ public extension RuuviTag {
         }
     }
     
+    var movementCounter: Int? {
+        return v5?.movementCounter
+    }
+    
+    var measurementSequenceNumber: Int? {
+        return v5?.measurementSequenceNumber
+    }
+    
+    var txPower: Int? {
+        return v5?.txPower
+    }
+    
     var uuid: String {
         switch self {
         case .v2(let data):
