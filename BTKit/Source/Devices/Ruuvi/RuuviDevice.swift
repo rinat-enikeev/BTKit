@@ -55,14 +55,53 @@ public extension RuuviTag {
     
     var voltage: Double? {
         switch self {
-        case .v2(let data):
+        case .v2:
             return nil
         case .v3(let data):
             return data.voltage
-        case .v4(let data):
+        case .v4:
             return nil
         case .v5(let data):
             return data.voltage
+        }
+    }
+    
+    var accelerationX: Double? {
+        switch self {
+        case .v2:
+            return nil
+        case .v3(let data):
+            return data.accelerationX
+        case .v4:
+            return nil
+        case .v5(let data):
+            return data.accelerationX
+        }
+    }
+    
+    var accelerationY: Double? {
+        switch self {
+        case .v2:
+            return nil
+        case .v3(let data):
+            return data.accelerationY
+        case .v4:
+            return nil
+        case .v5(let data):
+            return data.accelerationY
+        }
+    }
+    
+    var accelerationZ: Double? {
+        switch self {
+        case .v2:
+            return nil
+        case .v3(let data):
+            return data.accelerationZ
+        case .v4:
+            return nil
+        case .v5(let data):
+            return data.accelerationZ
         }
     }
     
