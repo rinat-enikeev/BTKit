@@ -3,12 +3,12 @@ import CoreBluetooth
 class BTScanneriOS: NSObject, BTScanner {
     
     private struct LostObservation {
-        var closure: (BTDevice) -> Void
+        var block: (BTDevice) -> Void
         var lostDeviceDelay: TimeInterval
     }
     
     private struct ObserveObservation {
-        var closure: (BTDevice) -> Void
+        var block: (BTDevice) -> Void
         var uuid: String
     }
     
@@ -65,7 +65,7 @@ class BTScanneriOS: NSObject, BTScanner {
             }
             for lostDevice in lostDevices {
                 lastSeen.removeValue(forKey: lostDevice)
-                observation.closure(lostDevice)
+                observation.block(lostDevice)
             }
         }
     }
@@ -83,7 +83,7 @@ class BTScanneriOS: NSObject, BTScanner {
         }
         
         let shouldObserveLostDevices = observations.lost.count > 0
-        if shouldObserveLostDevices {
+        if shouldObserveLostDevices && timer == nil {
             startLostDevicesTimer()
         } else {
             stopLostDevicesTimer()
@@ -109,7 +109,7 @@ extension BTScanneriOS: CBCentralManagerDelegate {
                     closure(device)
                 }
                 lastSeen[device] = Date()
-                observations.observe.values.filter({ $0.uuid == device.uuid}).forEach( { $0.closure(device) } )
+                observations.observe.values.filter({ $0.uuid == device.uuid}).forEach( { $0.block(device) } )
             }
         }
     }
@@ -134,7 +134,7 @@ extension BTScanneriOS {
         
         let id = UUID()
         
-        observations.lost[id] = LostObservation(closure: { [weak self, weak observer] (device) in
+        observations.lost[id] = LostObservation(block: { [weak self, weak observer] (device) in
             guard let observer = observer else {
                 self?.observations.lost.removeValue(forKey: id)
                 return
@@ -149,7 +149,9 @@ extension BTScanneriOS {
             }
         }, lostDeviceDelay: info.lostDeviceDelay)
         
-        startStopIfNeeded()
+        queue.async { [weak self] in
+            self?.startStopIfNeeded()
+        }
         
         return ObservationToken { [weak self] in
             self?.observations.lost.removeValue(forKey: id)
@@ -184,7 +186,9 @@ extension BTScanneriOS {
             }
         }
         
-        startStopIfNeeded()
+        queue.async { [weak self] in
+            self?.startStopIfNeeded()
+        }
         
         return ObservationToken { [weak self] in
             self?.observations.state.removeValue(forKey: id)
@@ -217,7 +221,9 @@ extension BTScanneriOS {
             }
         }
         
-        startStopIfNeeded()
+        queue.async { [weak self] in
+            self?.startStopIfNeeded()
+        }
         
         return ObservationToken { [weak self] in
             self?.observations.device.removeValue(forKey: id)
@@ -231,7 +237,7 @@ extension BTScanneriOS {
         let info = BTKitParsedOptionsInfo(options)
         
         let id = UUID()
-        observations.observe[id] = ObserveObservation(closure: { [weak self, weak observer] device in
+        observations.observe[id] = ObserveObservation(block: { [weak self, weak observer] device in
             guard let observer = observer else {
                 self?.observations.observe.removeValue(forKey: id)
                 return
@@ -245,7 +251,9 @@ extension BTScanneriOS {
             }
         }, uuid: uuid)
         
-        startStopIfNeeded()
+        queue.async { [weak self] in
+            self?.startStopIfNeeded()
+        }
         
         return ObservationToken { [weak self] in
             self?.observations.observe.removeValue(forKey: id)
