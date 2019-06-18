@@ -46,7 +46,7 @@ class BTScanneriOS: NSObject, BTScanner {
         timer?.setEventHandler { [weak self] in
             self?.notifyLostDevices()
         }
-        timer?.resume()
+        timer?.activate()
     }
     
     func stopLostDevicesTimer() {
