@@ -1,6 +1,8 @@
 public protocol BTScanner {
     init(decoders: [BTDecoder])
     
+    var bluetoothState: BTScannerState { get }
+    
     @discardableResult
     func scan<T: AnyObject>(_ observer: T, options: BTScannerOptionsInfo?, closure: @escaping (T, BTDevice) -> Void) -> ObservationToken
     @discardableResult

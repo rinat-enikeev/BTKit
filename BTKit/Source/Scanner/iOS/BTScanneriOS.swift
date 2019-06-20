@@ -2,6 +2,8 @@ import CoreBluetooth
 
 class BTScanneriOS: NSObject, BTScanner {
     
+    var bluetoothState: BTScannerState = .unknown
+    
     private struct LostObservation {
         var block: (BTDevice) -> Void
         var lostDeviceDelay: TimeInterval
@@ -94,6 +96,7 @@ class BTScanneriOS: NSObject, BTScanner {
 extension BTScanneriOS: CBCentralManagerDelegate {
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         isReady = central.state == CBManagerState.poweredOn
+        bluetoothState = BTScannerState(rawValue: central.state.rawValue) ?? .unknown
         if let state = BTScannerState(rawValue: central.state.rawValue) {
             observations.state.values.forEach { (closure) in
                 closure(state)
