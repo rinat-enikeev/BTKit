@@ -137,28 +137,34 @@ extension BTScanneriOS {
         
         let id = UUID()
         
-        observations.lost[id] = LostObservation(block: { [weak self, weak observer] (device) in
-            guard let observer = observer else {
-                self?.observations.lost.removeValue(forKey: id)
-                return
-            }
+        queue.async { [weak self] in
             
-            info.callbackQueue.execute { [weak self, weak observer] in
+            self?.observations.lost[id] = LostObservation(block: { [weak self, weak observer] (device) in
                 guard let observer = observer else {
                     self?.observations.lost.removeValue(forKey: id)
                     return
                 }
-                closure(observer, device)
-            }
-        }, lostDeviceDelay: info.lostDeviceDelay)
-        
-        queue.async { [weak self] in
+                
+                info.callbackQueue.execute { [weak self, weak observer] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.lost.removeValue(forKey: id)
+                        }
+                        return
+                    }
+
+                    closure(observer, device)
+                }
+            }, lostDeviceDelay: info.lostDeviceDelay)
+            
             self?.startStopIfNeeded()
         }
         
         return ObservationToken { [weak self] in
-            self?.observations.lost.removeValue(forKey: id)
-            self?.startStopIfNeeded()
+            self?.queue.async { [weak self] in
+                self?.observations.lost.removeValue(forKey: id)
+                self?.startStopIfNeeded()
+            }
         }
     }
     
@@ -174,28 +180,32 @@ extension BTScanneriOS {
         let info = BTKitParsedOptionsInfo(options)
         
         let id = UUID()
-        observations.state[id] = { [weak self, weak observer] state in
-            guard let observer = observer else {
-                self?.observations.state.removeValue(forKey: id)
-                return
-            }
-            info.callbackQueue.execute { [weak self, weak observer] in
+        
+        queue.async { [weak self] in
+            self?.observations.state[id] = { [weak self, weak observer] state in
                 guard let observer = observer else {
                     self?.observations.state.removeValue(forKey: id)
                     return
                 }
-                closure(observer, state)
-
+                info.callbackQueue.execute { [weak self, weak observer] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.state.removeValue(forKey: id)
+                        }
+                        return
+                    }
+                    closure(observer, state)
+                }
             }
-        }
-        
-        queue.async { [weak self] in
+            
             self?.startStopIfNeeded()
         }
         
         return ObservationToken { [weak self] in
-            self?.observations.state.removeValue(forKey: id)
-            self?.startStopIfNeeded()
+            self?.queue.async { [weak self] in
+                self?.observations.state.removeValue(forKey: id)
+                self?.startStopIfNeeded()
+            }
         }
     }
     
@@ -210,27 +220,32 @@ extension BTScanneriOS {
         let info = BTKitParsedOptionsInfo(options)
         
         let id = UUID()
-        observations.device[id] = { [weak self, weak observer] device in
-            guard let observer = observer else {
-                self?.observations.device.removeValue(forKey: id)
-                return
-            }
-            info.callbackQueue.execute { [weak observer, weak self] in
+        
+        queue.async { [weak self] in
+            self?.observations.device[id] = { [weak self, weak observer] device in
                 guard let observer = observer else {
                     self?.observations.device.removeValue(forKey: id)
                     return
                 }
-                closure(observer, device)
+                info.callbackQueue.execute { [weak observer, weak self] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.device.removeValue(forKey: id)
+                        }
+                        return
+                    }
+                    closure(observer, device)
+                }
             }
-        }
-        
-        queue.async { [weak self] in
+            
             self?.startStopIfNeeded()
         }
         
         return ObservationToken { [weak self] in
-            self?.observations.device.removeValue(forKey: id)
-            self?.startStopIfNeeded()
+            self?.queue.async { [weak self] in
+                self?.observations.device.removeValue(forKey: id)
+                self?.startStopIfNeeded()
+            }
         }
     }
     
@@ -240,27 +255,31 @@ extension BTScanneriOS {
         let info = BTKitParsedOptionsInfo(options)
         
         let id = UUID()
-        observations.observe[id] = ObserveObservation(block: { [weak self, weak observer] device in
-            guard let observer = observer else {
-                self?.observations.observe.removeValue(forKey: id)
-                return
-            }
-            info.callbackQueue.execute { [weak observer, weak self] in
+        
+        queue.async { [weak self] in
+            self?.observations.observe[id] = ObserveObservation(block: { [weak self, weak observer] device in
                 guard let observer = observer else {
                     self?.observations.observe.removeValue(forKey: id)
                     return
                 }
-                closure(observer, device)
-            }
-        }, uuid: uuid)
-        
-        queue.async { [weak self] in
+                info.callbackQueue.execute { [weak observer, weak self] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.observe.removeValue(forKey: id)
+                        }
+                        return
+                    }
+                    closure(observer, device)
+                }
+            }, uuid: uuid)
             self?.startStopIfNeeded()
         }
         
         return ObservationToken { [weak self] in
-            self?.observations.observe.removeValue(forKey: id)
-            self?.startStopIfNeeded()
+            self?.queue.async { [weak self] in
+                self?.observations.observe.removeValue(forKey: id)
+                self?.startStopIfNeeded()
+            }
         }
     }
 }
