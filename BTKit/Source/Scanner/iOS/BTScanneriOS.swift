@@ -135,9 +135,9 @@ extension BTScanneriOS {
         let options = currentDefaultOptions + (options ?? .empty)
         let info = BTKitParsedOptionsInfo(options)
         
+        let id = UUID()
+        
         queue.async { [weak self] in
-            
-            let id = UUID()
             
             self?.observations.lost[id] = LostObservation(block: { [weak self, weak observer] (device) in
                 guard let observer = observer else {
@@ -179,8 +179,9 @@ extension BTScanneriOS {
         let options = currentDefaultOptions + (options ?? .empty)
         let info = BTKitParsedOptionsInfo(options)
         
+        let id = UUID()
+        
         queue.async { [weak self] in
-            let id = UUID()
             self?.observations.state[id] = { [weak self, weak observer] state in
                 guard let observer = observer else {
                     self?.observations.state.removeValue(forKey: id)
@@ -218,8 +219,9 @@ extension BTScanneriOS {
         let options = currentDefaultOptions + (options ?? .empty)
         let info = BTKitParsedOptionsInfo(options)
         
+        let id = UUID()
+        
         queue.async { [weak self] in
-            let id = UUID()
             self?.observations.device[id] = { [weak self, weak observer] device in
                 guard let observer = observer else {
                     self?.observations.device.removeValue(forKey: id)
@@ -252,8 +254,9 @@ extension BTScanneriOS {
         let options = currentDefaultOptions + (options ?? .empty)
         let info = BTKitParsedOptionsInfo(options)
         
+        let id = UUID()
+        
         queue.async { [weak self] in
-            let id = UUID()
             self?.observations.observe[id] = ObserveObservation(block: { [weak self, weak observer] device in
                 guard let observer = observer else {
                     self?.observations.observe.removeValue(forKey: id)
