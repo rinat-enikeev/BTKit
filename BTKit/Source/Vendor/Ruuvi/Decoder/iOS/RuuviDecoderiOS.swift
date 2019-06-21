@@ -4,7 +4,7 @@ public struct RuuviDecoderiOS: BTDecoder {
     public func decode(uuid: String, rssi: NSNumber, advertisementData: [String : Any]) -> BTDevice? {
         if let manufacturerDictionary = advertisementData[CBAdvertisementDataServiceDataKey] as? [NSObject:AnyObject],
             let manufacturerData = manufacturerDictionary.first?.value as? Data {
-            guard manufacturerData.count == 20 else { return nil }
+            guard manufacturerData.count > 18 else { return nil }
             guard let url = String(data: manufacturerData[3 ... manufacturerData.count - 1], encoding: .utf8) else { return nil}
             guard url.starts(with: Ruuvi.eddystone) else { return nil }
             var urlData = url.replacingOccurrences(of: Ruuvi.eddystone, with: "")
