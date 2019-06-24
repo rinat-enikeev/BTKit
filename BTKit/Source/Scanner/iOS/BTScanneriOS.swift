@@ -41,12 +41,27 @@ class BTScanneriOS: NSObject, BTScanner {
     private var timer: DispatchSourceTimer?
 
     deinit {
+        NotificationCenter.default.removeObserver(self)
         timer?.cancel()
     }
     
     required init(decoders: [BTDecoder]) {
         self.decoders = decoders
         super.init()
+        NotificationCenter.default.addObserver(self, selector: #selector(self.willResignActiveNotification(_:)), name: UIApplication.willResignActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.didBecomeActiveNotification(_:)), name: UIApplication.didBecomeActiveNotification, object: nil)
+    }
+    
+    @objc func willResignActiveNotification(_ notification: Notification)  {
+        queue.async { [weak self] in
+            self?.manager.stopScan()
+        }
+    }
+    
+    @objc func didBecomeActiveNotification(_ notification: Notification)  {
+        queue.async { [weak self] in
+            self?.startStopIfNeeded()
+        }
     }
     
     func startLostDevicesTimer() {
