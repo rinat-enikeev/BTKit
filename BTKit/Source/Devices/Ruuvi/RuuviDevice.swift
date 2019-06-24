@@ -209,12 +209,16 @@ extension RuuviTag: Hashable {
         switch self {
         case .v2(let data):
             hasher.combine(data.uuid)
+            hasher.combine("v2")
         case .v3(let data):
             hasher.combine(data.uuid)
+            hasher.combine("v3")
         case .v4(let data):
             hasher.combine(data.uuid)
+            hasher.combine("v4")
         case .v5(let data):
             hasher.combine(data.uuid)
+            hasher.combine("v5")
         }
     }
 }
