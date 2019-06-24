@@ -14,6 +14,12 @@ class BTScanneriOS: NSObject, BTScanner {
         var uuid: String
     }
     
+    private struct ConnectObservation {
+        var block: (BTDevice) -> Void
+        var uuid: String
+    }
+    
+    private var connectedPeripherals = Set<CBPeripheral>()
     private let queue = DispatchQueue(label: "CBCentralManager")
     private lazy var manager: CBCentralManager = {
         return CBCentralManager(delegate: self, queue: queue)
@@ -22,7 +28,8 @@ class BTScanneriOS: NSObject, BTScanner {
         state: [UUID : (BTScannerState) -> Void](),
         device: [UUID : (BTDevice) -> Void](),
         lost: [UUID: LostObservation](),
-        observe: [UUID: ObserveObservation]()
+        observe: [UUID: ObserveObservation](),
+        connect: [UUID: ConnectObservation]()
     )
     private var isReady = false { didSet { startStopIfNeeded() } }
     private var decoders: [BTDecoder]
@@ -93,6 +100,37 @@ class BTScanneriOS: NSObject, BTScanner {
     }
 }
 
+extension BTScanneriOS: CBPeripheralDelegate {
+    func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+        guard let services = peripheral.services else { return }
+        for service in services {
+            print(service)
+            peripheral.discoverCharacteristics(nil, for: service)
+        }
+    }
+    
+    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+        guard let characteristics = service.characteristics else { return }
+        
+        for characteristic in characteristics {
+            print(characteristic)
+            
+            if characteristic.properties.contains(.read) {
+                print("\(characteristic.uuid): properties contains .read")
+                peripheral.readValue(for: characteristic)
+            }
+            if characteristic.properties.contains(.notify) {
+                print("\(characteristic.uuid): properties contains .notify")
+                peripheral.setNotifyValue(true, for: characteristic)
+            }
+        }
+    }
+    
+    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+        print(characteristic)
+    }
+}
+
 extension BTScanneriOS: CBCentralManagerDelegate {
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         isReady = central.state == CBManagerState.poweredOn
@@ -112,7 +150,18 @@ extension BTScanneriOS: CBCentralManagerDelegate {
                     closure(device)
                 }
                 lastSeen[device] = Date()
-                observations.observe.values.filter({ $0.uuid == device.uuid}).forEach( { $0.block(device) } )
+                observations.observe.values
+                    .filter({ $0.uuid == device.uuid })
+                    .forEach( { $0.block(device) } )
+                observations.connect.values
+                    .filter({ $0.uuid == device.uuid })
+                    .forEach( { connect in
+                        if !connectedPeripherals.contains(peripheral) {
+                            connectedPeripherals.insert(peripheral)
+                            peripheral.delegate = self
+                            manager.connect(peripheral)
+                        }
+                    } )
             }
         }
     }
@@ -278,6 +327,40 @@ extension BTScanneriOS {
         return ObservationToken { [weak self] in
             self?.queue.async { [weak self] in
                 self?.observations.observe.removeValue(forKey: id)
+                self?.startStopIfNeeded()
+            }
+        }
+    }
+    
+    @discardableResult
+    func connect<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, closure: @escaping (T, BTDevice) -> Void) -> ObservationToken {
+        let options = currentDefaultOptions + (options ?? .empty)
+        let info = BTKitParsedOptionsInfo(options)
+        
+        let id = UUID()
+        
+        queue.async { [weak self] in
+            self?.observations.connect[id] = ConnectObservation(block: { [weak self, weak observer] device in
+                guard let observer = observer else {
+                    self?.observations.connect.removeValue(forKey: id)
+                    return
+                }
+                info.callbackQueue.execute { [weak observer, weak self] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.connect.removeValue(forKey: id)
+                        }
+                        return
+                    }
+                    closure(observer, device)
+                }
+            }, uuid: uuid)
+            self?.startStopIfNeeded()
+        }
+        
+        return ObservationToken { [weak self] in
+            self?.queue.async { [weak self] in
+                self?.observations.connect.removeValue(forKey: id)
                 self?.startStopIfNeeded()
             }
         }

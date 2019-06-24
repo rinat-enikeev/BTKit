@@ -11,6 +11,8 @@ public protocol BTScanner {
     func lost<T: AnyObject>(_ observer: T, options: BTScannerOptionsInfo?, closure: @escaping (T, BTDevice) -> Void) -> ObservationToken
     @discardableResult
     func observe<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, closure: @escaping (T, BTDevice) -> Void) -> ObservationToken
+    @discardableResult
+    func connect<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, closure: @escaping (T, BTDevice) -> Void) -> ObservationToken
 }
 
 public extension BTScanner {
@@ -32,6 +34,11 @@ public extension BTScanner {
     @discardableResult
     func observe<T: AnyObject>(_ observer: T, uuid: String, closure: @escaping (T, BTDevice) -> Void) -> ObservationToken {
         return observe(observer, uuid: uuid, options: nil, closure: closure)
+    }
+    
+    @discardableResult
+    func connect<T: AnyObject>(_ observer: T, uuid: String, closure: @escaping (T, BTDevice) -> Void) -> ObservationToken {
+        return connect(observer, uuid: uuid, options: nil, closure: closure)
     }
 }
 
