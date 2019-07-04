@@ -4,19 +4,34 @@ class BTScanneriOS: NSObject, BTScanner {
     
     var bluetoothState: BTScannerState = .unknown
     
-    private struct LostObservation {
+    private class LostObservation {
         var block: (BTDevice) -> Void
         var lostDeviceDelay: TimeInterval
+        
+        init(block: @escaping ((BTDevice) -> Void), lostDeviceDelay: TimeInterval) {
+            self.block = block
+            self.lostDeviceDelay = lostDeviceDelay
+        }
     }
     
-    private struct ObserveObservation {
+    private class ObserveObservation {
         var block: (BTDevice) -> Void
-        var uuid: String
+        var uuid: String = ""
+        
+        init(block: @escaping ((BTDevice) -> Void), uuid: String) {
+            self.block = block
+            self.uuid = uuid
+        }
     }
     
-    private struct ConnectObservation {
+    private class ConnectObservation {
         var block: (BTDevice) -> Void
-        var uuid: String
+        var uuid: String = ""
+        
+        init(block: @escaping ((BTDevice) -> Void), uuid: String) {
+            self.block = block
+            self.uuid = uuid
+        }
     }
     
     private var connectedPeripherals = Set<CBPeripheral>()

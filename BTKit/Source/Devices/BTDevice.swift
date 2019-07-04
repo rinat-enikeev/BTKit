@@ -34,7 +34,8 @@ public extension BTDevice {
 
 extension BTDevice: Hashable {
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(uuid)
+        let key = uuid
+        hasher.combine(key)
     }
 }
 
