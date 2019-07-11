@@ -66,7 +66,7 @@ public extension Data {
         let temperatureFraction = Double(self[5]) / 100.0
         var temperature = Double(temperatureBase) + temperatureFraction
         if (temperatureSign == 1) {
-            temperature *= -1;
+            temperature *= -1
         }
         
         let pressureHi = self[6] & 0xFF
@@ -77,9 +77,9 @@ public extension Data {
         let accelerationY = Double(UInt16(self[10]) << 8 | UInt16(self[11] & 0xFF)) / 1000.0
         let accelerationZ = Double(UInt16(self[12]) << 8 | UInt16(self[13] & 0xFF)) / 1000.0
         
-        let battHi = self[14] & 0xFF;
-        let battLo = self[15] & 0xFF;
-        let voltage = (Double(battHi) * 256.0 + Double(battLo)) / 1000.0;
+        let battHi = self[14] & 0xFF
+        let battLo = self[15] & 0xFF
+        let voltage = (Double(battHi) * 256.0 + Double(battLo)) / 1000.0
         return Ruuvi.Data3(humidity: humidity, temperature: temperature, pressure: pressure, accelerationX: accelerationX, accelerationY: accelerationY, accelerationZ: accelerationZ, voltage: voltage)
     }
     
