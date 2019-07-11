@@ -104,9 +104,9 @@ public extension Data {
         var pressure = Double(UInt16(self[7] & 0xFF) << 8 | UInt16(self[8] & 0xFF)) + 50000
         pressure /= 100.0
         
-        let accelerationX = Double(UInt16(self[9]) << 8 | UInt16(self[10] & 0xFF)) / 1000.0
-        let accelerationY = Double(UInt16(self[11]) << 8 | UInt16(self[12] & 0xFF)) / 1000.0
-        let accelerationZ = Double(UInt16(self[13]) << 8 | UInt16(self[14] & 0xFF)) / 1000.0
+        let accelerationX = Double(self[9...10].withUnsafeBytes({ $0.bindMemory(to: Int16.self) }).map(Int16.init(bigEndian:)).first ?? 0) / 1000.0
+        let accelerationY = Double(self[11...12].withUnsafeBytes({ $0.bindMemory(to: Int16.self) }).map(Int16.init(bigEndian:)).first ?? 0) / 1000.0
+        let accelerationZ = Double(self[13...14].withUnsafeBytes({ $0.bindMemory(to: Int16.self) }).map(Int16.init(bigEndian:)).first ?? 0) / 1000.0
         
         let powerInfo = UInt32(UInt16(self[15] & 0xFF) << 8 | UInt16(self[16] & 0xFF))
         var voltage: Double = 0
