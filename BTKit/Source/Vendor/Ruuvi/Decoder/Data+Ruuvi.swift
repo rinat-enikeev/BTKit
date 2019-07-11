@@ -73,9 +73,22 @@ public extension Data {
         let pressureLo = self[7] & 0xFF
         let pressure = (Double(pressureHi) * 256.0 + 50000.0 + Double(pressureLo)) / 100.0
         
-        let accelerationX = Double(UInt16(self[8]) << 8 | UInt16(self[9] & 0xFF)) / 1000.0
-        let accelerationY = Double(UInt16(self[10]) << 8 | UInt16(self[11] & 0xFF)) / 1000.0
-        let accelerationZ = Double(UInt16(self[12]) << 8 | UInt16(self[13] & 0xFF)) / 1000.0
+        let accelerationXSign = (self[8] >> 7) & 1
+        var accelerationX = Double(UInt16(self[8] & 0x7F) << 8 | UInt16(self[9] & 0xFF)) / 1000.0
+        if accelerationXSign == 1 {
+            accelerationX *= -1
+        }
+        let accelerationYSign = (self[10] >> 7) & 1
+        var accelerationY = Double(UInt16(self[10] & 0x7F) << 8 | UInt16(self[11] & 0xFF)) / 1000.0
+        if accelerationYSign == 1 {
+            accelerationY *= -1
+        }
+        
+        let accelerationZSign = (self[12] >> 7) & 1
+        var accelerationZ = Double(UInt16(self[12] & 0x7F) << 8 | UInt16(self[13] & 0xFF)) / 1000.0
+        if accelerationZSign == 1 {
+            accelerationZ *= -1
+        }
         
         let battHi = self[14] & 0xFF
         let battLo = self[15] & 0xFF
