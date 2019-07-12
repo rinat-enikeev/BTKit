@@ -46,7 +46,7 @@ class BTScanneriOS: NSObject, BTScanner {
         observe: [UUID: ObserveObservation](),
         connect: [UUID: ConnectObservation]()
     )
-    private var isReady = false { didSet { startStopIfNeeded() } }
+    private var isReady = false { didSet { startIfNeeded() } }
     private var decoders: [BTDecoder]
     private var defaultOptions = BTScannerOptionsInfo.empty
     private var currentDefaultOptions: BTScannerOptionsInfo {
@@ -75,7 +75,7 @@ class BTScanneriOS: NSObject, BTScanner {
     
     @objc func didBecomeActiveNotification(_ notification: Notification)  {
         queue.async { [weak self] in
-            self?.startStopIfNeeded()
+            self?.startIfNeeded()
         }
     }
     
@@ -109,22 +109,34 @@ class BTScanneriOS: NSObject, BTScanner {
         }
     }
     
-    private func startStopIfNeeded() {
+    private func startIfNeeded() {
         let shouldBeRunning = observations.state.count > 0
-                            || observations.device.count > 0
-                            || observations.lost.count > 0
-                            || observations.observe.count > 0
+            || observations.device.count > 0
+            || observations.lost.count > 0
+            || observations.observe.count > 0
         
         if shouldBeRunning && !manager.isScanning && isReady {
             manager.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: NSNumber(value: true)])
-        } else if !shouldBeRunning && manager.isScanning {
-            manager.stopScan()
         }
         
         let shouldObserveLostDevices = observations.lost.count > 0
         if shouldObserveLostDevices && timer == nil {
             startLostDevicesTimer()
-        } else {
+        }
+    }
+    
+    private func stopIfNeeded() {
+        let shouldBeRunning = observations.state.count > 0
+            || observations.device.count > 0
+            || observations.lost.count > 0
+            || observations.observe.count > 0
+        
+        if !shouldBeRunning && manager.isScanning {
+            manager.stopScan()
+        }
+        
+        let shouldObserveLostDevices = observations.lost.count > 0
+        if !shouldObserveLostDevices && timer != nil {
             stopLostDevicesTimer()
         }
     }
@@ -236,13 +248,13 @@ extension BTScanneriOS {
                 }
             }, lostDeviceDelay: info.lostDeviceDelay)
             
-            self?.startStopIfNeeded()
+            self?.startIfNeeded()
         }
         
         return ObservationToken { [weak self] in
             self?.queue.async { [weak self] in
                 self?.observations.lost.removeValue(forKey: id)
-                self?.startStopIfNeeded()
+                self?.stopIfNeeded()
             }
         }
     }
@@ -277,13 +289,13 @@ extension BTScanneriOS {
                 }
             }
             
-            self?.startStopIfNeeded()
+            self?.startIfNeeded()
         }
         
         return ObservationToken { [weak self] in
             self?.queue.async { [weak self] in
                 self?.observations.state.removeValue(forKey: id)
-                self?.startStopIfNeeded()
+                self?.stopIfNeeded()
             }
         }
     }
@@ -317,13 +329,13 @@ extension BTScanneriOS {
                 }
             }
             
-            self?.startStopIfNeeded()
+            self?.startIfNeeded()
         }
         
         return ObservationToken { [weak self] in
             self?.queue.async { [weak self] in
                 self?.observations.device.removeValue(forKey: id)
-                self?.startStopIfNeeded()
+                self?.stopIfNeeded()
             }
         }
     }
@@ -351,13 +363,13 @@ extension BTScanneriOS {
                     closure(observer, device)
                 }
             }, uuid: uuid)
-            self?.startStopIfNeeded()
+            self?.startIfNeeded()
         }
         
         return ObservationToken { [weak self] in
             self?.queue.async { [weak self] in
                 self?.observations.observe.removeValue(forKey: id)
-                self?.startStopIfNeeded()
+                self?.stopIfNeeded()
             }
         }
     }
@@ -385,13 +397,13 @@ extension BTScanneriOS {
                     closure(observer, device)
                 }
             }, uuid: uuid)
-            self?.startStopIfNeeded()
+            self?.startIfNeeded()
         }
         
         return ObservationToken { [weak self] in
             self?.queue.async { [weak self] in
                 self?.observations.connect.removeValue(forKey: id)
-                self?.startStopIfNeeded()
+                self?.stopIfNeeded()
             }
         }
     }
