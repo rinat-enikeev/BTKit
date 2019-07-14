@@ -26,16 +26,16 @@ public extension Ruuvi {
     }
 
     struct Data5 {
-        var humidity: Double
-        var temperature: Double
-        var pressure: Double
-        var accelerationX: Double
-        var accelerationY: Double
-        var accelerationZ: Double
-        var movementCounter: Int
-        var measurementSequenceNumber: Int
-        var voltage: Double
-        var txPower: Int
+        var humidity: Double?
+        var temperature: Double?
+        var pressure: Double?
+        var accelerationX: Double?
+        var accelerationY: Double?
+        var accelerationZ: Double?
+        var movementCounter: Int?
+        var measurementSequenceNumber: Int?
+        var voltage: Double?
+        var txPower: Int?
         var mac: String
     }
 }
@@ -94,12 +94,16 @@ public extension Data {
     }
     
     func ruuvi5() -> Ruuvi.Data5 {
-        let humidity = Double(UInt16(self[5] & 0xFF) << 8 | UInt16(self[6] & 0xFF)) / 400.0
+        
         var temperature = Double(UInt16(self[3]) << 8 | UInt16(self[4] & 0xFF))
         if temperature > 32767 {
             temperature -= 65534
         }
         temperature /= 200.0
+        
+        
+        
+        let humidity = Double(UInt16(self[5] & 0xFF) << 8 | UInt16(self[6] & 0xFF)) / 400.0
         
         var pressure = Double(UInt16(self[7] & 0xFF) << 8 | UInt16(self[8] & 0xFF)) + 50000
         pressure /= 100.0
