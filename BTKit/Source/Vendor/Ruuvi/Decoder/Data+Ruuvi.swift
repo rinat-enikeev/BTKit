@@ -117,8 +117,16 @@ public extension Data {
             humidity = nil
         }
         
-        var pressure = Double(UInt16(self[7] & 0xFF) << 8 | UInt16(self[8] & 0xFF)) + 50000
-        pressure /= 100.0
+        var pressure: Double?
+        if let p = self[7...8].withUnsafeBytes({ $0.bindMemory(to: UInt16.self) }).map(UInt16.init(bigEndian:)).first {
+            if p == UInt16.max {
+                pressure = nil
+            } else {
+                pressure = (Double(p) + 50000.0) / 100.0
+            }
+        } else {
+            pressure = nil
+        }
         
         let accelerationX = Double(self[9...10].withUnsafeBytes({ $0.bindMemory(to: Int16.self) }).map(Int16.init(bigEndian:)).first ?? 0) / 1000.0
         let accelerationY = Double(self[11...12].withUnsafeBytes({ $0.bindMemory(to: Int16.self) }).map(Int16.init(bigEndian:)).first ?? 0) / 1000.0
