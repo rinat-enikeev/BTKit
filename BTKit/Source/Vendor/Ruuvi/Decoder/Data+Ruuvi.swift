@@ -40,12 +40,6 @@ public extension Ruuvi {
     }
 }
 
-infix operator >>> : BitwiseShiftPrecedence
-
-func >>> (lhs: UInt32, rhs: UInt32) -> UInt32 {
-    return UInt32(bitPattern: Int32(UInt64(bitPattern: Int64(lhs)) >> UInt64(rhs)))
-}
-
 public extension Data {
     
     func ruuvi2() -> Ruuvi.Data2 {
@@ -167,6 +161,7 @@ public extension Data {
             accelerationZ = nil
         }
         
+        // powerInfo
         var voltage: Double?
         var txPower: Int?
         if let powerInfo = self[15...16].withUnsafeBytes({ $0.bindMemory(to: UInt16.self) }).map(UInt16.init(bigEndian:)).first {
@@ -187,14 +182,31 @@ public extension Data {
             txPower = nil
         }
         
-        let movementCounter = Int(self[18] & 0xFF)
-        let measurementSequenceNumber = Int(UInt16(self[20] & 0xFF) << 8 | UInt16(self[19] & 0xFF))
+        // movementCounter
+        var movementCounter: Int?
+        let mc = self[17]
+        if mc == UInt8.max {
+            movementCounter = nil
+        } else {
+            movementCounter = Int(mc)
+        }
+        
+        // measurementSequenceNumber
+        var measurementSequenceNumber: Int?
+        if let msn = self[18...19].withUnsafeBytes({ $0.bindMemory(to: UInt16.self) }).map(UInt16.init(bigEndian:)).first {
+            if msn == UInt16.max {
+                measurementSequenceNumber = nil
+            } else {
+                measurementSequenceNumber = Int(msn)
+            }
+        } else {
+            measurementSequenceNumber = nil
+        }
         
         let asStr = self.hexEncodedString()
         let start = asStr.index(asStr.endIndex, offsetBy: -12)
         let mac = addColons(mac: String(asStr[start...]))
         return Ruuvi.Data5(humidity: humidity, temperature: temperature, pressure: pressure, accelerationX: accelerationX, accelerationY: accelerationY, accelerationZ: accelerationZ, movementCounter: movementCounter, measurementSequenceNumber: measurementSequenceNumber, voltage: voltage, txPower: txPower, mac: mac)
-        
     }
     
     private struct HexEncodingOptions: OptionSet {
