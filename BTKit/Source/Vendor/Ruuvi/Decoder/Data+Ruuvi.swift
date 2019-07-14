@@ -95,6 +95,7 @@ public extension Data {
     
     func ruuvi5() -> Ruuvi.Data5 {
         
+        // temperature
         var temperature: Double?
         if let t = self[3...4].withUnsafeBytes({ $0.bindMemory(to: Int16.self) }).map(Int16.init(bigEndian:)).first {
             if t == Int16.min {
@@ -106,6 +107,7 @@ public extension Data {
             temperature = nil
         }
         
+        // humidity
         var humidity: Double?
         if let h = self[5...6].withUnsafeBytes({ $0.bindMemory(to: UInt16.self) }).map(UInt16.init(bigEndian:)).first {
             if h == UInt16.max {
@@ -117,6 +119,7 @@ public extension Data {
             humidity = nil
         }
         
+        // pressure
         var pressure: Double?
         if let p = self[7...8].withUnsafeBytes({ $0.bindMemory(to: UInt16.self) }).map(UInt16.init(bigEndian:)).first {
             if p == UInt16.max {
@@ -128,9 +131,41 @@ public extension Data {
             pressure = nil
         }
         
-        let accelerationX = Double(self[9...10].withUnsafeBytes({ $0.bindMemory(to: Int16.self) }).map(Int16.init(bigEndian:)).first ?? 0) / 1000.0
-        let accelerationY = Double(self[11...12].withUnsafeBytes({ $0.bindMemory(to: Int16.self) }).map(Int16.init(bigEndian:)).first ?? 0) / 1000.0
-        let accelerationZ = Double(self[13...14].withUnsafeBytes({ $0.bindMemory(to: Int16.self) }).map(Int16.init(bigEndian:)).first ?? 0) / 1000.0
+        // accelerationX
+        var accelerationX: Double?
+        if let aX = self[9...10].withUnsafeBytes({ $0.bindMemory(to: Int16.self) }).map(Int16.init(bigEndian:)).first {
+            if aX == Int16.min {
+                accelerationX = nil
+            } else {
+                accelerationX = Double(aX) / 1000.0
+            }
+        } else {
+            accelerationX = nil
+        }
+        
+        // accelerationY
+        var accelerationY: Double?
+        if let aY = self[11...12].withUnsafeBytes({ $0.bindMemory(to: Int16.self) }).map(Int16.init(bigEndian:)).first {
+            if aY == Int16.min {
+                accelerationY = nil
+            } else {
+                accelerationY = Double(aY) / 1000.0
+            }
+        } else {
+            accelerationY = nil
+        }
+        
+        // accelerationZ
+        var accelerationZ: Double?
+        if let aZ = self[13...14].withUnsafeBytes({ $0.bindMemory(to: Int16.self) }).map(Int16.init(bigEndian:)).first {
+            if aZ == Int16.min {
+                accelerationZ = nil
+            } else {
+                accelerationZ = Double(aZ) / 1000.0
+            }
+        } else {
+            accelerationZ = nil
+        }
         
         let powerInfo = UInt32(UInt16(self[15] & 0xFF) << 8 | UInt16(self[16] & 0xFF))
         var voltage: Double = 0
