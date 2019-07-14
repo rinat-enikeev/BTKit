@@ -95,13 +95,16 @@ public extension Data {
     
     func ruuvi5() -> Ruuvi.Data5 {
         
-        var temperature = Double(UInt16(self[3]) << 8 | UInt16(self[4] & 0xFF))
-        if temperature > 32767 {
-            temperature -= 65534
+        var temperature: Double?
+        if let t = self[3...4].withUnsafeBytes({ $0.bindMemory(to: Int16.self) }).map(Int16.init(bigEndian:)).first {
+            if t == Int16.min {
+                temperature = nil
+            } else {
+                temperature = Double(t) / 200.0
+            }
+        } else {
+            temperature = nil
         }
-        temperature /= 200.0
-        
-        
         
         let humidity = Double(UInt16(self[5] & 0xFF) << 8 | UInt16(self[6] & 0xFF)) / 400.0
         
