@@ -167,16 +167,26 @@ public extension Data {
             accelerationZ = nil
         }
         
-        let powerInfo = UInt32(UInt16(self[15] & 0xFF) << 8 | UInt16(self[16] & 0xFF))
-        var voltage: Double = 0
-        if ((powerInfo >>> UInt32(5)) != 0b11111111111) {
-            voltage = Double(powerInfo >>> UInt32(5)) / 1000.0 + 1.6
-            voltage = (voltage*1000).rounded()/1000
+        var voltage: Double?
+        var txPower: Int?
+        if let powerInfo = self[15...16].withUnsafeBytes({ $0.bindMemory(to: UInt16.self) }).map(UInt16.init(bigEndian:)).first {
+            let v = powerInfo >> 5
+            if v == 0b11111111111 {
+                voltage = nil
+            } else {
+                voltage = Double(v) / 1000.0 + 1.6
+            }
+            let tx = powerInfo & 0b11111
+            if tx == 0b11111 {
+                txPower = nil
+            } else {
+                txPower = Int(tx) * 2 - 40
+            }
+        } else {
+            voltage = nil
+            txPower = nil
         }
-        var txPower = 0
-        if ((powerInfo & 0b11111) != 0b11111) {
-            txPower = Int((powerInfo & 0b11111) * 2 - 40)
-        }
+        
         let movementCounter = Int(self[18] & 0xFF)
         let measurementSequenceNumber = Int(UInt16(self[20] & 0xFF) << 8 | UInt16(self[19] & 0xFF))
         
