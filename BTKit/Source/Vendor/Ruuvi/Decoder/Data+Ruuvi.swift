@@ -106,7 +106,16 @@ public extension Data {
             temperature = nil
         }
         
-        let humidity = Double(UInt16(self[5] & 0xFF) << 8 | UInt16(self[6] & 0xFF)) / 400.0
+        var humidity: Double?
+        if let h = self[5...6].withUnsafeBytes({ $0.bindMemory(to: UInt16.self) }).map(UInt16.init(bigEndian:)).first {
+            if h == UInt16.max {
+                humidity = nil
+            } else {
+                humidity = Double(h) / 400.0
+            }
+        } else {
+            humidity = nil
+        }
         
         var pressure = Double(UInt16(self[7] & 0xFF) << 8 | UInt16(self[8] & 0xFF)) + 50000
         pressure /= 100.0
