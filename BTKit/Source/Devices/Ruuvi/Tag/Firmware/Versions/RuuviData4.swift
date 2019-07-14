@@ -1,4 +1,4 @@
-public struct RuuviData4: RuuviData {
+public struct RuuviData4 {
     public var uuid: String
     public var rssi: Int
     public var version: Int

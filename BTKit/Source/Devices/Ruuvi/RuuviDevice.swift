@@ -156,7 +156,7 @@ public extension RuuviTag {
         }
     }
     
-    var humidity: Double {
+    var humidity: Double? {
         switch self {
         case .v2(let data):
             return data.humidity
@@ -169,7 +169,7 @@ public extension RuuviTag {
         }
     }
     
-    var pressure: Double {
+    var pressure: Double? {
         switch self {
         case .v2(let data):
             return data.pressure
@@ -182,7 +182,7 @@ public extension RuuviTag {
         }
     }
     
-    var celsius: Double {
+    var celsius: Double? {
         switch self {
         case .v2(let data):
             return data.temperature
@@ -199,8 +199,12 @@ public extension RuuviTag {
         return v5?.mac
     }
     
-    var fahrenheit: Double {
-        return (celsius * 9.0 / 5.0) + 32.0
+    var fahrenheit: Double? {
+        if let celsius = celsius {
+            return (celsius * 9.0 / 5.0) + 32.0
+        } else {
+            return nil
+        }
     }
 }
 
