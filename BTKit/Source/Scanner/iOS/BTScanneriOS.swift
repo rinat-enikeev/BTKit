@@ -53,11 +53,11 @@ class BTScanneriOS: NSObject, BTScanner {
         return [] + defaultOptions
     }
     private var lastSeen = [BTDevice: Date]()
-    private var timer: DispatchSourceTimer?
+    private var lostTimer: DispatchSourceTimer?
 
     deinit {
         NotificationCenter.default.removeObserver(self)
-        timer?.cancel()
+        lostTimer?.cancel()
     }
     
     required init(decoders: [BTDecoder]) {
@@ -80,17 +80,17 @@ class BTScanneriOS: NSObject, BTScanner {
     }
     
     func startLostDevicesTimer() {
-        timer = DispatchSource.makeTimerSource(queue: queue)
-        timer?.schedule(deadline: .now(), repeating: .seconds(1))
-        timer?.setEventHandler { [weak self] in
+        lostTimer = DispatchSource.makeTimerSource(queue: queue)
+        lostTimer?.schedule(deadline: .now(), repeating: .seconds(1))
+        lostTimer?.setEventHandler { [weak self] in
             self?.notifyLostDevices()
         }
-        timer?.activate()
+        lostTimer?.activate()
     }
     
     func stopLostDevicesTimer() {
-        timer?.cancel()
-        timer = nil
+        lostTimer?.cancel()
+        lostTimer = nil
     }
     
     private func notifyLostDevices() {
@@ -120,7 +120,7 @@ class BTScanneriOS: NSObject, BTScanner {
         }
         
         let shouldObserveLostDevices = observations.lost.count > 0
-        if shouldObserveLostDevices && timer == nil {
+        if shouldObserveLostDevices && lostTimer == nil {
             startLostDevicesTimer()
         }
     }
@@ -136,7 +136,7 @@ class BTScanneriOS: NSObject, BTScanner {
         }
         
         let shouldObserveLostDevices = observations.lost.count > 0
-        if !shouldObserveLostDevices && timer != nil {
+        if !shouldObserveLostDevices && lostTimer != nil {
             stopLostDevicesTimer()
         }
     }
