@@ -35,7 +35,7 @@ class BTScanneriOS: NSObject, BTScanner {
     }
     
     private var connectedPeripherals = Set<CBPeripheral>()
-    private let queue = DispatchQueue(label: "CBCentralManager")
+    private let queue = DispatchQueue(label: "CBCentralManager", qos: .userInteractive)
     private lazy var manager: CBCentralManager = {
         return CBCentralManager(delegate: self, queue: queue)
     }()
