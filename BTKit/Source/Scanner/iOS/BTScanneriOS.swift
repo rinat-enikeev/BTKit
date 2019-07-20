@@ -86,7 +86,7 @@ class BTScanneriOS: NSObject, BTScanner {
     
     func setupRestartTimer() {
         restartTimer = DispatchSource.makeTimerSource(queue: queue)
-        restartTimer?.schedule(deadline: .now(), repeating: .seconds(60))
+        restartTimer?.schedule(deadline: .now() + 60, repeating: .seconds(60))
         restartTimer?.setEventHandler { [weak self] in
             self?.manager.stopScan()
             self?.startIfNeeded()
