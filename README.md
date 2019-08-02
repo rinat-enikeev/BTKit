@@ -9,7 +9,7 @@ Scan for Ruuvi BLE devices and access them with dot syntax.
 
 ## Features
 
-- [x] Scan for Ruuvi devices
+- [x] Listen to [RuuviTag](https://ruuvi.com/index.php?id=2) data
 
 ## Requirements
 
@@ -40,11 +40,11 @@ import BTKit
 
 let scanner = BTKit.scanner // hold a strong reference to scanner
 
-scanner.observeDevice(self) { (observer, device) in
-            if let ruuviTag = device.ruuvi?.tag {
-                print(ruuviTag)
-            }
-        }
+scanner.scan(self) { (observer, device) in
+                        if let ruuviTag = device.ruuvi?.tag {
+                            print(ruuviTag)
+                        }
+                    }
 ```
 
 ## Contribute
