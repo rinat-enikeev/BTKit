@@ -1,5 +1,3 @@
 public struct BTKit {   
-    static var scanner: BTScanner {
-        return BTScanneriOS(decoders: [RuuviDecoderiOS()])
-    }
+    public static let scanner: BTScanner = BTScanneriOS(decoders: [RuuviDecoderiOS()])
 }
