@@ -38,13 +38,11 @@ import BTKit
 ```swift
 import BTKit
 
-let scanner = BTKit.scanner // hold a strong reference to scanner
-
-scanner.scan(self) { (observer, device) in
-                        if let ruuviTag = device.ruuvi?.tag {
-                            print(ruuviTag)
-                        }
-                    }
+BTKit.scanner.scan(self) { (observer, device) in
+                             if let ruuviTag = device.ruuvi?.tag {
+                                 print(ruuviTag)
+                             }
+                         }
 ```
 
 ## Contribute
