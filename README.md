@@ -5,7 +5,7 @@
 [![License][license-image]][license-url]
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
-Scan for Ruuvi BLE devices and access them with dot syntax. 
+Scan for Ruuvi BLE devices and access them with dot syntax. See [tutorial](https://medium.com/btkit-swift-framework-for-ble/tutorial-ios-ruuvitag-listener-f55952b49c6a). 
 
 ## Features
 
