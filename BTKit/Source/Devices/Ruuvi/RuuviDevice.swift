@@ -143,6 +143,19 @@ public extension RuuviTag {
         }
     }
     
+    var isConnectable: Bool {
+        switch self {
+        case .v2(let data):
+            return data.isConnectable
+        case .v3(let data):
+            return data.isConnectable
+        case .v4(let data):
+            return data.isConnectable
+        case .v5(let data):
+            return data.isConnectable
+        }
+    }
+    
     var version: Int {
         switch self {
         case .v2(let data):
