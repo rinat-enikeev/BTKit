@@ -5,7 +5,7 @@ struct DemoFactory {
     
     func build(for uuid: String) -> BTDevice {
         let rssi = -Int(arc4random_uniform(90))
-        let humidity = Double(arc4random_uniform(100)) / 100.0
+        let humidity = Double(arc4random_uniform(100))
         let temperature = Double(arc4random_uniform(30))
         let pressure = Double(arc4random_uniform(100)) + 1000.0
         let accelerationX = Double(arc4random_uniform(1000)) / 1000.0
