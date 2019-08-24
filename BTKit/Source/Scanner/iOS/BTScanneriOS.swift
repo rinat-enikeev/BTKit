@@ -326,28 +326,52 @@ extension BTScanneriOS {
         let info = BTKitParsedOptionsInfo(options)
         
         let id = UUID()
+        var demoTimer: Timer?
         
-        queue.async { [weak self] in
-            self?.observations.device[id] = { [weak self, weak observer] device in
-                guard let observer = observer else {
-                    self?.observations.device.removeValue(forKey: id)
-                    return
-                }
-                info.callbackQueue.execute { [weak observer, weak self] in
-                    guard let observer = observer else {
-                        self?.queue.async { [weak self] in
-                            self?.observations.device.removeValue(forKey: id)
+        if info.demoCount > 0 {
+            var uuids = [String]()
+            for _ in 0..<info.demoCount {
+                uuids.append(UUID().uuidString)
+            }
+            demoTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { (timer) in
+                info.callbackQueue.execute { [weak observer] in
+                    if let observer = observer {
+                        for uuid in uuids {
+                            closure(observer, DemoFactory.shared.build(for: uuid))
                         }
-                        return
+                    } else {
+                        DispatchQueue.main.async {
+                            demoTimer?.invalidate()
+                        }
                     }
-                    closure(observer, device)
                 }
             }
-            
-            self?.startIfNeeded()
+        } else {
+            queue.async { [weak self] in
+                self?.observations.device[id] = { [weak self, weak observer] device in
+                    guard let observer = observer else {
+                        self?.observations.device.removeValue(forKey: id)
+                        return
+                    }
+                    info.callbackQueue.execute { [weak observer, weak self] in
+                        guard let observer = observer else {
+                            self?.queue.async { [weak self] in
+                                self?.observations.device.removeValue(forKey: id)
+                            }
+                            return
+                        }
+                        closure(observer, device)
+                    }
+                }
+                
+                self?.startIfNeeded()
+            }
         }
         
         return ObservationToken { [weak self] in
+            DispatchQueue.main.async {
+                demoTimer?.invalidate()
+            }
             self?.queue.async { [weak self] in
                 self?.observations.device.removeValue(forKey: id)
                 self?.stopIfNeeded()

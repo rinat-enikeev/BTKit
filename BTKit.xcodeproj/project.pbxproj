@@ -30,6 +30,7 @@
 		0E375F4A22AD6CDD0092D269 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0E375F4822AD6CDD0092D269 /* LaunchScreen.storyboard */; };
 		0E375F6222AD74880092D269 /* BTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E375EED22ACFB8F0092D269 /* BTKit.framework */; };
 		0E375F6322AD74880092D269 /* BTKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0E375EED22ACFB8F0092D269 /* BTKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		0E3BCBF4231110BF0076E11D /* DemoFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E3BCBF3231110BF0076E11D /* DemoFactory.swift */; };
 		0E70A45822AF821D006CB87C /* CallbackQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45722AF821D006CB87C /* CallbackQueue.swift */; };
 		0E70A45A22AF8313006CB87C /* BTScannerOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45922AF8313006CB87C /* BTScannerOptions.swift */; };
 		0E70A45C22AF8C58006CB87C /* BTScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45B22AF8C58006CB87C /* BTScanner.swift */; };
@@ -100,6 +101,7 @@
 		0E375F4622AD6CDD0092D269 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0E375F4922AD6CDD0092D269 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		0E375F4B22AD6CDD0092D269 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0E3BCBF3231110BF0076E11D /* DemoFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoFactory.swift; sourceTree = "<group>"; };
 		0E70A45722AF821D006CB87C /* CallbackQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallbackQueue.swift; sourceTree = "<group>"; };
 		0E70A45922AF8313006CB87C /* BTScannerOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTScannerOptions.swift; sourceTree = "<group>"; };
 		0E70A45B22AF8C58006CB87C /* BTScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTScanner.swift; sourceTree = "<group>"; };
@@ -296,6 +298,7 @@
 			isa = PBXGroup;
 			children = (
 				0E375F0122ACFDA20092D269 /* BTKit.swift */,
+				0E3BCBF2231110B10076E11D /* Demo */,
 				0E375F2322AD64970092D269 /* Devices */,
 				0E375F1422ACFFD20092D269 /* Scanner */,
 				0E375EFC22ACFD260092D269 /* Vendor */,
@@ -317,6 +320,14 @@
 				0E375F0422ACFE4F0092D269 /* Versions */,
 			);
 			path = Firmware;
+			sourceTree = "<group>";
+		};
+		0E3BCBF2231110B10076E11D /* Demo */ = {
+			isa = PBXGroup;
+			children = (
+				0E3BCBF3231110BF0076E11D /* DemoFactory.swift */,
+			);
+			path = Demo;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -478,6 +489,7 @@
 				0E375F1922AD00600092D269 /* BTScanneriOS.swift in Sources */,
 				0E375F1C22AD01000092D269 /* RuuviDevice.swift in Sources */,
 				0E375F0922ACFE760092D269 /* RuuviData3.swift in Sources */,
+				0E3BCBF4231110BF0076E11D /* DemoFactory.swift in Sources */,
 				0E70A45A22AF8313006CB87C /* BTScannerOptions.swift in Sources */,
 				0E375F1F22AD046A0092D269 /* ObservationToken.swift in Sources */,
 			);
