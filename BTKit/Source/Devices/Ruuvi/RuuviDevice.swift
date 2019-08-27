@@ -219,6 +219,14 @@ public extension RuuviTag {
             return nil
         }
     }
+    
+    var kelvin: Double? {
+        if let celsius = celsius {
+            return celsius + 273.15
+        } else {
+            return nil
+        }
+    }
 }
 
 extension RuuviTag: Hashable {
