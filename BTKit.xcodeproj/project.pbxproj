@@ -229,6 +229,7 @@
 		0E375F2322AD64970092D269 /* Devices */ = {
 			isa = PBXGroup;
 			children = (
+				0E3BCBF2231110B10076E11D /* Demo */,
 				0E375F2622AD65180092D269 /* Ruuvi */,
 				0E375F2422AD650F0092D269 /* BTDevice.swift */,
 				0E70A45B22AF8C58006CB87C /* BTScanner.swift */,
@@ -298,7 +299,6 @@
 			isa = PBXGroup;
 			children = (
 				0E375F0122ACFDA20092D269 /* BTKit.swift */,
-				0E3BCBF2231110B10076E11D /* Demo */,
 				0E375F2322AD64970092D269 /* Devices */,
 				0E375F1422ACFFD20092D269 /* Scanner */,
 				0E375EFC22ACFD260092D269 /* Vendor */,
