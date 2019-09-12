@@ -30,10 +30,16 @@
                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3O0-iA-TKV">
                                     <rect key="frame" x="177.5" y="37" width="59" height="30"/>
                                     <state key="normal" title="Connect"/>
+                                    <connections>
+                                        <action selector="connectButtonTouchUpInside:" destination="Uhr-O6-bc1" eventType="touchUpInside" id="0na-US-N1w"/>
+                                    </connections>
                                 </button>
                                 <button opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nTh-ER-Lug">
                                     <rect key="frame" x="189.5" y="75" width="35" height="30"/>
                                     <state key="normal" title="Read"/>
+                                    <connections>
+                                        <action selector="readButtonTouchUpInside:" destination="Uhr-O6-bc1" eventType="touchUpInside" id="axi-OQ-YRD"/>
+                                    </connections>
                                 </button>
                             </subviews>
                             <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -81,6 +87,11 @@
                             <outlet property="delegate" destination="Uhr-O6-bc1" id="oBF-Fb-gB5"/>
                         </connections>
                     </tableView>
+                    <connections>
+                        <outlet property="connectButton" destination="3O0-iA-TKV" id="oju-A6-uxo"/>
+                        <outlet property="readButton" destination="nTh-ER-Lug" id="2Aa-Jb-CiV"/>
+                        <outlet property="uuidOrMacLabel" destination="Qrd-XJ-jzS" id="ZDl-ox-Dqh"/>
+                    </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="wM8-ax-U54" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

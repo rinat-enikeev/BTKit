@@ -82,9 +82,9 @@ extension MainViewController {
 // MARK: - Observing & Reloading
 extension MainViewController {
     private func startObserving() {
-        scanToken = BTKit.scanner.scan(self) { [weak self] (observer, device) in
+        scanToken = BTKit.scanner.scan(self) { (observer, device) in
             if let tag = device.ruuvi?.tag {
-                self?.ruuviTagsSet.update(with: tag)
+                observer.ruuviTagsSet.update(with: tag)
             }
         }
     }
@@ -95,15 +95,20 @@ extension MainViewController {
     
     private func startReloading() {
         reloadingTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true, block: { [weak self] _ in
-            if let set = self?.ruuviTagsSet {
-                self?.ruuviTags = set.sorted(by: { $0.rssi > $1.rssi })
-                self?.tableView.reloadData()
-            }
+            self?.updateRuuviTags()
         })
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.updateRuuviTags()
+        }
     }
     
     private func stopReloading() {
         reloadingTimer?.invalidate()
         reloadingTimer = nil
+    }
+    
+    private func updateRuuviTags() {
+        ruuviTags = ruuviTagsSet.sorted(by: { $0.rssi > $1.rssi })
+        tableView.reloadData()
     }
 }
