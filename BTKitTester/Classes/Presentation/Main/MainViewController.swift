@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  MainViewController.swift
 //  BTKitTester
 //
 //  Created by Rinat Enikeev on 6/9/19.
@@ -9,7 +9,7 @@
 import UIKit
 import BTKit
 
-class ViewController: UIViewController {
+class MainViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
