@@ -7,7 +7,8 @@
 //
 
 import UIKit
+import BTKit
 
 class ConnectableViewController: UITableViewController {
-    
+    var ruuviTag: RuuviTag!
 }

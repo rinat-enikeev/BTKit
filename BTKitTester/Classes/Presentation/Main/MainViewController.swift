@@ -47,14 +47,14 @@ extension MainViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: cellReuseIdentifier, for: indexPath) as! MainTableViewCell
-        let tag = ruuviTags[indexPath.row]
-        configure(cell: cell, tag: tag)
+        let ruuviTag = ruuviTags[indexPath.row]
+        configure(cell: cell, ruuviTag: ruuviTag)
         return cell
     }
     
-    private func configure(cell: MainTableViewCell, tag: RuuviTag) {
-        cell.uuidOrMacLabel.text = tag.mac ?? tag.uuid
-        cell.accessoryType = tag.isConnectable ? .detailDisclosureButton : .none
+    private func configure(cell: MainTableViewCell, ruuviTag: RuuviTag) {
+        cell.uuidOrMacLabel.text = ruuviTag.mac ?? ruuviTag.uuid
+        cell.accessoryType = ruuviTag.isConnectable ? .detailDisclosureButton : .none
     }
 }
 
@@ -62,17 +62,20 @@ extension MainViewController {
 extension MainViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        let tag = ruuviTags[indexPath.row]
-        if tag.isConnectable {
-            openConnectableTag(tag)
+        let ruuviTag = ruuviTags[indexPath.row]
+        if ruuviTag.isConnectable {
+            openConnectable(ruuviTag: ruuviTag)
         }
     }
 }
 
 // MARK: - Routing
 extension MainViewController {
-    private func openConnectableTag(_ tag: RuuviTag) {
-        print(tag)
+    private func openConnectable(ruuviTag: RuuviTag) {
+        let storyboard = UIStoryboard(name: "Connectable", bundle: .main)
+        let controller = storyboard.instantiateInitialViewController() as! ConnectableViewController
+        controller.ruuviTag = ruuviTag
+        navigationController?.pushViewController(controller, animated: true)
     }
 }
 
