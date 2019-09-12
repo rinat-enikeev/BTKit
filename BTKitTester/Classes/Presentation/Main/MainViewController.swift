@@ -60,7 +60,20 @@ extension MainViewController {
 
 // MARK: - UITableViewDelegate
 extension MainViewController {
-    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        let tag = ruuviTags[indexPath.row]
+        if tag.isConnectable {
+            openConnectableTag(tag)
+        }
+    }
+}
+
+// MARK: - Routing
+extension MainViewController {
+    private func openConnectableTag(_ tag: RuuviTag) {
+        print(tag)
+    }
 }
 
 // MARK: - Observing & Reloading
