@@ -35,6 +35,8 @@
 		0E70A45A22AF8313006CB87C /* BTScannerOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45922AF8313006CB87C /* BTScannerOptions.swift */; };
 		0E70A45C22AF8C58006CB87C /* BTScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45B22AF8C58006CB87C /* BTScanner.swift */; };
 		0EA31060232A82C600BC8CF5 /* MainTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA3105F232A82C600BC8CF5 /* MainTableViewCell.swift */; };
+		0EA31064232A86D100BC8CF5 /* Connectable.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0EA31063232A86D100BC8CF5 /* Connectable.storyboard */; };
+		0EA31066232A88DC00BC8CF5 /* ConnectableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA31065232A88DC00BC8CF5 /* ConnectableViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -107,6 +109,8 @@
 		0E70A45922AF8313006CB87C /* BTScannerOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTScannerOptions.swift; sourceTree = "<group>"; };
 		0E70A45B22AF8C58006CB87C /* BTScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTScanner.swift; sourceTree = "<group>"; };
 		0EA3105F232A82C600BC8CF5 /* MainTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTableViewCell.swift; sourceTree = "<group>"; };
+		0EA31063232A86D100BC8CF5 /* Connectable.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Connectable.storyboard; sourceTree = "<group>"; };
+		0EA31065232A88DC00BC8CF5 /* ConnectableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectableViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -350,6 +354,7 @@
 			children = (
 				0EA3105D232A6DB200BC8CF5 /* Launch */,
 				0EA3105A232A6D8100BC8CF5 /* Main */,
+				0EA31061232A86A800BC8CF5 /* RuuviTag */,
 			);
 			path = Presentation;
 			sourceTree = "<group>";
@@ -395,6 +400,23 @@
 				0E375F4B22AD6CDD0092D269 /* Info.plist */,
 			);
 			path = Plists;
+			sourceTree = "<group>";
+		};
+		0EA31061232A86A800BC8CF5 /* RuuviTag */ = {
+			isa = PBXGroup;
+			children = (
+				0EA31062232A86C200BC8CF5 /* Connectable */,
+			);
+			path = RuuviTag;
+			sourceTree = "<group>";
+		};
+		0EA31062232A86C200BC8CF5 /* Connectable */ = {
+			isa = PBXGroup;
+			children = (
+				0EA31063232A86D100BC8CF5 /* Connectable.storyboard */,
+				0EA31065232A88DC00BC8CF5 /* ConnectableViewController.swift */,
+			);
+			path = Connectable;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -532,6 +554,7 @@
 				0E375F4A22AD6CDD0092D269 /* LaunchScreen.storyboard in Resources */,
 				0E375F4722AD6CDD0092D269 /* Assets.xcassets in Resources */,
 				0E375F4522AD6CDB0092D269 /* Main.storyboard in Resources */,
+				0EA31064232A86D100BC8CF5 /* Connectable.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -577,6 +600,7 @@
 				0E375F4222AD6CDB0092D269 /* MainViewController.swift in Sources */,
 				0EA31060232A82C600BC8CF5 /* MainTableViewCell.swift in Sources */,
 				0E375F4022AD6CDB0092D269 /* AppDelegate.swift in Sources */,
+				0EA31066232A88DC00BC8CF5 /* ConnectableViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
