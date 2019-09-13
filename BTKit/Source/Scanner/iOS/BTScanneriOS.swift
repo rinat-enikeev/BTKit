@@ -246,6 +246,7 @@ extension BTScanneriOS: CBCentralManagerDelegate {
         observations.disconnect.values
             .filter({ $0.uuid == peripheral.identifier.uuidString })
             .forEach({ $0.block() })
+        connectedPeripherals.remove(peripheral)
     }
     
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
