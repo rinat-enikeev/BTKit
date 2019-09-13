@@ -227,6 +227,10 @@ extension BTScanneriOS: CBCentralManagerDelegate {
         peripheral.discoverServices(nil)
     }
     
+    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+        
+    }
+    
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         if let error = error {
             print(error.localizedDescription)
