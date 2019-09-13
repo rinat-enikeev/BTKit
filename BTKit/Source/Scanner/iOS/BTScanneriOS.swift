@@ -25,10 +25,20 @@ class BTScanneriOS: NSObject, BTScanner {
     }
     
     private class ConnectObservation {
-        var block: (BTDevice) -> Void
+        var block: () -> Void
         var uuid: String = ""
         
-        init(block: @escaping ((BTDevice) -> Void), uuid: String) {
+        init(block: @escaping (() -> Void), uuid: String) {
+            self.block = block
+            self.uuid = uuid
+        }
+    }
+    
+    private class DisconnectObservation {
+        var block: () -> Void
+        var uuid: String = ""
+        
+        init(block: @escaping (() -> Void), uuid: String) {
             self.block = block
             self.uuid = uuid
         }
@@ -44,7 +54,8 @@ class BTScanneriOS: NSObject, BTScanner {
         device: [UUID : (BTDevice) -> Void](),
         lost: [UUID: LostObservation](),
         observe: [UUID: ObserveObservation](),
-        connect: [UUID: ConnectObservation]()
+        connect: [UUID: ConnectObservation](),
+        disconnect: [UUID: DisconnectObservation]()
     )
     private var isReady = false { didSet { startIfNeeded() } }
     private var decoders: [BTDecoder]
@@ -129,6 +140,7 @@ class BTScanneriOS: NSObject, BTScanner {
             || observations.device.count > 0
             || observations.lost.count > 0
             || observations.observe.count > 0
+            || observations.connect.count > 0
         
         if shouldBeRunning && !manager.isScanning && isReady {
             manager.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: NSNumber(value: true)])
@@ -225,10 +237,15 @@ extension BTScanneriOS: CBCentralManagerDelegate {
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         peripheral.discoverServices(nil)
+        observations.connect.values
+            .filter({ $0.uuid == peripheral.identifier.uuidString })
+            .forEach({ $0.block() })
     }
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-        
+        observations.disconnect.values
+            .filter({ $0.uuid == peripheral.identifier.uuidString })
+            .forEach({ $0.block() })
     }
     
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
@@ -418,14 +435,14 @@ extension BTScanneriOS {
     }
     
     @discardableResult
-    func connect<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, closure: @escaping (T, BTDevice) -> Void) -> ObservationToken {
+    func connect<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, connected: @escaping (T) -> Void, disconnected: @escaping (T) -> Void) -> ObservationToken {
         let options = currentDefaultOptions + (options ?? .empty)
         let info = BTKitParsedOptionsInfo(options)
         
         let id = UUID()
         
         queue.async { [weak self] in
-            self?.observations.connect[id] = ConnectObservation(block: { [weak self, weak observer] device in
+            self?.observations.connect[id] = ConnectObservation(block: { [weak self, weak observer] in
                 guard let observer = observer else {
                     self?.observations.connect.removeValue(forKey: id)
                     return
@@ -437,7 +454,23 @@ extension BTScanneriOS {
                         }
                         return
                     }
-                    closure(observer, device)
+                    connected(observer)
+                }
+            }, uuid: uuid)
+            
+            self?.observations.disconnect[id] = DisconnectObservation(block: { [weak self, weak observer] in
+                guard let observer = observer else {
+                    self?.observations.connect.removeValue(forKey: id)
+                    return
+                }
+                info.callbackQueue.execute { [weak observer, weak self] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.connect.removeValue(forKey: id)
+                        }
+                        return
+                    }
+                    disconnected(observer)
                 }
             }, uuid: uuid)
             self?.startIfNeeded()

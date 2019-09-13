@@ -16,13 +16,16 @@ class ConnectableViewController: UITableViewController {
     @IBOutlet weak var connectButton: UIButton!
     @IBOutlet weak var readButton: UIButton!
     
+    var isConnected: Bool = false { didSet { updateUIIsConnected() } }
 }
 
 // MARK: - IBActions
 extension ConnectableViewController {
     @IBAction func connectButtonTouchUpInside(_ sender: Any) {
-        BTKit.scanner.connect(self, uuid: ruuviTag.uuid) { (observer, device) in
-            print(device)
+        BTKit.scanner.connect(self, uuid: ruuviTag.uuid, connected: { (observer) in
+            observer.isConnected = true
+        }) { (observer) in
+            observer.isConnected = false
         }
     }
     
@@ -42,8 +45,20 @@ extension ConnectableViewController {
 // MARK: - Update UI
 extension ConnectableViewController {
     private func updateUI() {
+        updateUIUUIDOrMAC()
+        updateUIIsConnected()
+    }
+    
+    private func updateUIUUIDOrMAC() {
         if isViewLoaded {
             uuidOrMacLabel.text = ruuviTag.mac ?? ruuviTag.uuid
+        }
+    }
+    
+    private func updateUIIsConnected() {
+        if isViewLoaded {
+            connectButton.isEnabled = !isConnected
+            readButton.isEnabled = isConnected
         }
     }
 }
