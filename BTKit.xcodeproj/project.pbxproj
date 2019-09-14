@@ -37,6 +37,8 @@
 		0EA31060232A82C600BC8CF5 /* MainTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA3105F232A82C600BC8CF5 /* MainTableViewCell.swift */; };
 		0EA31064232A86D100BC8CF5 /* Connectable.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0EA31063232A86D100BC8CF5 /* Connectable.storyboard */; };
 		0EA31066232A88DC00BC8CF5 /* ConnectableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA31065232A88DC00BC8CF5 /* ConnectableViewController.swift */; };
+		0EA3106D232BBA3900BC8CF5 /* BTService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA3106C232BBA3900BC8CF5 /* BTService.swift */; };
+		0EA31071232BBAAC00BC8CF5 /* RuuviNUSService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA31070232BBAAC00BC8CF5 /* RuuviNUSService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -111,6 +113,8 @@
 		0EA3105F232A82C600BC8CF5 /* MainTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTableViewCell.swift; sourceTree = "<group>"; };
 		0EA31063232A86D100BC8CF5 /* Connectable.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Connectable.storyboard; sourceTree = "<group>"; };
 		0EA31065232A88DC00BC8CF5 /* ConnectableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectableViewController.swift; sourceTree = "<group>"; };
+		0EA3106C232BBA3900BC8CF5 /* BTService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTService.swift; sourceTree = "<group>"; };
+		0EA31070232BBAAC00BC8CF5 /* RuuviNUSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuuviNUSService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -182,6 +186,7 @@
 		0E375EFD22ACFD2E0092D269 /* Ruuvi */ = {
 			isa = PBXGroup;
 			children = (
+				0EA3106F232BBA6600BC8CF5 /* Service */,
 				0E375F0022ACFD7B0092D269 /* Decoder */,
 				0E375EFE22ACFD410092D269 /* Ruuvi.swift */,
 			);
@@ -240,6 +245,7 @@
 				0E375F2422AD650F0092D269 /* BTDevice.swift */,
 				0E70A45B22AF8C58006CB87C /* BTScanner.swift */,
 				0E375F1022ACFF070092D269 /* BTContract.swift */,
+				0EA3106C232BBA3900BC8CF5 /* BTService.swift */,
 				0E375F1E22AD046A0092D269 /* ObservationToken.swift */,
 				0E70A45722AF821D006CB87C /* CallbackQueue.swift */,
 				0E70A45922AF8313006CB87C /* BTScannerOptions.swift */,
@@ -419,6 +425,14 @@
 			path = Connectable;
 			sourceTree = "<group>";
 		};
+		0EA3106F232BBA6600BC8CF5 /* Service */ = {
+			isa = PBXGroup;
+			children = (
+				0EA31070232BBAAC00BC8CF5 /* RuuviNUSService.swift */,
+			);
+			path = Service;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -568,10 +582,12 @@
 				0E375F0A22ACFE760092D269 /* RuuviData4.swift in Sources */,
 				0E70A45822AF821D006CB87C /* CallbackQueue.swift in Sources */,
 				0E375F2522AD650F0092D269 /* BTDevice.swift in Sources */,
+				0EA3106D232BBA3900BC8CF5 /* BTService.swift in Sources */,
 				0E375F1122ACFF070092D269 /* BTContract.swift in Sources */,
 				0E375F0B22ACFE760092D269 /* RuuviData5.swift in Sources */,
 				0E375F1322ACFF2F0092D269 /* Data+Ruuvi.swift in Sources */,
 				0E375F2122AD5D1E0092D269 /* RuuviDecoderiOS.swift in Sources */,
+				0EA31071232BBAAC00BC8CF5 /* RuuviNUSService.swift in Sources */,
 				0E375EFF22ACFD410092D269 /* Ruuvi.swift in Sources */,
 				0E375F0C22ACFE760092D269 /* RuuviData2.swift in Sources */,
 				0E70A45C22AF8C58006CB87C /* BTScanner.swift in Sources */,

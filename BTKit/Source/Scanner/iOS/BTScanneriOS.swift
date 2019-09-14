@@ -59,6 +59,7 @@ class BTScanneriOS: NSObject, BTScanner {
     )
     private var isReady = false { didSet { startIfNeeded() } }
     private var decoders: [BTDecoder]
+    private var services: [BTService]
     private var defaultOptions = BTScannerOptionsInfo.empty
     private var currentDefaultOptions: BTScannerOptionsInfo {
         return [] + defaultOptions
@@ -73,8 +74,9 @@ class BTScanneriOS: NSObject, BTScanner {
         restartTimer?.cancel()
     }
     
-    required init(decoders: [BTDecoder]) {
+    required init(decoders: [BTDecoder], services: [BTService]) {
         self.decoders = decoders
+        self.services = services
         super.init()
         NotificationCenter.default.addObserver(self, selector: #selector(self.willResignActiveNotification(_:)), name: UIApplication.willResignActiveNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.didBecomeActiveNotification(_:)), name: UIApplication.didBecomeActiveNotification, object: nil)
@@ -171,32 +173,42 @@ class BTScanneriOS: NSObject, BTScanner {
 
 extension BTScanneriOS: CBPeripheralDelegate {
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
-        guard let services = peripheral.services else { return }
-        for service in services {
-            print(service)
-            peripheral.discoverCharacteristics(nil, for: service)
+        guard let discovered = peripheral.services else { return }
+        for d in discovered {
+            if let service = services.first(where: { $0.uuid == d.uuid }) {
+                if let uart = service as? BTUARTService {
+                    peripheral.discoverCharacteristics([uart.txUUID, uart.rxUUID], for: d)
+                }
+            }
         }
     }
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         guard let characteristics = service.characteristics else { return }
         
-        for characteristic in characteristics {
-            print(characteristic)
-            
-            if characteristic.properties.contains(.read) {
-                print("\(characteristic.uuid): properties contains .read")
-                peripheral.readValue(for: characteristic)
-            }
-            if characteristic.properties.contains(.notify) {
-                print("\(characteristic.uuid): properties contains .notify")
-                peripheral.setNotifyValue(true, for: characteristic)
+        if let handler = services.first(where: { $0.uuid == service.uuid }) as? BTUARTService {
+            handler.tx = characteristics.first(where: { $0.uuid == handler.txUUID })
+            handler.rx = characteristics.first(where: { $0.uuid == handler.rxUUID })
+            if let tx = handler.tx, tx.properties.contains(.notify) {
+                peripheral.setNotifyValue(true, for: tx)
             }
         }
     }
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         print(characteristic)
+    }
+    
+    func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+        if let service = services.first(where: { (service) -> Bool in
+            if let uart = service as? BTUARTService, uart.tx?.uuid == characteristic.uuid {
+                return true
+            } else {
+                return false
+            }
+        }) as? BTUARTService {
+            service.isReady = true
+        }
     }
 }
 

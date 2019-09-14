@@ -1,5 +1,5 @@
 public protocol BTScanner {
-    init(decoders: [BTDecoder])
+    init(decoders: [BTDecoder], services: [BTService])
     
     var bluetoothState: BTScannerState { get }
     

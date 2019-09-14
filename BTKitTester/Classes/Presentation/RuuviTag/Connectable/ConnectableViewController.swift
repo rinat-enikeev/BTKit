@@ -17,12 +17,19 @@ class ConnectableViewController: UITableViewController {
     @IBOutlet weak var readButton: UIButton!
     
     var isConnected: Bool = false { didSet { updateUIIsConnected() } }
+    
+    private var connectToken: ObservationToken?
+    
+    deinit {
+        connectToken?.invalidate()
+    }
 }
 
 // MARK: - IBActions
 extension ConnectableViewController {
     @IBAction func connectButtonTouchUpInside(_ sender: Any) {
-        BTKit.scanner.connect(self, uuid: ruuviTag.uuid, connected: { (observer) in
+        connectToken?.invalidate()
+        connectToken = BTKit.scanner.connect(self, uuid: ruuviTag.uuid, connected: { (observer) in
             observer.isConnected = true
         }) { (observer) in
             observer.isConnected = false
