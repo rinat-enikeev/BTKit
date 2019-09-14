@@ -21,8 +21,12 @@ public enum BTRuuviServiceType {
     public static let NUS = CBUUID(string: "6E400001-B5A3-F393-E0A9-E50E24DCCA9E")
     
     public static func nusTemperatureHistoryRequest(from date: Date) -> Data {
-        let now = Int32(Date().timeIntervalSince1970)
-        let from = Int32(date.timeIntervalSince1970)
+        let nowTI = Date().timeIntervalSince1970
+        var now = UInt32(nowTI)
+        now = UInt32(bigEndian: now)
+        let fromTI = date.timeIntervalSince1970
+        var from = UInt32(fromTI)
+        from = UInt32(bigEndian: from)
         let nowData = withUnsafeBytes(of: now) { Data($0) }
         let fromData = withUnsafeBytes(of: from) { Data($0) }
         var data = Data()
@@ -37,17 +41,24 @@ public enum BTRuuviServiceType {
     public static func nusTemperatureHistoryDecode(data: Data) -> (Date,Double)? {
         guard data.count == 11 else { return nil }
         guard data[1] == 0x30 else { return nil }
-        guard let timestamp = data[3...6].withUnsafeBytes({ $0.bindMemory(to: UInt32.self) }).map(UInt32.init(bigEndian:)).first else { return nil }
-        guard let celsiusFraction = data[7...10].withUnsafeBytes({ $0.bindMemory(to: UInt32.self) }).map(UInt32.init(bigEndian:)).first else { return nil }
+        let timestampData = data[3...6]
+        var timestamp: UInt32 = 0
+        let timestampBytesCopied = withUnsafeMutableBytes(of: &timestamp, { timestampData.copyBytes(to: $0)} )
+        timestamp = UInt32(bigEndian: timestamp)
+        assert(timestampBytesCopied == MemoryLayout.size(ofValue: timestamp))
+        
+        let celsiusFractionData = data[7...10]
+        var celsiusFraction: Int32 = 0
+        let celsiusFractionBytesCopied = withUnsafeMutableBytes(of: &celsiusFraction, { celsiusFractionData.copyBytes(to: $0) })
+        assert(celsiusFractionBytesCopied == MemoryLayout.size(ofValue: celsiusFraction))
         let date = Date(timeIntervalSince1970: TimeInterval(timestamp))
+        celsiusFraction = Int32(bigEndian: celsiusFraction)
         let celsius = Double(celsiusFraction) / 100.0
         return (date,celsius)
     }
     
     public static func nusIsEOF(data: Data) -> Bool {
-        // last 8 bytes are ffffffffffffffff
         guard data.count == 11 else { return false }
-//        guard let value = data[3...10].withUnsafeBytes({ $0.bindMemory(to: UInt64.self) }).map(UInt64.init(bigEndian:)).first else { return false }
         let payload = data[3...10]
         var value: UInt64 = 0
         let bytesCopied = withUnsafeMutableBytes(of: &value, { payload.copyBytes(to: $0)} )
