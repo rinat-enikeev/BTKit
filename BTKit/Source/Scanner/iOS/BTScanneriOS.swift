@@ -45,13 +45,13 @@ class BTScanneriOS: NSObject, BTScanner {
     }
     
     private class ServiceObservation {
-        var request: ((CBCharacteristic?, CBCharacteristic?) -> Void)?
-        var response: ((Data) -> Void)?
+        var request: ((CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?
+        var response: ((Data?) -> Void)?
         var failure: ((BTError) -> Void)?
         var uuid: String = ""
         var type: BTServiceType
         
-        init(uuid: String, type: BTServiceType, request: ((CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((Data) -> Void)?, failure: ((BTError) -> Void)?) {
+        init(uuid: String, type: BTServiceType, request: ((CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((Data?) -> Void)?, failure: ((BTError) -> Void)?) {
             self.uuid = uuid
             self.type = type
             self.request = request
@@ -213,14 +213,38 @@ extension BTScanneriOS: CBPeripheralDelegate {
         }
     }
     
+    func peripheral(_ peripheral: CBPeripheral, didWriteValueFor descriptor: CBDescriptor, error: Error?) {
+        print(descriptor)
+    }
+    
+    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor descriptor: CBDescriptor, error: Error?) {
+        print(descriptor)
+    }
+    
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-        print(characteristic)
+        services.compactMap { (service) -> BTUARTService? in
+            let uart = service as? BTUARTService
+            let isService = characteristic.service.uuid == service.uuid
+            let isCharacteristic = uart?.tx?.uuid == characteristic.uuid
+            return isService && isCharacteristic ? uart : nil
+        }.forEach { (service) in
+            observations.service.values
+                .filter( {
+                    $0.uuid == peripheral.identifier.uuidString &&
+                    $0.type.uuid == service.uuid
+                } )
+                .forEach( {
+                    $0.response?(characteristic.value)
+                } )
+        }
     }
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
         services.compactMap { (service) -> BTUARTService? in
             let uart = service as? BTUARTService
-            return (uart?.tx?.uuid == characteristic.uuid) ? uart : nil
+            let isService = characteristic.service.uuid == service.uuid
+            let isCharacteristic = uart?.tx?.uuid == characteristic.uuid
+            return isService && isCharacteristic ? uart : nil
         }.forEach { (service) in
             service.isReady = true
             observations.service.values
@@ -229,7 +253,7 @@ extension BTScanneriOS: CBPeripheralDelegate {
                     $0.type.uuid == service.uuid
                 } )
                 .forEach( {
-                    $0.request?(service.rx, service.tx )
+                    $0.request?(peripheral, service.rx, service.tx)
                 } )
         }
     }
@@ -522,7 +546,7 @@ extension BTScanneriOS {
     }
     
     @discardableResult
-    func serve<T: AnyObject>(_ observer: T, for uuid: String, _ type: BTServiceType, options: BTScannerOptionsInfo?, request: ((T, CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((T, Data) -> Void)?, failure: ((T, BTError) -> Void)?) -> ObservationToken {
+    func serve<T: AnyObject>(_ observer: T, for uuid: String, _ type: BTServiceType, options: BTScannerOptionsInfo?, request: ((T, CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((T, Data?) -> Void)?, failure: ((T, BTError) -> Void)?) -> ObservationToken {
         
         let options = currentDefaultOptions + (options ?? .empty)
         let info = BTKitParsedOptionsInfo(options)
@@ -530,7 +554,7 @@ extension BTScanneriOS {
         let id = UUID()
         
         queue.async { [weak self] in
-            self?.observations.service[id] = ServiceObservation(uuid: uuid, type: type, request: { [weak self, weak observer] (rx, tx) in
+            self?.observations.service[id] = ServiceObservation(uuid: uuid, type: type, request: { [weak self, weak observer] (peripheral, rx, tx) in
                 guard let observer = observer else {
                     self?.observations.service.removeValue(forKey: id)
                     return
@@ -542,7 +566,7 @@ extension BTScanneriOS {
                         }
                         return
                     }
-                    request?(observer, rx, tx)
+                    request?(observer, peripheral, rx, tx)
                 }
             }, response: { [weak self, weak observer] (data) in
                 guard let observer = observer else {
@@ -589,7 +613,8 @@ extension BTScanneriOS {
                     }
                     return
                 }
-                request?(observer, service.rx, service.tx)
+                let peripheral = self?.connectedPeripherals.first(where: { $0.identifier.uuidString == uuid })
+                request?(observer, peripheral, service.rx, service.tx)
             }
         }
         

@@ -42,11 +42,12 @@ extension ConnectableViewController {
     
     @IBAction func readButtonTouchUpInside(_ sender: Any) {
         readToken?.invalidate()
-        readToken = BTKit.scanner.serve(self, for: ruuviTag.uuid, .ruuvi(.uart(BTRuuviServiceType.NUS)), request: { (observer, rx, tx) in
-            print(rx)
-            print(tx)
+        readToken = BTKit.scanner.serve(self, for: ruuviTag.uuid, .ruuvi(.uart(BTRuuviServiceType.NUS)), request: { (observer, peripheral, rx, tx) in
+            guard let rx = rx, let from = Calendar.current.date(byAdding: .hour, value: -5, to: Date()) else { return }
+            let data = BTRuuviServiceType.nusTemperatureHistoryRequest(from: from)
+            peripheral?.writeValue(data, for: rx, type: .withResponse)
         }, response: { (observer, data) in
-            
+            print(data?.hexString)
         }) { (observer, error) in
             
         }

@@ -32,6 +32,7 @@
 		0E375F6322AD74880092D269 /* BTKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0E375EED22ACFB8F0092D269 /* BTKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		0E3BCBF4231110BF0076E11D /* DemoFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E3BCBF3231110BF0076E11D /* DemoFactory.swift */; };
 		0E53A3E9232CCCD400ACED49 /* BTError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53A3E8232CCCD400ACED49 /* BTError.swift */; };
+		0E53A3EC232CE65100ACED49 /* Data+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53A3EB232CE65100ACED49 /* Data+Hex.swift */; };
 		0E70A45822AF821D006CB87C /* CallbackQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45722AF821D006CB87C /* CallbackQueue.swift */; };
 		0E70A45A22AF8313006CB87C /* BTScannerOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45922AF8313006CB87C /* BTScannerOptions.swift */; };
 		0E70A45C22AF8C58006CB87C /* BTScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45B22AF8C58006CB87C /* BTScanner.swift */; };
@@ -109,6 +110,7 @@
 		0E375F4B22AD6CDD0092D269 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0E3BCBF3231110BF0076E11D /* DemoFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoFactory.swift; sourceTree = "<group>"; };
 		0E53A3E8232CCCD400ACED49 /* BTError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTError.swift; sourceTree = "<group>"; };
+		0E53A3EB232CE65100ACED49 /* Data+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Hex.swift"; sourceTree = "<group>"; };
 		0E70A45722AF821D006CB87C /* CallbackQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallbackQueue.swift; sourceTree = "<group>"; };
 		0E70A45922AF8313006CB87C /* BTScannerOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTScannerOptions.swift; sourceTree = "<group>"; };
 		0E70A45B22AF8C58006CB87C /* BTScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTScanner.swift; sourceTree = "<group>"; };
@@ -294,6 +296,7 @@
 			isa = PBXGroup;
 			children = (
 				0EA31057232A6D6100BC8CF5 /* Classes */,
+				0E53A3EA232CE63C00ACED49 /* Extensions */,
 				0EA3105B232A6D9900BC8CF5 /* Resources */,
 			);
 			path = BTKitTester;
@@ -339,6 +342,14 @@
 				0E3BCBF3231110BF0076E11D /* DemoFactory.swift */,
 			);
 			path = Demo;
+			sourceTree = "<group>";
+		};
+		0E53A3EA232CE63C00ACED49 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				0E53A3EB232CE65100ACED49 /* Data+Hex.swift */,
+			);
+			path = Extensions;
 			sourceTree = "<group>";
 		};
 		0EA31057232A6D6100BC8CF5 /* Classes */ = {
@@ -618,6 +629,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0E375F4222AD6CDB0092D269 /* MainViewController.swift in Sources */,
+				0E53A3EC232CE65100ACED49 /* Data+Hex.swift in Sources */,
 				0EA31060232A82C600BC8CF5 /* MainTableViewCell.swift in Sources */,
 				0E375F4022AD6CDB0092D269 /* AppDelegate.swift in Sources */,
 				0EA31066232A88DC00BC8CF5 /* ConnectableViewController.swift in Sources */,
