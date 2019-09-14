@@ -53,7 +53,7 @@
                             </constraints>
                         </view>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" id="Oe1-VW-YcR">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="ConnectableTableViewCellReuseIdentifier" id="Oe1-VW-YcR" customClass="ConnectableTableViewCell" customModule="BTKitTester" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="141" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Oe1-VW-YcR" id="JBt-Av-86z">
@@ -80,6 +80,10 @@
                                         <constraint firstItem="ymK-c1-lgW" firstAttribute="leading" secondItem="JBt-Av-86z" secondAttribute="leading" constant="20" id="mPS-xP-bSX"/>
                                     </constraints>
                                 </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="timeLabel" destination="ymK-c1-lgW" id="Dnq-4q-gWy"/>
+                                    <outlet property="valueLabel" destination="PAK-YY-Oy0" id="4Mo-7g-tOF"/>
+                                </connections>
                             </tableViewCell>
                         </prototypes>
                         <connections>

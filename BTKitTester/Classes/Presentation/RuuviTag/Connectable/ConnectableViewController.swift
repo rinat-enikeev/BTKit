@@ -20,8 +20,15 @@ class ConnectableViewController: UITableViewController {
     var isConnected: Bool = false { didSet { updateUIIsConnected() } }
     var isReading: Bool = false { didSet { updateUIIsReading() } }
     
+    private var values = [(Date,Double)]()
     private var connectToken: ObservationToken?
     private var readToken: ObservationToken?
+    private let cellReuseIdentifier = "ConnectableTableViewCellReuseIdentifier"
+    private lazy var timeFormatter: DateFormatter = {
+        let df = DateFormatter()
+        df.dateFormat = "HH:mm:ss"
+        return df
+    }()
     
     deinit {
         connectToken?.invalidate()
@@ -49,7 +56,8 @@ extension ConnectableViewController {
                 self?.readToken?.invalidate()
                 switch result {
                 case .success(let values):
-                    print(values)
+                    self?.values = values
+                    self?.tableView.reloadData()
                 case .failure(let error):
                     print(error)
                 }
@@ -63,6 +71,21 @@ extension ConnectableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         updateUI()
+    }
+}
+
+// MARK: - UITableViewDataSource
+extension ConnectableViewController {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return values.count
+    }
+    
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: cellReuseIdentifier, for: indexPath) as! ConnectableTableViewCell
+        let value = values[indexPath.row]
+        cell.timeLabel.text = timeFormatter.string(from: value.0)
+        cell.valueLabel.text = String(format: "%0.2f", value.1)
+        return cell
     }
 }
 
