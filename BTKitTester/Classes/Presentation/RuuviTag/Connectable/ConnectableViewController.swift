@@ -8,6 +8,7 @@
 
 import UIKit
 import BTKit
+import CoreBluetooth
 
 class ConnectableViewController: UITableViewController {
     var ruuviTag: RuuviTag!
@@ -17,11 +18,14 @@ class ConnectableViewController: UITableViewController {
     @IBOutlet weak var readButton: UIButton!
     
     var isConnected: Bool = false { didSet { updateUIIsConnected() } }
+    var isReading: Bool = false { didSet { updateUIIsReading() } }
     
     private var connectToken: ObservationToken?
+    private var readToken: ObservationToken?
     
     deinit {
         connectToken?.invalidate()
+        readToken?.invalidate()
     }
 }
 
@@ -37,7 +41,15 @@ extension ConnectableViewController {
     }
     
     @IBAction func readButtonTouchUpInside(_ sender: Any) {
-        
+        readToken?.invalidate()
+        readToken = BTKit.scanner.serve(self, for: ruuviTag.uuid, .ruuvi(.uart(BTRuuviServiceType.NUS)), request: { (observer, rx, tx) in
+            print(rx)
+            print(tx)
+        }, response: { (observer, data) in
+            
+        }) { (observer, error) in
+            
+        }
     }
 }
 
@@ -54,6 +66,7 @@ extension ConnectableViewController {
     private func updateUI() {
         updateUIUUIDOrMAC()
         updateUIIsConnected()
+        updateUIIsReading()
     }
     
     private func updateUIUUIDOrMAC() {
@@ -66,6 +79,12 @@ extension ConnectableViewController {
         if isViewLoaded {
             connectButton.isEnabled = !isConnected
             readButton.isEnabled = isConnected
+        }
+    }
+    
+    private func updateUIIsReading() {
+        if isViewLoaded {
+            readButton.isEnabled = !isReading && isConnected
         }
     }
 }

@@ -1,3 +1,5 @@
+import CoreBluetooth
+
 public protocol BTScanner {
     init(decoders: [BTDecoder], services: [BTService])
     
@@ -13,6 +15,8 @@ public protocol BTScanner {
     func observe<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, closure: @escaping (T, BTDevice) -> Void) -> ObservationToken
     @discardableResult
     func connect<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, connected: @escaping (T) -> Void, disconnected: @escaping (T) -> Void) -> ObservationToken
+    @discardableResult
+    func serve<T: AnyObject>(_ observer: T, for uuid: String, _ type: BTServiceType, options: BTScannerOptionsInfo?, request: ((T, CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((T, Data) -> Void)?, failure: ((T, BTError) -> Void)?) -> ObservationToken
 }
 
 public extension BTScanner {
@@ -39,6 +43,11 @@ public extension BTScanner {
     @discardableResult
     func connect<T: AnyObject>(_ observer: T, uuid: String, connected: @escaping (T) -> Void, disconnected: @escaping (T) -> Void) -> ObservationToken {
         return connect(observer, uuid: uuid, options: nil, connected: connected, disconnected: disconnected)
+    }
+    
+    @discardableResult
+    func serve<T: AnyObject>(_ observer: T, for uuid: String, _ type: BTServiceType, request: ((T, CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((T, Data) -> Void)?, failure: ((T, BTError) -> Void)?) -> ObservationToken {
+        return serve(observer, for: uuid, type, options: nil, request: request, response: response, failure: failure)
     }
 }
 

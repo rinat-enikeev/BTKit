@@ -44,6 +44,22 @@ class BTScanneriOS: NSObject, BTScanner {
         }
     }
     
+    private class ServiceObservation {
+        var request: ((CBCharacteristic?, CBCharacteristic?) -> Void)?
+        var response: ((Data) -> Void)?
+        var failure: ((BTError) -> Void)?
+        var uuid: String = ""
+        var type: BTServiceType
+        
+        init(uuid: String, type: BTServiceType, request: ((CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((Data) -> Void)?, failure: ((BTError) -> Void)?) {
+            self.uuid = uuid
+            self.type = type
+            self.request = request
+            self.response = response
+            self.failure = failure
+        }
+    }
+    
     private var connectedPeripherals = Set<CBPeripheral>()
     private let queue = DispatchQueue(label: "CBCentralManager", qos: .userInteractive)
     private lazy var manager: CBCentralManager = {
@@ -55,7 +71,8 @@ class BTScanneriOS: NSObject, BTScanner {
         lost: [UUID: LostObservation](),
         observe: [UUID: ObserveObservation](),
         connect: [UUID: ConnectObservation](),
-        disconnect: [UUID: DisconnectObservation]()
+        disconnect: [UUID: DisconnectObservation](),
+        service: [UUID: ServiceObservation]()
     )
     private var isReady = false { didSet { startIfNeeded() } }
     private var decoders: [BTDecoder]
@@ -143,6 +160,7 @@ class BTScanneriOS: NSObject, BTScanner {
             || observations.lost.count > 0
             || observations.observe.count > 0
             || observations.connect.count > 0
+            || observations.service.count > 0
         
         if shouldBeRunning && !manager.isScanning && isReady {
             manager.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: NSNumber(value: true)])
@@ -200,14 +218,19 @@ extension BTScanneriOS: CBPeripheralDelegate {
     }
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
-        if let service = services.first(where: { (service) -> Bool in
-            if let uart = service as? BTUARTService, uart.tx?.uuid == characteristic.uuid {
-                return true
-            } else {
-                return false
-            }
-        }) as? BTUARTService {
+        services.compactMap { (service) -> BTUARTService? in
+            let uart = service as? BTUARTService
+            return (uart?.tx?.uuid == characteristic.uuid) ? uart : nil
+        }.forEach { (service) in
             service.isReady = true
+            observations.service.values
+                .filter( {
+                    $0.uuid == peripheral.identifier.uuidString &&
+                    $0.type.uuid == service.uuid
+                } )
+                .forEach( {
+                    $0.request?(service.rx, service.tx )
+                } )
         }
     }
 }
@@ -263,7 +286,7 @@ extension BTScanneriOS: CBCentralManagerDelegate {
     
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         if let error = error {
-            print(error.localizedDescription)
+            print(error.localizedDescription) // TODO: pass error to connect caller
         }
     }
 }
@@ -473,13 +496,13 @@ extension BTScanneriOS {
             
             self?.observations.disconnect[id] = DisconnectObservation(block: { [weak self, weak observer] in
                 guard let observer = observer else {
-                    self?.observations.connect.removeValue(forKey: id)
+                    self?.observations.disconnect.removeValue(forKey: id)
                     return
                 }
                 info.callbackQueue.execute { [weak observer, weak self] in
                     guard let observer = observer else {
                         self?.queue.async { [weak self] in
-                            self?.observations.connect.removeValue(forKey: id)
+                            self?.observations.disconnect.removeValue(forKey: id)
                         }
                         return
                     }
@@ -492,6 +515,87 @@ extension BTScanneriOS {
         return ObservationToken { [weak self] in
             self?.queue.async { [weak self] in
                 self?.observations.connect.removeValue(forKey: id)
+                self?.observations.disconnect.removeValue(forKey: id)
+                self?.stopIfNeeded()
+            }
+        }
+    }
+    
+    @discardableResult
+    func serve<T: AnyObject>(_ observer: T, for uuid: String, _ type: BTServiceType, options: BTScannerOptionsInfo?, request: ((T, CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((T, Data) -> Void)?, failure: ((T, BTError) -> Void)?) -> ObservationToken {
+        
+        let options = currentDefaultOptions + (options ?? .empty)
+        let info = BTKitParsedOptionsInfo(options)
+        
+        let id = UUID()
+        
+        queue.async { [weak self] in
+            self?.observations.service[id] = ServiceObservation(uuid: uuid, type: type, request: { [weak self, weak observer] (rx, tx) in
+                guard let observer = observer else {
+                    self?.observations.service.removeValue(forKey: id)
+                    return
+                }
+                info.callbackQueue.execute { [weak observer, weak self] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.service.removeValue(forKey: id)
+                        }
+                        return
+                    }
+                    request?(observer, rx, tx)
+                }
+            }, response: { [weak self, weak observer] (data) in
+                guard let observer = observer else {
+                    self?.observations.service.removeValue(forKey: id)
+                    return
+                }
+                info.callbackQueue.execute { [weak observer, weak self] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.service.removeValue(forKey: id)
+                        }
+                        return
+                    }
+                    response?(observer, data)
+                }
+            }, failure: { [weak self, weak observer] (error) in
+                guard let observer = observer else {
+                    self?.observations.service.removeValue(forKey: id)
+                    return
+                }
+                info.callbackQueue.execute { [weak observer, weak self] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.service.removeValue(forKey: id)
+                        }
+                        return
+                    }
+                    failure?(observer, error)
+                }
+            })
+            
+            self?.startIfNeeded()
+        }
+        
+        // call if service is ready
+        services.compactMap { (service) -> BTUARTService? in
+            guard let uart = service as? BTUARTService else { return nil }
+            return uart.uuid == type.uuid && uart.isReady ? uart : nil
+        }.forEach { (service) in
+            info.callbackQueue.execute { [weak observer, weak self] in
+                guard let observer = observer else {
+                    self?.queue.async { [weak self] in
+                        self?.observations.service.removeValue(forKey: id)
+                    }
+                    return
+                }
+                request?(observer, service.rx, service.tx)
+            }
+        }
+        
+        return ObservationToken { [weak self] in
+            self?.queue.async { [weak self] in
+                self?.observations.service.removeValue(forKey: id)
                 self?.stopIfNeeded()
             }
         }
