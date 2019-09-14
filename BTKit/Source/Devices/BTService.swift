@@ -33,6 +33,27 @@ public enum BTRuuviServiceType {
         data.append(fromData)
         return data
     }
+    
+    public static func nusTemperatureHistoryDecode(data: Data) -> (Date,Double)? {
+        guard data.count == 11 else { return nil }
+        guard data[1] == 0x30 else { return nil }
+        guard let timestamp = data[3...6].withUnsafeBytes({ $0.bindMemory(to: UInt32.self) }).map(UInt32.init(bigEndian:)).first else { return nil }
+        guard let celsiusFraction = data[7...10].withUnsafeBytes({ $0.bindMemory(to: UInt32.self) }).map(UInt32.init(bigEndian:)).first else { return nil }
+        let date = Date(timeIntervalSince1970: TimeInterval(timestamp))
+        let celsius = Double(celsiusFraction) / 100.0
+        return (date,celsius)
+    }
+    
+    public static func nusIsEOF(data: Data) -> Bool {
+        // last 8 bytes are ffffffffffffffff
+        guard data.count == 11 else { return false }
+//        guard let value = data[3...10].withUnsafeBytes({ $0.bindMemory(to: UInt64.self) }).map(UInt64.init(bigEndian:)).first else { return false }
+        let payload = data[3...10]
+        var value: UInt64 = 0
+        let bytesCopied = withUnsafeMutableBytes(of: &value, { payload.copyBytes(to: $0)} )
+        assert(bytesCopied == MemoryLayout.size(ofValue: value))
+        return value == UInt64.max
+    }
 }
 
 public protocol BTService: class {

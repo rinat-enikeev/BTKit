@@ -259,3 +259,31 @@ extension RuuviTag: Equatable {
         }
     }
 }
+
+public extension RuuviTag {
+    func celisus(for observer: AnyObject, from: Date, result: @escaping (Result<[(Date,Double)], BTError>) -> Void) -> ObservationToken {
+        var celsius = [(Date,Double)]()
+        let serveToken = BTKit.scanner.serve(observer, for: uuid, .ruuvi(.uart(BTRuuviServiceType.NUS)), request: { (observer, peripheral, rx, tx) in
+            if let rx = rx {
+                let data = BTRuuviServiceType.nusTemperatureHistoryRequest(from: from)
+                peripheral?.writeValue(data, for: rx, type: .withResponse)
+            } else {
+                result(.failure(.unexpected(.characteristicIsNil)))
+            }
+        }, response: { (observer, data) in
+            if let data = data {
+                print(data.map { String(format: "%02.2hhx", $0) }.joined())
+                if BTRuuviServiceType.nusIsEOF(data: data) {
+                    result(.success(celsius))
+                } else if let row = BTRuuviServiceType.nusTemperatureHistoryDecode(data: data) {
+                    celsius.append(row)
+                }
+            } else {
+                result(.failure(.unexpected(.dataIsNil)))
+            }
+        }) { (observer, error) in
+            result(.failure(error))
+        }
+        return serveToken
+    }
+}
