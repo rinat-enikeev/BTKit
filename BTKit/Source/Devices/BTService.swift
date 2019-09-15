@@ -41,7 +41,7 @@ public enum BTRuuviNUSService {
     var multiplier: Double {
         switch self {
         case .temperature:
-            return 0.1
+            return 0.01
         case .humidity:
             return 1
         case .pressure:

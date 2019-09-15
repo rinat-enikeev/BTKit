@@ -57,7 +57,7 @@
                                     </constraints>
                                 </view>
                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="EeI-Ea-Rub">
-                                    <rect key="frame" x="128" y="75" width="158" height="30"/>
+                                    <rect key="frame" x="93.5" y="75" width="227" height="30"/>
                                     <subviews>
                                         <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gOV-t9-g5O">
                                             <rect key="frame" x="96" y="0.0" width="62" height="30"/>
@@ -73,15 +73,25 @@
                                                 <action selector="temperatureButtonTouchUpInside:" destination="Uhr-O6-bc1" eventType="touchUpInside" id="axi-OQ-YRD"/>
                                             </connections>
                                         </button>
+                                        <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gmq-dB-NhM">
+                                            <rect key="frame" x="166" y="0.0" width="61" height="30"/>
+                                            <state key="normal" title="Pressure"/>
+                                            <connections>
+                                                <action selector="humidityButtonTouchUpInside:" destination="Uhr-O6-bc1" eventType="touchUpInside" id="OXc-av-V8z"/>
+                                            </connections>
+                                        </button>
                                     </subviews>
                                     <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <constraints>
                                         <constraint firstItem="nTh-ER-Lug" firstAttribute="top" secondItem="EeI-Ea-Rub" secondAttribute="top" id="OPX-VW-TBW"/>
-                                        <constraint firstAttribute="trailing" secondItem="gOV-t9-g5O" secondAttribute="trailing" id="S9v-y5-7lE"/>
                                         <constraint firstItem="nTh-ER-Lug" firstAttribute="leading" secondItem="EeI-Ea-Rub" secondAttribute="leading" id="SLb-In-3FG"/>
                                         <constraint firstAttribute="bottom" secondItem="gOV-t9-g5O" secondAttribute="bottom" id="ZI2-Sv-uA8"/>
+                                        <constraint firstAttribute="bottom" secondItem="gmq-dB-NhM" secondAttribute="bottom" id="Zbh-Hz-wch"/>
+                                        <constraint firstItem="gmq-dB-NhM" firstAttribute="leading" secondItem="gOV-t9-g5O" secondAttribute="trailing" constant="8" id="gzY-Pu-hUE"/>
                                         <constraint firstItem="gOV-t9-g5O" firstAttribute="top" secondItem="EeI-Ea-Rub" secondAttribute="top" id="jB1-7L-HzI"/>
                                         <constraint firstItem="gOV-t9-g5O" firstAttribute="leading" secondItem="nTh-ER-Lug" secondAttribute="trailing" constant="8" id="kLx-QC-FWl"/>
+                                        <constraint firstAttribute="trailing" secondItem="gmq-dB-NhM" secondAttribute="trailing" id="nj4-Pe-fuN"/>
+                                        <constraint firstItem="gmq-dB-NhM" firstAttribute="top" secondItem="EeI-Ea-Rub" secondAttribute="top" id="nzf-hZ-zF6"/>
                                         <constraint firstAttribute="bottom" secondItem="nTh-ER-Lug" secondAttribute="bottom" id="ut6-P4-y7M"/>
                                     </constraints>
                                 </view>
