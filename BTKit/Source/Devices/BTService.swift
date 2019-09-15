@@ -43,11 +43,11 @@ public enum BTRuuviNUSService {
         case .temperature:
             return 0.01
         case .humidity:
-            return 1
+            return 0.01
         case .pressure:
-            return 1
+            return 0.01
         case .all:
-            return 1
+            return 0.01
         }
     }
     
@@ -61,8 +61,8 @@ public enum BTRuuviNUSService {
         let nowData = withUnsafeBytes(of: now) { Data($0) }
         let fromData = withUnsafeBytes(of: from) { Data($0) }
         var data = Data()
-        data.append(0x30)
         data.append(flag)
+        data.append(0x30)
         data.append(0x11)
         data.append(nowData)
         data.append(fromData)
@@ -71,7 +71,7 @@ public enum BTRuuviNUSService {
     
     func response(from data: Data) -> (Date,Double)? {
         guard data.count == 11 else { return nil }
-        guard data[0] == flag else { return nil }
+        guard data[1] == flag else { return nil }
         let timestampData = data[3...6]
         var timestamp: UInt32 = 0
         let timestampBytesCopied = withUnsafeMutableBytes(of: &timestamp, { timestampData.copyBytes(to: $0)} )
