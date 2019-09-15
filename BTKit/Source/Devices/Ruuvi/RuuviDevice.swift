@@ -265,6 +265,23 @@ public extension RuuviTag {
         return BTKit.scanner.isConnected(uuid: uuid)
     }
     
+    func connect<T: AnyObject>(for observer: T, result: @escaping (T, BTConnectResult) -> Void) -> ObservationToken? {
+        if !isConnectable {
+            result(observer, .failure(.logic(.notConnectable)))
+            return nil
+        } else if isConnected {
+            result(observer, .already)
+            return nil
+        } else {
+            let connectToken = BTKit.scanner.connect(observer, uuid: uuid, connected: { (observer) in
+                result(observer, .just)
+            }) { (observer) in
+                result(observer, .disconnected)
+            }
+            return connectToken
+        }
+    }
+    
     func celisus(for observer: AnyObject, from date: Date, result: @escaping (Result<[(Date,Double)], BTError>) -> Void) -> ObservationToken? {
         return serve(.temperature, for: observer, from: date, result: result)
     }

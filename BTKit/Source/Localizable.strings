@@ -1,2 +1,3 @@
 // BTLogicError
 "BTLogicError.notConnected" = "BTKit: not connected to the device.";
+"BTLogicError.notConnectable" = "BTKit: device is not connectable.";

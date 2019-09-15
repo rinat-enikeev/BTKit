@@ -23,6 +23,7 @@ extension BTError: LocalizedError {
 
 public enum BTLogicError: Error {
     case notConnected
+    case notConnectable
 }
 
 extension BTLogicError: LocalizedError {
@@ -30,6 +31,8 @@ extension BTLogicError: LocalizedError {
         switch self {
         case .notConnected:
             return NSLocalizedString("BTLogicError.notConnected", tableName: nil, bundle: Bundle(for: BundleClass.self), value: "", comment: "")
+        case .notConnectable:
+            return NSLocalizedString("BTLogicError.notConnectable", tableName: nil, bundle: Bundle(for: BundleClass.self), value: "", comment: "")
         }
     }
 }

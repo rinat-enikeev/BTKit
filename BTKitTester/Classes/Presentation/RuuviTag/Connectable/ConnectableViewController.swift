@@ -50,11 +50,19 @@ class ConnectableViewController: UITableViewController {
 extension ConnectableViewController {
     @IBAction func connectButtonTouchUpInside(_ sender: Any) {
         connectToken?.invalidate()
-        connectToken = BTKit.scanner.connect(self, uuid: ruuviTag.uuid, connected: { (observer) in
-            observer.isConnected = true
-        }) { (observer) in
-            observer.isConnected = false
-        }
+        connectToken = ruuviTag.connect(for: self, result: { (observer, result) in
+            switch result {
+            case .already:
+                observer.isConnected = true
+            case .just:
+                observer.isConnected = true
+            case .disconnected:
+                observer.isConnected = false
+            case .failure(let error):
+                print(error.localizedDescription)
+                observer.isConnected = false
+            }
+        })
     }
     
     @IBAction func disconnectButtonTouchUpInside(_ sender: Any) {
@@ -171,9 +179,9 @@ extension ConnectableViewController {
     
     private func updateUIIsReading() {
         if isViewLoaded {
-            temperatureButton.isEnabled = true // !isReading && isConnected
-            humidityButton.isEnabled = true // !isReading && isConnected
-            pressureButton.isEnabled = true // !isReading && isConnected
+            temperatureButton.isEnabled = !isReading && isConnected
+            humidityButton.isEnabled = !isReading && isConnected
+            pressureButton.isEnabled = !isReading && isConnected
         }
     }
 }
