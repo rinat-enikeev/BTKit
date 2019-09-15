@@ -630,4 +630,51 @@ extension BTScanneriOS {
             }
         }
     }
+    
+    func disconnect<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, disconnected: @escaping (T) -> Void) -> ObservationToken {
+        
+        let options = currentDefaultOptions + (options ?? .empty)
+        let info = BTKitParsedOptionsInfo(options)
+        
+        let id = UUID()
+        
+        queue.async { [weak self] in
+            self?.observations.disconnect[id] = DisconnectObservation(block: { [weak self, weak observer] in
+                guard let observer = observer else {
+                    self?.observations.disconnect.removeValue(forKey: id)
+                    return
+                }
+                info.callbackQueue.execute { [weak observer, weak self] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.disconnect.removeValue(forKey: id)
+                        }
+                        return
+                    }
+                    disconnected(observer)
+                }
+            }, uuid: uuid)
+            
+            self?.startIfNeeded()
+        }
+        
+        queue.async { [weak self] in
+            if let connectedClients = self?.observations.connect.values.filter({ $0.uuid == uuid }).count, connectedClients == 0 {
+                self?.connectedPeripherals
+                    .filter( { $0.identifier.uuidString == uuid } )
+                    .forEach({ (peripheral) in
+                        if peripheral.state != .disconnected {
+                            self?.manager.cancelPeripheralConnection(peripheral)
+                        }
+                    })
+            }
+        }
+        
+        return ObservationToken { [weak self] in
+            self?.queue.async { [weak self] in
+                self?.observations.disconnect.removeValue(forKey: id)
+                self?.stopIfNeeded()
+            }
+        }
+    }
 }

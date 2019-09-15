@@ -16,12 +16,14 @@ class ConnectableViewController: UITableViewController {
     @IBOutlet weak var uuidOrMacLabel: UILabel!
     @IBOutlet weak var connectButton: UIButton!
     @IBOutlet weak var readButton: UIButton!
+    @IBOutlet weak var disconnectButton: UIButton!
     
     var isConnected: Bool = false { didSet { updateUIIsConnected() } }
     var isReading: Bool = false { didSet { updateUIIsReading() } }
     
     private var values = [(Date,Double)]()
     private var connectToken: ObservationToken?
+    private var disconnectToken: ObservationToken?
     private var readToken: ObservationToken?
     private let cellReuseIdentifier = "ConnectableTableViewCellReuseIdentifier"
     private lazy var timeFormatter: DateFormatter = {
@@ -32,8 +34,10 @@ class ConnectableViewController: UITableViewController {
     
     deinit {
         connectToken?.invalidate()
+        disconnectToken?.invalidate()
         readToken?.invalidate()
     }
+    
 }
 
 // MARK: - IBActions
@@ -43,6 +47,14 @@ extension ConnectableViewController {
         connectToken = BTKit.scanner.connect(self, uuid: ruuviTag.uuid, connected: { (observer) in
             observer.isConnected = true
         }) { (observer) in
+            observer.isConnected = false
+        }
+    }
+    
+    @IBAction func disconnectButtonTouchUpInside(_ sender: Any) {
+        connectToken?.invalidate()
+        disconnectToken?.invalidate()
+        BTKit.scanner.disconnect(self, uuid: ruuviTag.uuid) { (observer) in
             observer.isConnected = false
         }
     }
@@ -107,6 +119,7 @@ extension ConnectableViewController {
     private func updateUIIsConnected() {
         if isViewLoaded {
             connectButton.isEnabled = !isConnected
+            disconnectButton.isEnabled = isConnected
             readButton.isEnabled = isConnected
         }
     }
