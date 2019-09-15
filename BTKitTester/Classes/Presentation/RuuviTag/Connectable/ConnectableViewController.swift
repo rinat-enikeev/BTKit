@@ -77,7 +77,7 @@ extension ConnectableViewController {
                     self?.values = values
                     self?.tableView.reloadData()
                 case .failure(let error):
-                    print(error)
+                    print(error.localizedDescription)
                 }
             }
         }
@@ -95,7 +95,7 @@ extension ConnectableViewController {
                     self?.values = values
                     self?.tableView.reloadData()
                 case .failure(let error):
-                    print(error)
+                    print(error.localizedDescription)
                 }
             }
         }
@@ -113,7 +113,7 @@ extension ConnectableViewController {
                     self?.values = values
                     self?.tableView.reloadData()
                 case .failure(let error):
-                    print(error)
+                    print(error.localizedDescription)
                 }
             }
         }
@@ -171,9 +171,9 @@ extension ConnectableViewController {
     
     private func updateUIIsReading() {
         if isViewLoaded {
-            temperatureButton.isEnabled = !isReading && isConnected
-            humidityButton.isEnabled = !isReading && isConnected
-            pressureButton.isEnabled = !isReading && isConnected
+            temperatureButton.isEnabled = true // !isReading && isConnected
+            humidityButton.isEnabled = true // !isReading && isConnected
+            pressureButton.isEnabled = true // !isReading && isConnected
         }
     }
 }
