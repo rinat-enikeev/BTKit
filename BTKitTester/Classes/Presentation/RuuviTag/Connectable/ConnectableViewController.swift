@@ -48,7 +48,7 @@ extension ConnectableViewController {
     }
     
     @IBAction func readButtonTouchUpInside(_ sender: Any) {
-        if let from = Calendar.current.date(byAdding: .hour, value: -5, to: Date()) {
+        if let from = Calendar.current.date(byAdding: .minute, value: -5, to: Date()) {
             readToken?.invalidate()
             isReading = true
             readToken = ruuviTag.celisus(for: self, from: from) { [weak self] (result) in
@@ -70,6 +70,7 @@ extension ConnectableViewController {
 extension ConnectableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
+        isConnected = ruuviTag.isConnected
         updateUI()
     }
 }

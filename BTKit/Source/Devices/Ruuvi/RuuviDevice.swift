@@ -261,6 +261,10 @@ extension RuuviTag: Equatable {
 }
 
 public extension RuuviTag {
+    var isConnected: Bool {
+        return BTKit.scanner.isConnected(uuid: uuid)
+    }
+    
     func celisus(for observer: AnyObject, from: Date, result: @escaping (Result<[(Date,Double)], BTError>) -> Void) -> ObservationToken {
         var celsius = [(Date,Double)]()
         let serveToken = BTKit.scanner.serve(observer, for: uuid, .ruuvi(.uart(BTRuuviServiceType.NUS)), request: { (observer, peripheral, rx, tx) in

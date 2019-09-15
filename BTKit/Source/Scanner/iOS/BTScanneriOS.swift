@@ -316,6 +316,11 @@ extension BTScanneriOS: CBCentralManagerDelegate {
 }
 
 extension BTScanneriOS {
+    
+    func isConnected(uuid: String) -> Bool {
+        return connectedPeripherals.contains(where: { $0.identifier.uuidString == uuid })
+    }
+    
     @discardableResult
     func lost<T: AnyObject>(_ observer: T, options: BTScannerOptionsInfo?, closure: @escaping (T, BTDevice) -> Void) -> ObservationToken {
         
