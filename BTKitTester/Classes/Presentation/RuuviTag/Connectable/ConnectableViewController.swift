@@ -18,6 +18,7 @@ class ConnectableViewController: UITableViewController {
     @IBOutlet weak var disconnectButton: UIButton!
     @IBOutlet weak var temperatureButton: UIButton!
     @IBOutlet weak var humidityButton: UIButton!
+    @IBOutlet weak var pressureButton: UIButton!
     
     var isConnected: Bool = false { didSet { updateUIIsConnected() } }
     var isReading: Bool = false { didSet { updateUIIsReading() } }
@@ -27,6 +28,7 @@ class ConnectableViewController: UITableViewController {
     private var disconnectToken: ObservationToken?
     private var temperatureToken: ObservationToken?
     private var humidityToken: ObservationToken?
+    private var pressureToken: ObservationToken?
     private let cellReuseIdentifier = "ConnectableTableViewCellReuseIdentifier"
     private lazy var timeFormatter: DateFormatter = {
         let df = DateFormatter()
@@ -39,6 +41,7 @@ class ConnectableViewController: UITableViewController {
         disconnectToken?.invalidate()
         temperatureToken?.invalidate()
         humidityToken?.invalidate()
+        pressureToken?.invalidate()
     }
     
 }
@@ -97,6 +100,25 @@ extension ConnectableViewController {
             }
         }
     }
+    
+    @IBAction func pressureButtonTouchUpInside(_ sender: Any) {
+        if let from = Calendar.current.date(byAdding: .minute, value: -5, to: Date()) {
+            pressureToken?.invalidate()
+            isReading = true
+            pressureToken = ruuviTag.pressure(for: self, from: from) { [weak self] (result) in
+                self?.isReading = false
+                self?.pressureToken?.invalidate()
+                switch result {
+                case .success(let values):
+                    self?.values = values
+                    self?.tableView.reloadData()
+                case .failure(let error):
+                    print(error)
+                }
+            }
+        }
+        
+    }
 }
 
 // MARK: - View lifecycle
@@ -143,6 +165,7 @@ extension ConnectableViewController {
             disconnectButton.isEnabled = isConnected
             temperatureButton.isEnabled = isConnected
             humidityButton.isEnabled = isConnected
+            pressureButton.isEnabled = isConnected
         }
     }
     
@@ -150,6 +173,7 @@ extension ConnectableViewController {
         if isViewLoaded {
             temperatureButton.isEnabled = !isReading && isConnected
             humidityButton.isEnabled = !isReading && isConnected
+            pressureButton.isEnabled = !isReading && isConnected
         }
     }
 }

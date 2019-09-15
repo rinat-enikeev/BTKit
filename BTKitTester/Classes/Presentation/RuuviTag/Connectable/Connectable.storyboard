@@ -77,7 +77,7 @@
                                             <rect key="frame" x="166" y="0.0" width="61" height="30"/>
                                             <state key="normal" title="Pressure"/>
                                             <connections>
-                                                <action selector="humidityButtonTouchUpInside:" destination="Uhr-O6-bc1" eventType="touchUpInside" id="OXc-av-V8z"/>
+                                                <action selector="pressureButtonTouchUpInside:" destination="Uhr-O6-bc1" eventType="touchUpInside" id="i40-au-jEd"/>
                                             </connections>
                                         </button>
                                     </subviews>
@@ -149,6 +149,7 @@
                         <outlet property="connectButton" destination="3O0-iA-TKV" id="oju-A6-uxo"/>
                         <outlet property="disconnectButton" destination="dAn-Z1-FMY" id="xW3-A1-sTU"/>
                         <outlet property="humidityButton" destination="gOV-t9-g5O" id="Dmj-gD-nFJ"/>
+                        <outlet property="pressureButton" destination="gmq-dB-NhM" id="Bud-qu-2lD"/>
                         <outlet property="temperatureButton" destination="nTh-ER-Lug" id="2Aa-Jb-CiV"/>
                         <outlet property="uuidOrMacLabel" destination="Qrd-XJ-jzS" id="ZDl-ox-Dqh"/>
                     </connections>
