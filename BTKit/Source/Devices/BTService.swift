@@ -8,19 +8,50 @@ public enum BTServiceType {
         switch self {
         case .ruuvi(let type):
             switch type {
-            case .uart(let uuid):
-                return uuid
+            case .uart(let service):
+                return service.uuid
             }
         }
     }
 }
 
-public enum BTRuuviServiceType {
-    case uart(CBUUID)
+public enum BTRuuviNUSService {
+    case temperature // in °C
+    case humidity // relative
+    case pressure // in hPa
+    case all
     
-    public static let NUS = CBUUID(string: "6E400001-B5A3-F393-E0A9-E50E24DCCA9E")
+    var uuid: CBUUID {
+        return CBUUID(string: "6E400001-B5A3-F393-E0A9-E50E24DCCA9E")
+    }
     
-    public static func nusTemperatureHistoryRequest(from date: Date) -> Data {
+    var flag: UInt8 {
+        switch self {
+        case .temperature:
+            return 0x30
+        case .humidity:
+            return 0x31
+        case .pressure:
+            return 0x32
+        case .all:
+            return 0x3A
+        }
+    }
+    
+    var multiplier: Double {
+        switch self {
+        case .temperature:
+            return 0.1
+        case .humidity:
+            return 1
+        case .pressure:
+            return 1
+        case .all:
+            return 1
+        }
+    }
+    
+    func request(from date: Date) -> Data {
         let nowTI = Date().timeIntervalSince1970
         var now = UInt32(nowTI)
         now = UInt32(bigEndian: now)
@@ -31,33 +62,33 @@ public enum BTRuuviServiceType {
         let fromData = withUnsafeBytes(of: from) { Data($0) }
         var data = Data()
         data.append(0x30)
-        data.append(0x30)
+        data.append(flag)
         data.append(0x11)
         data.append(nowData)
         data.append(fromData)
         return data
     }
     
-    public static func nusTemperatureHistoryDecode(data: Data) -> (Date,Double)? {
+    func response(from data: Data) -> (Date,Double)? {
         guard data.count == 11 else { return nil }
-        guard data[1] == 0x30 else { return nil }
+        guard data[0] == flag else { return nil }
         let timestampData = data[3...6]
         var timestamp: UInt32 = 0
         let timestampBytesCopied = withUnsafeMutableBytes(of: &timestamp, { timestampData.copyBytes(to: $0)} )
         timestamp = UInt32(bigEndian: timestamp)
         assert(timestampBytesCopied == MemoryLayout.size(ofValue: timestamp))
         
-        let celsiusFractionData = data[7...10]
-        var celsiusFraction: Int32 = 0
-        let celsiusFractionBytesCopied = withUnsafeMutableBytes(of: &celsiusFraction, { celsiusFractionData.copyBytes(to: $0) })
-        assert(celsiusFractionBytesCopied == MemoryLayout.size(ofValue: celsiusFraction))
+        let valueData = data[7...10]
+        var value: Int32 = 0
+        let valueBytesCopied = withUnsafeMutableBytes(of: &value, { valueData.copyBytes(to: $0) })
+        assert(valueBytesCopied == MemoryLayout.size(ofValue: value))
+        
         let date = Date(timeIntervalSince1970: TimeInterval(timestamp))
-        celsiusFraction = Int32(bigEndian: celsiusFraction)
-        let celsius = Double(celsiusFraction) / 100.0
-        return (date,celsius)
+        value = Int32(bigEndian: value)
+        return (date, Double(value) * multiplier)
     }
     
-    public static func nusIsEOF(data: Data) -> Bool {
+    func isEndOfTransmissionFlag(data: Data) -> Bool {
         guard data.count == 11 else { return false }
         let payload = data[3...10]
         var value: UInt64 = 0
@@ -65,6 +96,10 @@ public enum BTRuuviServiceType {
         assert(bytesCopied == MemoryLayout.size(ofValue: value))
         return value == UInt64.max
     }
+}
+
+public enum BTRuuviServiceType {
+    case uart(BTRuuviNUSService)
 }
 
 public protocol BTService: class {

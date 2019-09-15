@@ -56,22 +56,44 @@
                                         <constraint firstAttribute="trailing" secondItem="dAn-Z1-FMY" secondAttribute="trailing" id="u13-6Q-ocK"/>
                                     </constraints>
                                 </view>
-                                <button opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nTh-ER-Lug">
-                                    <rect key="frame" x="163" y="75" width="88" height="30"/>
-                                    <state key="normal" title="Temperature"/>
-                                    <connections>
-                                        <action selector="temperatureButtonTouchUpInside:" destination="Uhr-O6-bc1" eventType="touchUpInside" id="axi-OQ-YRD"/>
-                                    </connections>
-                                </button>
+                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="EeI-Ea-Rub">
+                                    <rect key="frame" x="128" y="75" width="158" height="30"/>
+                                    <subviews>
+                                        <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gOV-t9-g5O">
+                                            <rect key="frame" x="96" y="0.0" width="62" height="30"/>
+                                            <state key="normal" title="Humidity"/>
+                                            <connections>
+                                                <action selector="humidityButtonTouchUpInside:" destination="Uhr-O6-bc1" eventType="touchUpInside" id="fbf-sa-jg7"/>
+                                            </connections>
+                                        </button>
+                                        <button opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nTh-ER-Lug">
+                                            <rect key="frame" x="0.0" y="0.0" width="88" height="30"/>
+                                            <state key="normal" title="Temperature"/>
+                                            <connections>
+                                                <action selector="temperatureButtonTouchUpInside:" destination="Uhr-O6-bc1" eventType="touchUpInside" id="axi-OQ-YRD"/>
+                                            </connections>
+                                        </button>
+                                    </subviews>
+                                    <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <constraints>
+                                        <constraint firstItem="nTh-ER-Lug" firstAttribute="top" secondItem="EeI-Ea-Rub" secondAttribute="top" id="OPX-VW-TBW"/>
+                                        <constraint firstAttribute="trailing" secondItem="gOV-t9-g5O" secondAttribute="trailing" id="S9v-y5-7lE"/>
+                                        <constraint firstItem="nTh-ER-Lug" firstAttribute="leading" secondItem="EeI-Ea-Rub" secondAttribute="leading" id="SLb-In-3FG"/>
+                                        <constraint firstAttribute="bottom" secondItem="gOV-t9-g5O" secondAttribute="bottom" id="ZI2-Sv-uA8"/>
+                                        <constraint firstItem="gOV-t9-g5O" firstAttribute="top" secondItem="EeI-Ea-Rub" secondAttribute="top" id="jB1-7L-HzI"/>
+                                        <constraint firstItem="gOV-t9-g5O" firstAttribute="leading" secondItem="nTh-ER-Lug" secondAttribute="trailing" constant="8" id="kLx-QC-FWl"/>
+                                        <constraint firstAttribute="bottom" secondItem="nTh-ER-Lug" secondAttribute="bottom" id="ut6-P4-y7M"/>
+                                    </constraints>
+                                </view>
                             </subviews>
                             <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstItem="4U0-C6-frM" firstAttribute="top" secondItem="Qrd-XJ-jzS" secondAttribute="bottom" constant="8" id="Bew-vz-ltJ"/>
-                                <constraint firstItem="nTh-ER-Lug" firstAttribute="top" secondItem="4U0-C6-frM" secondAttribute="bottom" constant="8" id="N0v-S6-K13"/>
                                 <constraint firstItem="Qrd-XJ-jzS" firstAttribute="centerX" secondItem="LL7-K6-3TG" secondAttribute="centerX" id="NfH-V8-oJT"/>
+                                <constraint firstItem="EeI-Ea-Rub" firstAttribute="top" secondItem="4U0-C6-frM" secondAttribute="bottom" constant="8" id="XbQ-PL-ZOE"/>
                                 <constraint firstItem="4U0-C6-frM" firstAttribute="centerX" secondItem="Qrd-XJ-jzS" secondAttribute="centerX" id="Y60-W2-tpR"/>
                                 <constraint firstItem="Qrd-XJ-jzS" firstAttribute="top" secondItem="LL7-K6-3TG" secondAttribute="top" constant="8" id="ZRD-iy-dCP"/>
-                                <constraint firstItem="nTh-ER-Lug" firstAttribute="centerX" secondItem="LL7-K6-3TG" secondAttribute="centerX" id="yx9-yW-4W4"/>
+                                <constraint firstItem="EeI-Ea-Rub" firstAttribute="centerX" secondItem="4U0-C6-frM" secondAttribute="centerX" id="zEf-B3-vcG"/>
                             </constraints>
                         </view>
                         <prototypes>
@@ -116,6 +138,7 @@
                     <connections>
                         <outlet property="connectButton" destination="3O0-iA-TKV" id="oju-A6-uxo"/>
                         <outlet property="disconnectButton" destination="dAn-Z1-FMY" id="xW3-A1-sTU"/>
+                        <outlet property="humidityButton" destination="gOV-t9-g5O" id="Dmj-gD-nFJ"/>
                         <outlet property="temperatureButton" destination="nTh-ER-Lug" id="2Aa-Jb-CiV"/>
                         <outlet property="uuidOrMacLabel" destination="Qrd-XJ-jzS" id="ZDl-ox-Dqh"/>
                     </connections>

@@ -15,8 +15,9 @@ class ConnectableViewController: UITableViewController {
     
     @IBOutlet weak var uuidOrMacLabel: UILabel!
     @IBOutlet weak var connectButton: UIButton!
-    @IBOutlet weak var temperatureButton: UIButton!
     @IBOutlet weak var disconnectButton: UIButton!
+    @IBOutlet weak var temperatureButton: UIButton!
+    @IBOutlet weak var humidityButton: UIButton!
     
     var isConnected: Bool = false { didSet { updateUIIsConnected() } }
     var isReading: Bool = false { didSet { updateUIIsReading() } }
@@ -25,6 +26,7 @@ class ConnectableViewController: UITableViewController {
     private var connectToken: ObservationToken?
     private var disconnectToken: ObservationToken?
     private var temperatureToken: ObservationToken?
+    private var humidityToken: ObservationToken?
     private let cellReuseIdentifier = "ConnectableTableViewCellReuseIdentifier"
     private lazy var timeFormatter: DateFormatter = {
         let df = DateFormatter()
@@ -36,6 +38,7 @@ class ConnectableViewController: UITableViewController {
         connectToken?.invalidate()
         disconnectToken?.invalidate()
         temperatureToken?.invalidate()
+        humidityToken?.invalidate()
     }
     
 }
@@ -66,6 +69,24 @@ extension ConnectableViewController {
             temperatureToken = ruuviTag.celisus(for: self, from: from) { [weak self] (result) in
                 self?.isReading = false
                 self?.temperatureToken?.invalidate()
+                switch result {
+                case .success(let values):
+                    self?.values = values
+                    self?.tableView.reloadData()
+                case .failure(let error):
+                    print(error)
+                }
+            }
+        }
+    }
+    
+    @IBAction func humidityButtonTouchUpInside(_ sender: Any) {
+        if let from = Calendar.current.date(byAdding: .minute, value: -5, to: Date()) {
+            humidityToken?.invalidate()
+            isReading = true
+            humidityToken = ruuviTag.humidity(for: self, from: from) { [weak self] (result) in
+                self?.isReading = false
+                self?.humidityToken?.invalidate()
                 switch result {
                 case .success(let values):
                     self?.values = values
@@ -121,12 +142,14 @@ extension ConnectableViewController {
             connectButton.isEnabled = !isConnected
             disconnectButton.isEnabled = isConnected
             temperatureButton.isEnabled = isConnected
+            humidityButton.isEnabled = isConnected
         }
     }
     
     private func updateUIIsReading() {
         if isViewLoaded {
             temperatureButton.isEnabled = !isReading && isConnected
+            humidityButton.isEnabled = !isReading && isConnected
         }
     }
 }

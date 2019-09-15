@@ -265,22 +265,33 @@ public extension RuuviTag {
         return BTKit.scanner.isConnected(uuid: uuid)
     }
     
-    func celisus(for observer: AnyObject, from: Date, result: @escaping (Result<[(Date,Double)], BTError>) -> Void) -> ObservationToken {
-        var celsius = [(Date,Double)]()
-        let serveToken = BTKit.scanner.serve(observer, for: uuid, .ruuvi(.uart(BTRuuviServiceType.NUS)), request: { (observer, peripheral, rx, tx) in
+    func celisus(for observer: AnyObject, from date: Date, result: @escaping (Result<[(Date,Double)], BTError>) -> Void) -> ObservationToken {
+        return serve(.temperature, for: observer, from: date, result: result)
+    }
+    
+    func humidity(for observer: AnyObject, from date: Date, result: @escaping (Result<[(Date,Double)], BTError>) -> Void) -> ObservationToken {
+        return serve(.humidity, for: observer, from: date, result: result)
+    }
+    
+    func pressure(for observer: AnyObject, from date: Date, result: @escaping (Result<[(Date,Double)], BTError>) -> Void) -> ObservationToken {
+        return serve(.pressure, for: observer, from: date, result: result)
+    }
+    
+    private func serve(_ service: BTRuuviNUSService, for observer: AnyObject, from date: Date, result: @escaping (Result<[(Date,Double)], BTError>) -> Void) -> ObservationToken {
+        var values = [(Date,Double)]()
+        let serveToken = BTKit.scanner.serve(observer, for: uuid, .ruuvi(.uart(service)), request: { (observer, peripheral, rx, tx) in
             if let rx = rx {
-                let data = BTRuuviServiceType.nusTemperatureHistoryRequest(from: from)
-                peripheral?.writeValue(data, for: rx, type: .withResponse)
+                peripheral?.writeValue(service.request(from: date), for: rx, type: .withResponse)
             } else {
                 result(.failure(.unexpected(.characteristicIsNil)))
             }
         }, response: { (observer, data) in
             if let data = data {
                 print(data.map { String(format: "%02.2hhx", $0) }.joined())
-                if BTRuuviServiceType.nusIsEOF(data: data) {
-                    result(.success(celsius))
-                } else if let row = BTRuuviServiceType.nusTemperatureHistoryDecode(data: data) {
-                    celsius.append(row)
+                if service.isEndOfTransmissionFlag(data: data) {
+                    result(.success(values))
+                } else if let row = service.response(from: data) {
+                    values.append(row)
                 }
             } else {
                 result(.failure(.unexpected(.dataIsNil)))
