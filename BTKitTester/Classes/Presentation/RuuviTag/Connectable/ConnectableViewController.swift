@@ -15,7 +15,7 @@ class ConnectableViewController: UITableViewController {
     
     @IBOutlet weak var uuidOrMacLabel: UILabel!
     @IBOutlet weak var connectButton: UIButton!
-    @IBOutlet weak var readButton: UIButton!
+    @IBOutlet weak var temperatureButton: UIButton!
     @IBOutlet weak var disconnectButton: UIButton!
     
     var isConnected: Bool = false { didSet { updateUIIsConnected() } }
@@ -24,7 +24,7 @@ class ConnectableViewController: UITableViewController {
     private var values = [(Date,Double)]()
     private var connectToken: ObservationToken?
     private var disconnectToken: ObservationToken?
-    private var readToken: ObservationToken?
+    private var temperatureToken: ObservationToken?
     private let cellReuseIdentifier = "ConnectableTableViewCellReuseIdentifier"
     private lazy var timeFormatter: DateFormatter = {
         let df = DateFormatter()
@@ -35,7 +35,7 @@ class ConnectableViewController: UITableViewController {
     deinit {
         connectToken?.invalidate()
         disconnectToken?.invalidate()
-        readToken?.invalidate()
+        temperatureToken?.invalidate()
     }
     
 }
@@ -59,13 +59,13 @@ extension ConnectableViewController {
         }
     }
     
-    @IBAction func readButtonTouchUpInside(_ sender: Any) {
+    @IBAction func temperatureButtonTouchUpInside(_ sender: Any) {
         if let from = Calendar.current.date(byAdding: .minute, value: -5, to: Date()) {
-            readToken?.invalidate()
+            temperatureToken?.invalidate()
             isReading = true
-            readToken = ruuviTag.celisus(for: self, from: from) { [weak self] (result) in
+            temperatureToken = ruuviTag.celisus(for: self, from: from) { [weak self] (result) in
                 self?.isReading = false
-                self?.readToken?.invalidate()
+                self?.temperatureToken?.invalidate()
                 switch result {
                 case .success(let values):
                     self?.values = values
@@ -120,13 +120,13 @@ extension ConnectableViewController {
         if isViewLoaded {
             connectButton.isEnabled = !isConnected
             disconnectButton.isEnabled = isConnected
-            readButton.isEnabled = isConnected
+            temperatureButton.isEnabled = isConnected
         }
     }
     
     private func updateUIIsReading() {
         if isViewLoaded {
-            readButton.isEnabled = !isReading && isConnected
+            temperatureButton.isEnabled = !isReading && isConnected
         }
     }
 }

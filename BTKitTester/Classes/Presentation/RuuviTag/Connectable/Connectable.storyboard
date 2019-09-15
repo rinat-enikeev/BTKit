@@ -57,10 +57,10 @@
                                     </constraints>
                                 </view>
                                 <button opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nTh-ER-Lug">
-                                    <rect key="frame" x="189.5" y="75" width="35" height="30"/>
-                                    <state key="normal" title="Read"/>
+                                    <rect key="frame" x="163" y="75" width="88" height="30"/>
+                                    <state key="normal" title="Temperature"/>
                                     <connections>
-                                        <action selector="readButtonTouchUpInside:" destination="Uhr-O6-bc1" eventType="touchUpInside" id="axi-OQ-YRD"/>
+                                        <action selector="temperatureButtonTouchUpInside:" destination="Uhr-O6-bc1" eventType="touchUpInside" id="axi-OQ-YRD"/>
                                     </connections>
                                 </button>
                             </subviews>
@@ -116,7 +116,7 @@
                     <connections>
                         <outlet property="connectButton" destination="3O0-iA-TKV" id="oju-A6-uxo"/>
                         <outlet property="disconnectButton" destination="dAn-Z1-FMY" id="xW3-A1-sTU"/>
-                        <outlet property="readButton" destination="nTh-ER-Lug" id="2Aa-Jb-CiV"/>
+                        <outlet property="temperatureButton" destination="nTh-ER-Lug" id="2Aa-Jb-CiV"/>
                         <outlet property="uuidOrMacLabel" destination="Qrd-XJ-jzS" id="ZDl-ox-Dqh"/>
                     </connections>
                 </tableViewController>
