@@ -17,20 +17,4 @@ Pod::Spec.new do |spec|
 
   spec.source_files  = "BTKit/Source/**/*.{swift,h}"
 
-  spec.subspec 'Devices' do |ss|
-    ss.source_files = 'BTKit/Source/Devices/**/*.{swift,h}'
-  end
-
-  spec.subspec 'Scanner' do |ss|
-    ss.source_files = 'BTKit/Source/Scanner/**/*.{swift,h}'
-    ss.dependency 'BTKit/Devices'
-  end
-
-  spec.subspec 'Ruuvi' do |ss|
-    ss.source_files = 'BTKit/Source/Vendor/Ruuvi/**/*.{swift,h}'
-    ss.dependency 'BTKit/Devices'
-    ss.dependency 'BTKit/Scanner'
-  end
-
-
 end
