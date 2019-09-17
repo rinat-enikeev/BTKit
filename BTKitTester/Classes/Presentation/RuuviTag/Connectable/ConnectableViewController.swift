@@ -30,8 +30,8 @@ class ConnectableViewController: UITableViewController {
     var isReading: Bool = false { didSet { updateUIIsReading() } }
     
     private var source: ConnectableTableSource = .values
-    private var values = [(Date,Double)]()
-    private var logs = [RuuviTagLog]()
+    private var values = [RuuviTagEnvLog]()
+    private var logs = [RuuviTagEnvLogFull]()
     private var connectToken: ObservationToken?
     private var disconnectToken: ObservationToken?
     private var temperatureToken: ObservationToken?
@@ -86,6 +86,9 @@ extension ConnectableViewController {
                 observer.isConnected = false
             case .already:
                 observer.isConnected = false
+            case .failure(let error):
+                observer.isConnected = false
+                print(error.localizedDescription)
             }
         }
     }
@@ -94,18 +97,18 @@ extension ConnectableViewController {
         if let from = Calendar.current.date(byAdding: .minute, value: -5, to: Date()) {
             temperatureToken?.invalidate()
             isReading = true
-            temperatureToken = ruuviTag.celisus(for: self, from: from) { [weak self] (result) in
-                self?.isReading = false
-                self?.temperatureToken?.invalidate()
+            temperatureToken = BTKit.service.ruuvi.uart.nus.celisus(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
+                observer.isReading = false
+                observer.temperatureToken?.invalidate()
                 switch result {
                 case .success(let values):
-                    self?.values = values
-                    self?.source = .values
-                    self?.tableView.reloadData()
+                    observer.values = values
+                    observer.source = .values
+                    observer.tableView.reloadData()
                 case .failure(let error):
                     print(error.localizedDescription)
                 }
-            }
+            })
         }
     }
     
@@ -113,18 +116,18 @@ extension ConnectableViewController {
         if let from = Calendar.current.date(byAdding: .minute, value: -5, to: Date()) {
             humidityToken?.invalidate()
             isReading = true
-            humidityToken = ruuviTag.humidity(for: self, from: from) { [weak self] (result) in
-                self?.isReading = false
-                self?.humidityToken?.invalidate()
+            humidityToken = BTKit.service.ruuvi.uart.nus.humidity(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
+                observer.isReading = false
+                observer.humidityToken?.invalidate()
                 switch result {
                 case .success(let values):
-                    self?.values = values
-                    self?.source = .values
-                    self?.tableView.reloadData()
+                    observer.values = values
+                    observer.source = .values
+                    observer.tableView.reloadData()
                 case .failure(let error):
                     print(error.localizedDescription)
                 }
-            }
+            })
         }
     }
     
@@ -132,18 +135,18 @@ extension ConnectableViewController {
         if let from = Calendar.current.date(byAdding: .minute, value: -5, to: Date()) {
             pressureToken?.invalidate()
             isReading = true
-            pressureToken = ruuviTag.pressure(for: self, from: from) { [weak self] (result) in
-                self?.isReading = false
-                self?.pressureToken?.invalidate()
+            pressureToken = BTKit.service.ruuvi.uart.nus.pressure(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
+                observer.isReading = false
+                observer.pressureToken?.invalidate()
                 switch result {
                 case .success(let values):
-                    self?.values = values
-                    self?.source = .values
-                    self?.tableView.reloadData()
+                    observer.values = values
+                    observer.source = .values
+                    observer.tableView.reloadData()
                 case .failure(let error):
                     print(error.localizedDescription)
                 }
-            }
+            })
         }
     }
     
@@ -151,18 +154,18 @@ extension ConnectableViewController {
         if let from = Calendar.current.date(byAdding: .minute, value: -5, to: Date()) {
             allToken?.invalidate()
             isReading = true
-            allToken = ruuviTag.log(for: self, from: from) { [weak self] (result) in
-                self?.isReading = false
-                self?.allToken?.invalidate()
+            allToken = BTKit.service.ruuvi.uart.nus.log(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
+                observer.isReading = false
+                observer.allToken?.invalidate()
                 switch result {
                 case .success(let logs):
-                    self?.logs = logs
-                    self?.source = .logs
-                    self?.tableView.reloadData()
+                    observer.logs = logs
+                    observer.source = .logs
+                    observer.tableView.reloadData()
                 case .failure(let error):
                     print(error.localizedDescription)
                 }
-            }
+            })
         }
     }
 }
@@ -192,8 +195,8 @@ extension ConnectableViewController {
         case .values:
             let cell = tableView.dequeueReusableCell(withIdentifier: valueCellReuseIdentifier, for: indexPath) as! ConnectableValueTableViewCell
             let value = values[indexPath.row]
-            cell.timeLabel.text = timeFormatter.string(from: value.0)
-            cell.valueLabel.text = String(format: "%0.2f", value.1)
+            cell.timeLabel.text = timeFormatter.string(from: value.date)
+            cell.valueLabel.text = String(format: "%0.2f", value.value)
             return cell
         case .logs:
             let cell = tableView.dequeueReusableCell(withIdentifier: valuesCellReuseIdentifier, for: indexPath) as! ConnectableValuesTableViewCell

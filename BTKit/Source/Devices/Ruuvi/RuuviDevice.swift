@@ -269,135 +269,53 @@ public extension RuuviTag {
         if !isConnectable {
             result(observer, .failure(.logic(.notConnectable)))
             return nil
-        } else if isConnected {
-            result(observer, .already)
-            return nil
         } else {
-            let connectToken = BTKit.scanner.connect(observer, uuid: uuid, connected: { (observer) in
-                result(observer, .just)
-            }) { (observer) in
-                result(observer, .disconnected)
-            }
-            return connectToken
+            return BTKit.connection.establish(for: observer, uuid: uuid, result: result)
         }
     }
     
     func disconnect<T: AnyObject>(for observer: T, result: @escaping (T, BTDisconnectResult) -> Void) -> ObservationToken? {
-        if !isConnected {
-            result(observer, .already)
-            return nil
-        } else {
-            return BTKit.scanner.disconnect(observer, uuid: uuid) { (observer) in
-                result(observer, .just)
-            }
-        }
-    }
-    
-    func celisus(for observer: AnyObject, from date: Date, result: @escaping (Result<[(Date,Double)], BTError>) -> Void) -> ObservationToken? {
-        return serve(.temperature, for: observer, from: date, result: result)
-    }
-    
-    func humidity(for observer: AnyObject, from date: Date, result: @escaping (Result<[(Date,Double)], BTError>) -> Void) -> ObservationToken? {
-        return serve(.humidity, for: observer, from: date, result: result)
-    }
-    
-    func pressure(for observer: AnyObject, from date: Date, result: @escaping (Result<[(Date,Double)], BTError>) -> Void) -> ObservationToken? {
-        return serve(.pressure, for: observer, from: date, result: result)
-    }
-    
-    func log(for observer: AnyObject, from date: Date, result: @escaping (Result<[RuuviTagLog], BTError>) -> Void) -> ObservationToken? {
         if !isConnectable {
-            result(.failure(.logic(.notConnectable)))
-            return nil
-        } else if !isConnected {
-            result(.failure(.logic(.notConnected)))
+            result(observer, .failure(.logic(.notConnectable)))
             return nil
         } else {
-            var values = [RuuviTagLog]()
-            var lastValue = RuuviTagLogClass()
-            let service: BTRuuviNUSService = .all
-            let serveToken = BTKit.scanner.serve(observer, for: uuid, .ruuvi(.uart(service)), request: { (observer, peripheral, rx, tx) in
-                if let rx = rx {
-                    peripheral?.writeValue(service.request(from: date), for: rx, type: .withResponse)
-                } else {
-                    result(.failure(.unexpected(.characteristicIsNil)))
-                }
-            }, response: { (observer, data) in
-                if let data = data {
-                    if service.isEndOfTransmissionFlag(data: data) {
-                        result(.success(values))
-                    } else if let row = service.responseRow(from: data) {
-                        switch row.1 {
-                        case .temperature:
-                            lastValue.temperature = row.2
-                        case .humidity:
-                            lastValue.humidity = row.2
-                        case .pressure:
-                            lastValue.pressure = row.2
-                        case .all:
-                            break
-                        }
-                        if let t = lastValue.temperature,
-                            let h = lastValue.humidity,
-                            let p = lastValue.pressure {
-                            let log = RuuviTagLog(date: row.0, temperature: t, humidity: h, pressure: p)
-                            values.append(log)
-                            lastValue = RuuviTagLogClass()
-                        }
-                    }
-                } else {
-                    result(.failure(.unexpected(.dataIsNil)))
-                }
-            }) { (observer, error) in
-                result(.failure(error))
-            }
-            return serveToken
+            return BTKit.connection.drop(for: observer, uuid: uuid, result: result)
         }
     }
     
-    private func serve(_ service: BTRuuviNUSService, for observer: AnyObject, from date: Date, result: @escaping (Result<[(Date,Double)], BTError>) -> Void) -> ObservationToken? {
+    func celisus<T: AnyObject>(for observer: T, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
         if !isConnectable {
-            result(.failure(.logic(.notConnectable)))
-            return nil
-        } else if !isConnected {
-            result(.failure(.logic(.notConnected)))
+            result(observer, .failure(.logic(.notConnectable)))
             return nil
         } else {
-            var values = [(Date,Double)]()
-            let serveToken = BTKit.scanner.serve(observer, for: uuid, .ruuvi(.uart(service)), request: { (observer, peripheral, rx, tx) in
-                if let rx = rx {
-                    peripheral?.writeValue(service.request(from: date), for: rx, type: .withResponse)
-                } else {
-                    result(.failure(.unexpected(.characteristicIsNil)))
-                }
-            }, response: { (observer, data) in
-                if let data = data {
-                    if service.isEndOfTransmissionFlag(data: data) {
-                        result(.success(values))
-                    } else if let row = service.response(from: data) {
-                        values.append(row)
-                    }
-                } else {
-                    result(.failure(.unexpected(.dataIsNil)))
-                }
-            }) { (observer, error) in
-                result(.failure(error))
-            }
-            return serveToken
+            return BTKit.service.ruuvi.uart.nus.celisus(for: observer, uuid: uuid, from: date, result: result)
         }
     }
-}
-
-public struct RuuviTagLog {
-    public var date: Date
-    public var temperature: Double // in °C
-    public var humidity: Double // relative in %
-    public var pressure: Double // in hPa
-}
-
-private class RuuviTagLogClass {
-    var date: Date?
-    var temperature: Double? // in °C
-    var humidity: Double? // relative in %
-    var pressure: Double? // in hPa
+    
+    func humidity<T: AnyObject>(for observer: T, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
+        if !isConnectable {
+            result(observer, .failure(.logic(.notConnectable)))
+            return nil
+        } else {
+            return BTKit.service.ruuvi.uart.nus.humidity(for: observer, uuid: uuid, from: date, result: result)
+        }
+    }
+    
+    func pressure<T: AnyObject>(for observer: T, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
+        if !isConnectable {
+            result(observer, .failure(.logic(.notConnectable)))
+            return nil
+        } else {
+            return BTKit.service.ruuvi.uart.nus.pressure(for: observer, uuid: uuid, from: date, result: result)
+        }
+    }
+    
+    func log<T: AnyObject>(for observer: T, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) -> ObservationToken? {
+        if !isConnectable {
+            result(observer, .failure(.logic(.notConnectable)))
+            return nil
+        } else {
+            return BTKit.service.ruuvi.uart.nus.log(for: observer, uuid: uuid, from: date, result: result)
+        }
+    }
 }
