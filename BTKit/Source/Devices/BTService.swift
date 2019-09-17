@@ -17,7 +17,7 @@ public enum BTServiceType {
 
 public enum BTRuuviNUSService {
     case temperature // in °C
-    case humidity // relative
+    case humidity // relative in %
     case pressure // in hPa
     case all
     
@@ -69,9 +69,30 @@ public enum BTRuuviNUSService {
         return data
     }
     
-    func response(from data: Data) -> (Date,Double)? {
+    func responseRow(from data: Data) -> (Date,BTRuuviNUSService,Double)? {
         guard data.count == 11 else { return nil }
-        guard data[1] == flag else { return nil }
+        var service: BTRuuviNUSService
+        switch data[1] {
+        case BTRuuviNUSService.temperature.flag:
+            service = .temperature
+        case BTRuuviNUSService.humidity.flag:
+            service = .humidity
+        case BTRuuviNUSService.pressure.flag:
+            service = .pressure
+        default:
+            return nil
+        }
+        guard let value = response(from: data, for: service) else { return nil }
+        return (value.0, service, value.1)
+    }
+    
+    func response(from data: Data) -> (Date,Double)? {
+        return response(from: data, for: self)
+    }
+    
+    func response(from data: Data, for service: BTRuuviNUSService) -> (Date,Double)? {
+        guard data.count == 11 else { return nil }
+        guard data[1] == service.flag else { return nil }
         let timestampData = data[3...6]
         var timestamp: UInt32 = 0
         let timestampBytesCopied = withUnsafeMutableBytes(of: &timestamp, { timestampData.copyBytes(to: $0)} )
@@ -85,7 +106,7 @@ public enum BTRuuviNUSService {
         
         let date = Date(timeIntervalSince1970: TimeInterval(timestamp))
         value = Int32(bigEndian: value)
-        return (date, Double(value) * multiplier)
+        return (date, Double(value) * service.multiplier)
     }
     
     func isEndOfTransmissionFlag(data: Data) -> Bool {

@@ -294,8 +294,64 @@ public extension RuuviTag {
         return serve(.pressure, for: observer, from: date, result: result)
     }
     
+    func log(for observer: AnyObject, from date: Date, result: @escaping (Result<[RuuviTagLog], BTError>) -> Void) -> ObservationToken? {
+        if !isConnectable {
+            result(.failure(.logic(.notConnectable)))
+            return nil
+        } else if !isConnected {
+            result(.failure(.logic(.notConnected)))
+            return nil
+        } else {
+            var values = [RuuviTagLog]()
+            var lastValue = RuuviTagLogClass()
+            let service: BTRuuviNUSService = .all
+            let serveToken = BTKit.scanner.serve(observer, for: uuid, .ruuvi(.uart(service)), request: { (observer, peripheral, rx, tx) in
+                if let rx = rx {
+                    peripheral?.writeValue(service.request(from: date), for: rx, type: .withResponse)
+                } else {
+                    result(.failure(.unexpected(.characteristicIsNil)))
+                }
+            }, response: { (observer, data) in
+                if let data = data {
+                    if service.isEndOfTransmissionFlag(data: data) {
+                        result(.success(values))
+                    } else if let row = service.responseRow(from: data) {
+                        switch row.1 {
+                        case .temperature:
+                            lastValue.temperature = row.2
+                        case .humidity:
+                            lastValue.humidity = row.2
+                        case .pressure:
+                            lastValue.pressure = row.2
+                        case .all:
+                            break
+                        }
+                        if let t = lastValue.temperature,
+                            let h = lastValue.humidity,
+                            let p = lastValue.pressure {
+                            let log = RuuviTagLog(date: row.0, temperature: t, humidity: h, pressure: p)
+                            values.append(log)
+                            lastValue = RuuviTagLogClass()
+                        }
+                    }
+                } else {
+                    result(.failure(.unexpected(.dataIsNil)))
+                }
+            }) { (observer, error) in
+                result(.failure(error))
+            }
+            return serveToken
+        }
+    }
+    
     private func serve(_ service: BTRuuviNUSService, for observer: AnyObject, from date: Date, result: @escaping (Result<[(Date,Double)], BTError>) -> Void) -> ObservationToken? {
-        if BTKit.scanner.isConnected(uuid: uuid) {
+        if !isConnectable {
+            result(.failure(.logic(.notConnectable)))
+            return nil
+        } else if !isConnected {
+            result(.failure(.logic(.notConnected)))
+            return nil
+        } else {
             var values = [(Date,Double)]()
             let serveToken = BTKit.scanner.serve(observer, for: uuid, .ruuvi(.uart(service)), request: { (observer, peripheral, rx, tx) in
                 if let rx = rx {
@@ -305,7 +361,6 @@ public extension RuuviTag {
                 }
             }, response: { (observer, data) in
                 if let data = data {
-                    print(data.map { String(format: "%02.2hhx", $0) }.joined())
                     if service.isEndOfTransmissionFlag(data: data) {
                         result(.success(values))
                     } else if let row = service.response(from: data) {
@@ -318,9 +373,20 @@ public extension RuuviTag {
                 result(.failure(error))
             }
             return serveToken
-        } else {
-            result(.failure(.logic(.notConnected)))
-            return nil
         }
     }
+}
+
+public struct RuuviTagLog {
+    public var date: Date
+    public var temperature: Double // in °C
+    public var humidity: Double // relative in %
+    public var pressure: Double // in hPa
+}
+
+private class RuuviTagLogClass {
+    var date: Date?
+    var temperature: Double? // in °C
+    var humidity: Double? // relative in %
+    var pressure: Double? // in hPa
 }

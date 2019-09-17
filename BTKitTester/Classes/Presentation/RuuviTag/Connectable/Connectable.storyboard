@@ -57,7 +57,7 @@
                                     </constraints>
                                 </view>
                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="EeI-Ea-Rub">
-                                    <rect key="frame" x="93.5" y="75" width="227" height="30"/>
+                                    <rect key="frame" x="74.5" y="75" width="265" height="30"/>
                                     <subviews>
                                         <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gOV-t9-g5O">
                                             <rect key="frame" x="96" y="0.0" width="62" height="30"/>
@@ -80,18 +80,28 @@
                                                 <action selector="pressureButtonTouchUpInside:" destination="Uhr-O6-bc1" eventType="touchUpInside" id="i40-au-jEd"/>
                                             </connections>
                                         </button>
+                                        <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mHx-No-243">
+                                            <rect key="frame" x="235" y="0.0" width="30" height="30"/>
+                                            <state key="normal" title="All"/>
+                                            <connections>
+                                                <action selector="allButtonTouchUpInside:" destination="Uhr-O6-bc1" eventType="touchUpInside" id="XML-gU-FQ3"/>
+                                            </connections>
+                                        </button>
                                     </subviews>
                                     <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     <constraints>
+                                        <constraint firstAttribute="bottom" secondItem="mHx-No-243" secondAttribute="bottom" id="CdD-aV-Z87"/>
                                         <constraint firstItem="nTh-ER-Lug" firstAttribute="top" secondItem="EeI-Ea-Rub" secondAttribute="top" id="OPX-VW-TBW"/>
                                         <constraint firstItem="nTh-ER-Lug" firstAttribute="leading" secondItem="EeI-Ea-Rub" secondAttribute="leading" id="SLb-In-3FG"/>
                                         <constraint firstAttribute="bottom" secondItem="gOV-t9-g5O" secondAttribute="bottom" id="ZI2-Sv-uA8"/>
                                         <constraint firstAttribute="bottom" secondItem="gmq-dB-NhM" secondAttribute="bottom" id="Zbh-Hz-wch"/>
+                                        <constraint firstItem="mHx-No-243" firstAttribute="leading" secondItem="gmq-dB-NhM" secondAttribute="trailing" constant="8" id="eAd-Bv-xnP"/>
+                                        <constraint firstAttribute="trailing" secondItem="mHx-No-243" secondAttribute="trailing" id="eMG-LS-dyy"/>
                                         <constraint firstItem="gmq-dB-NhM" firstAttribute="leading" secondItem="gOV-t9-g5O" secondAttribute="trailing" constant="8" id="gzY-Pu-hUE"/>
                                         <constraint firstItem="gOV-t9-g5O" firstAttribute="top" secondItem="EeI-Ea-Rub" secondAttribute="top" id="jB1-7L-HzI"/>
                                         <constraint firstItem="gOV-t9-g5O" firstAttribute="leading" secondItem="nTh-ER-Lug" secondAttribute="trailing" constant="8" id="kLx-QC-FWl"/>
-                                        <constraint firstAttribute="trailing" secondItem="gmq-dB-NhM" secondAttribute="trailing" id="nj4-Pe-fuN"/>
                                         <constraint firstItem="gmq-dB-NhM" firstAttribute="top" secondItem="EeI-Ea-Rub" secondAttribute="top" id="nzf-hZ-zF6"/>
+                                        <constraint firstItem="mHx-No-243" firstAttribute="top" secondItem="EeI-Ea-Rub" secondAttribute="top" id="rMM-SR-3tv"/>
                                         <constraint firstAttribute="bottom" secondItem="nTh-ER-Lug" secondAttribute="bottom" id="ut6-P4-y7M"/>
                                     </constraints>
                                 </view>
@@ -107,7 +117,7 @@
                             </constraints>
                         </view>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="ConnectableTableViewCellReuseIdentifier" id="Oe1-VW-YcR" customClass="ConnectableTableViewCell" customModule="BTKitTester" customModuleProvider="target">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="ConnectableValueTableViewCellCellReuseIdentifier" id="Oe1-VW-YcR" customClass="ConnectableValueTableViewCell" customModule="BTKitTester" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="141" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Oe1-VW-YcR" id="JBt-Av-86z">
@@ -139,6 +149,56 @@
                                     <outlet property="valueLabel" destination="PAK-YY-Oy0" id="4Mo-7g-tOF"/>
                                 </connections>
                             </tableViewCell>
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="ConnectableValuesTableViewCellReuseIdentifier" id="n2W-xv-pL7" customClass="ConnectableValuesTableViewCell" customModule="BTKitTester" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="185" width="414" height="44"/>
+                                <autoresizingMask key="autoresizingMask"/>
+                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="n2W-xv-pL7" id="HNL-B6-IsZ">
+                                    <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                    <subviews>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Time" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WM8-bx-41c">
+                                            <rect key="frame" x="20" y="11.5" width="38" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Pressure" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ueE-Yr-B4b">
+                                            <rect key="frame" x="326" y="11.5" width="68" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Humidity" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Sjg-fF-8vm">
+                                            <rect key="frame" x="249" y="11.5" width="69" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Temperature" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="4xo-da-tPU">
+                                            <rect key="frame" x="143" y="11.5" width="98" height="21"/>
+                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                            <nil key="textColor"/>
+                                            <nil key="highlightedColor"/>
+                                        </label>
+                                    </subviews>
+                                    <constraints>
+                                        <constraint firstItem="WM8-bx-41c" firstAttribute="leading" secondItem="HNL-B6-IsZ" secondAttribute="leading" constant="20" id="92z-de-aoZ"/>
+                                        <constraint firstItem="WM8-bx-41c" firstAttribute="centerY" secondItem="HNL-B6-IsZ" secondAttribute="centerY" id="P95-LD-kc3"/>
+                                        <constraint firstItem="Sjg-fF-8vm" firstAttribute="centerY" secondItem="ueE-Yr-B4b" secondAttribute="centerY" id="dLZ-qb-JFE"/>
+                                        <constraint firstItem="Sjg-fF-8vm" firstAttribute="leading" secondItem="4xo-da-tPU" secondAttribute="trailing" constant="8" id="f83-LL-Rvj"/>
+                                        <constraint firstAttribute="trailing" secondItem="ueE-Yr-B4b" secondAttribute="trailing" constant="20" id="klW-uX-hBm"/>
+                                        <constraint firstItem="ueE-Yr-B4b" firstAttribute="centerY" secondItem="HNL-B6-IsZ" secondAttribute="centerY" id="lnn-rP-hez"/>
+                                        <constraint firstItem="ueE-Yr-B4b" firstAttribute="leading" secondItem="Sjg-fF-8vm" secondAttribute="trailing" constant="8" id="shm-i4-fhL"/>
+                                        <constraint firstItem="4xo-da-tPU" firstAttribute="centerY" secondItem="Sjg-fF-8vm" secondAttribute="centerY" id="xMe-kp-uMf"/>
+                                    </constraints>
+                                </tableViewCellContentView>
+                                <connections>
+                                    <outlet property="humidityLabel" destination="Sjg-fF-8vm" id="05D-7k-AgQ"/>
+                                    <outlet property="pressureLabel" destination="ueE-Yr-B4b" id="gnd-ts-dNf"/>
+                                    <outlet property="temperatureLabel" destination="4xo-da-tPU" id="7i4-3M-sWH"/>
+                                    <outlet property="timeLabel" destination="WM8-bx-41c" id="HCr-a7-tco"/>
+                                </connections>
+                            </tableViewCell>
                         </prototypes>
                         <connections>
                             <outlet property="dataSource" destination="Uhr-O6-bc1" id="jwi-iD-0oy"/>
@@ -146,6 +206,7 @@
                         </connections>
                     </tableView>
                     <connections>
+                        <outlet property="allButton" destination="mHx-No-243" id="xyS-ri-36S"/>
                         <outlet property="connectButton" destination="3O0-iA-TKV" id="oju-A6-uxo"/>
                         <outlet property="disconnectButton" destination="dAn-Z1-FMY" id="xW3-A1-sTU"/>
                         <outlet property="humidityButton" destination="gOV-t9-g5O" id="Dmj-gD-nFJ"/>

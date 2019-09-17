@@ -1,5 +1,5 @@
 //
-//  ConnectableTableViewCell.swift
+//  ConnectableValueTableViewCell.swift
 //  BTKitTester
 //
 //  Created by Rinat Enikeev on 9/14/19.
@@ -8,7 +8,7 @@
 
 import UIKit
 
-class ConnectableTableViewCell: UITableViewCell {
+class ConnectableValueTableViewCell: UITableViewCell {
     
     @IBOutlet weak var valueLabel: UILabel!
     @IBOutlet weak var timeLabel: UILabel!

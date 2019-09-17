@@ -10,6 +10,11 @@ import UIKit
 import BTKit
 import CoreBluetooth
 
+private enum ConnectableTableSource {
+    case values
+    case logs
+}
+
 class ConnectableViewController: UITableViewController {
     var ruuviTag: RuuviTag!
     
@@ -19,17 +24,22 @@ class ConnectableViewController: UITableViewController {
     @IBOutlet weak var temperatureButton: UIButton!
     @IBOutlet weak var humidityButton: UIButton!
     @IBOutlet weak var pressureButton: UIButton!
+    @IBOutlet weak var allButton: UIButton!
     
     var isConnected: Bool = false { didSet { updateUIIsConnected() } }
     var isReading: Bool = false { didSet { updateUIIsReading() } }
     
+    private var source: ConnectableTableSource = .values
     private var values = [(Date,Double)]()
+    private var logs = [RuuviTagLog]()
     private var connectToken: ObservationToken?
     private var disconnectToken: ObservationToken?
     private var temperatureToken: ObservationToken?
     private var humidityToken: ObservationToken?
     private var pressureToken: ObservationToken?
-    private let cellReuseIdentifier = "ConnectableTableViewCellReuseIdentifier"
+    private var allToken: ObservationToken?
+    private let valueCellReuseIdentifier = "ConnectableValueTableViewCellCellReuseIdentifier"
+    private let valuesCellReuseIdentifier = "ConnectableValuesTableViewCellReuseIdentifier"
     private lazy var timeFormatter: DateFormatter = {
         let df = DateFormatter()
         df.dateFormat = "HH:mm:ss"
@@ -42,6 +52,7 @@ class ConnectableViewController: UITableViewController {
         temperatureToken?.invalidate()
         humidityToken?.invalidate()
         pressureToken?.invalidate()
+        allToken?.invalidate()
     }
     
 }
@@ -83,6 +94,7 @@ extension ConnectableViewController {
                 switch result {
                 case .success(let values):
                     self?.values = values
+                    self?.source = .values
                     self?.tableView.reloadData()
                 case .failure(let error):
                     print(error.localizedDescription)
@@ -101,6 +113,7 @@ extension ConnectableViewController {
                 switch result {
                 case .success(let values):
                     self?.values = values
+                    self?.source = .values
                     self?.tableView.reloadData()
                 case .failure(let error):
                     print(error.localizedDescription)
@@ -119,13 +132,32 @@ extension ConnectableViewController {
                 switch result {
                 case .success(let values):
                     self?.values = values
+                    self?.source = .values
                     self?.tableView.reloadData()
                 case .failure(let error):
                     print(error.localizedDescription)
                 }
             }
         }
-        
+    }
+    
+    @IBAction func allButtonTouchUpInside(_ sender: Any) {
+        if let from = Calendar.current.date(byAdding: .minute, value: -5, to: Date()) {
+            allToken?.invalidate()
+            isReading = true
+            allToken = ruuviTag.log(for: self, from: from) { [weak self] (result) in
+                self?.isReading = false
+                self?.allToken?.invalidate()
+                switch result {
+                case .success(let logs):
+                    self?.logs = logs
+                    self?.source = .logs
+                    self?.tableView.reloadData()
+                case .failure(let error):
+                    print(error.localizedDescription)
+                }
+            }
+        }
     }
 }
 
@@ -141,15 +173,33 @@ extension ConnectableViewController {
 // MARK: - UITableViewDataSource
 extension ConnectableViewController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return values.count
+        switch source {
+        case .values:
+            return values.count
+        case .logs:
+            return logs.count
+        }
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellReuseIdentifier, for: indexPath) as! ConnectableTableViewCell
-        let value = values[indexPath.row]
-        cell.timeLabel.text = timeFormatter.string(from: value.0)
-        cell.valueLabel.text = String(format: "%0.2f", value.1)
-        return cell
+        switch source {
+        case .values:
+            let cell = tableView.dequeueReusableCell(withIdentifier: valueCellReuseIdentifier, for: indexPath) as! ConnectableValueTableViewCell
+            let value = values[indexPath.row]
+            cell.timeLabel.text = timeFormatter.string(from: value.0)
+            cell.valueLabel.text = String(format: "%0.2f", value.1)
+            return cell
+        case .logs:
+            let cell = tableView.dequeueReusableCell(withIdentifier: valuesCellReuseIdentifier, for: indexPath) as! ConnectableValuesTableViewCell
+            let log = logs[indexPath.row]
+            cell.timeLabel.text = timeFormatter.string(from: log.date)
+            cell.temperatureLabel.text = String(format: "%0.2f", log.temperature)
+            cell.humidityLabel.text = String(format: "%0.2f", log.humidity)
+            cell.pressureLabel.text = String(format: "%0.2f", log.pressure)
+            return cell
+        }
+        
+        
     }
 }
 
@@ -174,6 +224,7 @@ extension ConnectableViewController {
             temperatureButton.isEnabled = isConnected
             humidityButton.isEnabled = isConnected
             pressureButton.isEnabled = isConnected
+            allButton.isEnabled = isConnected
         }
     }
     
@@ -182,6 +233,7 @@ extension ConnectableViewController {
             temperatureButton.isEnabled = !isReading && isConnected
             humidityButton.isEnabled = !isReading && isConnected
             pressureButton.isEnabled = !isReading && isConnected
+            allButton.isEnabled = !isReading && isConnected
         }
     }
 }
