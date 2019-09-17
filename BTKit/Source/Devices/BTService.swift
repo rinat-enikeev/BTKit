@@ -1,6 +1,5 @@
 import Foundation
 import CoreBluetooth
-import BTKit
 
 public enum BTServiceType {
     case ruuvi(BTRuuviServiceType)
