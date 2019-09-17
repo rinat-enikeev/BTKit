@@ -188,6 +188,19 @@ if let from = Calendar.current.date(byAdding: .minute, value: -5, to: Date()) {
 }
 ```
 
+Or use `BTKit` if you know only the `uuid`
+
+```swift
+BTKit.service.ruuvi.uart.nus.log(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
+    switch result {
+    case .success(let logs):
+        print(logs)
+    case .failure(let error):
+        print(error.localizedDescription)
+    }
+})
+```
+
 ### Disconnect from the device
 
 ```swift
@@ -218,19 +231,6 @@ BTKit.connection.drop(for: self, uuid: ruuviTag.uuid) { (observer, result) in
         print(error.localizedDescription)
     }
 }
-```
-
-Or use `BTKit` if you know only the `uuid`
-
-```swift
-BTKit.service.ruuvi.uart.nus.log(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
-    switch result {
-    case .success(let logs):
-        print(logs)
-    case .failure(let error):
-        print(error.localizedDescription)
-    }
-})
 ```
 
 ## Contribute
