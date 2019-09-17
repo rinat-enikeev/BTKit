@@ -6,3 +6,8 @@ public enum BTConnectResult {
     case disconnected
     case failure(BTError)
 }
+
+public enum BTDisconnectResult {
+    case already
+    case just
+}

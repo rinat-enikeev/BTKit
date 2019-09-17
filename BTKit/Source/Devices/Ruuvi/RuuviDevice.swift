@@ -282,6 +282,17 @@ public extension RuuviTag {
         }
     }
     
+    func disconnect<T: AnyObject>(for observer: T, result: @escaping (T, BTDisconnectResult) -> Void) -> ObservationToken? {
+        if !isConnected {
+            result(observer, .already)
+            return nil
+        } else {
+            return BTKit.scanner.disconnect(observer, uuid: uuid) { (observer) in
+                result(observer, .just)
+            }
+        }
+    }
+    
     func celisus(for observer: AnyObject, from date: Date, result: @escaping (Result<[(Date,Double)], BTError>) -> Void) -> ObservationToken? {
         return serve(.temperature, for: observer, from: date, result: result)
     }
