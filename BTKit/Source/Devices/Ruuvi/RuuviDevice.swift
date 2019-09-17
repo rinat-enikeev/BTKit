@@ -265,6 +265,7 @@ public extension RuuviTag {
         return BTKit.scanner.isConnected(uuid: uuid)
     }
     
+    @discardableResult
     func connect<T: AnyObject>(for observer: T, result: @escaping (T, BTConnectResult) -> Void) -> ObservationToken? {
         if !isConnectable {
             result(observer, .failure(.logic(.notConnectable)))
@@ -274,6 +275,7 @@ public extension RuuviTag {
         }
     }
     
+    @discardableResult
     func disconnect<T: AnyObject>(for observer: T, result: @escaping (T, BTDisconnectResult) -> Void) -> ObservationToken? {
         if !isConnectable {
             result(observer, .failure(.logic(.notConnectable)))
@@ -283,6 +285,7 @@ public extension RuuviTag {
         }
     }
     
+    @discardableResult
     func celisus<T: AnyObject>(for observer: T, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
         if !isConnectable {
             result(observer, .failure(.logic(.notConnectable)))
@@ -292,6 +295,7 @@ public extension RuuviTag {
         }
     }
     
+    @discardableResult
     func humidity<T: AnyObject>(for observer: T, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
         if !isConnectable {
             result(observer, .failure(.logic(.notConnectable)))
@@ -301,6 +305,7 @@ public extension RuuviTag {
         }
     }
     
+    @discardableResult
     func pressure<T: AnyObject>(for observer: T, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
         if !isConnectable {
             result(observer, .failure(.logic(.notConnectable)))
@@ -310,6 +315,7 @@ public extension RuuviTag {
         }
     }
     
+    @discardableResult
     func log<T: AnyObject>(for observer: T, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) -> ObservationToken? {
         if !isConnectable {
             result(observer, .failure(.logic(.notConnectable)))

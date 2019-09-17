@@ -207,8 +207,6 @@ extension ConnectableViewController {
             cell.pressureLabel.text = String(format: "%0.2f", log.pressure)
             return cell
         }
-        
-        
     }
 }
 

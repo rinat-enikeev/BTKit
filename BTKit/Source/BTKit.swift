@@ -50,18 +50,22 @@ public struct BTKitRuuviUARTService {
 
 public struct BTKitRuuviNUSService {
     
+    @discardableResult
     public func celisus<T: AnyObject>(for observer: T, uuid: String, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
         return serve(.temperature, for: observer, uuid: uuid, from: date, result: result)
     }
     
+    @discardableResult
     public func humidity<T: AnyObject>(for observer: T, uuid: String, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
         return serve(.humidity, for: observer, uuid: uuid, from: date, result: result)
     }
     
+    @discardableResult
     public func pressure<T: AnyObject>(for observer: T, uuid: String, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
         return serve(.pressure, for: observer, uuid: uuid, from: date, result: result)
     }
     
+    @discardableResult
     public func log<T: AnyObject>(for observer: T, uuid: String, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) -> ObservationToken? {
         if !BTKit.scanner.isConnected(uuid: uuid) {
             result(observer, .failure(.logic(.notConnected)))
