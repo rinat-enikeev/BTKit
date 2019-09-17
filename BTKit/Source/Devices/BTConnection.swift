@@ -1,4 +1,5 @@
 import Foundation
+import BTKit
 
 public struct BTKitConnection {
     @discardableResult

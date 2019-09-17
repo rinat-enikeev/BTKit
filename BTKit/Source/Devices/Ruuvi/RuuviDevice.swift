@@ -1,3 +1,5 @@
+import BTKit
+
 public enum RuuviDevice {
     case tag(RuuviTag)
 }
