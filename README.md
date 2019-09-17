@@ -10,7 +10,7 @@ Scan for Ruuvi BLE devices and access them with dot syntax. See [tutorial](https
 ## Features
 
 - [x] Listen to [RuuviTag](https://ruuvi.com/index.php?id=2) data
-- [x] Connect/disconnect to [RuuviTag](https://ruuvi.com/index.php?id=2) 
+- [x] Connect/disconnect [RuuviTag](https://ruuvi.com/index.php?id=2) 
 - [x] Read [RuuviTag](https://ruuvi.com/index.php?id=2) logs 
 
 ## Requirements
