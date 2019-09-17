@@ -61,7 +61,7 @@ class ConnectableViewController: UITableViewController {
 extension ConnectableViewController {
     @IBAction func connectButtonTouchUpInside(_ sender: Any) {
         connectToken?.invalidate()
-        connectToken = ruuviTag.connect(for: self, result: { (observer, result) in
+        connectToken = BTKit.service.ruuvi.uart.nus.connect(for: self, uuid: ruuviTag.uuid) { (observer, result) in
             switch result {
             case .already:
                 observer.isConnected = true
@@ -73,7 +73,7 @@ extension ConnectableViewController {
                 print(error.localizedDescription)
                 observer.isConnected = false
             }
-        })
+        }
     }
     
     @IBAction func disconnectButtonTouchUpInside(_ sender: Any) {
