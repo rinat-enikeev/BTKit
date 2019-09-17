@@ -29,7 +29,7 @@ pod 'BTKit'
 
 ## Usage example
 
-To make it work benefits import `BTKit` 
+To make it work import `BTKit` 
 
 ``` swift
 import BTKit
@@ -182,6 +182,38 @@ if let from = Calendar.current.date(byAdding: .minute, value: -5, to: Date()) {
         case .failure(let error):
             print(error.localizedDescription)
         }
+    }
+}
+```
+
+### Disconnect from the device
+
+```swift
+ruuviTag.disconnect(for: self) { (observer, result) in
+    switch result {
+    case .just:
+        observer.isConnected = false
+    case .already:
+        observer.isConnected = false
+    case .failure(let error):
+        observer.isConnected = false
+        print(error.localizedDescription)
+    }
+}
+```
+
+or use `BTKit` if you know only `uuid`
+
+```swift
+BTKit.connection.drop(for: self, uuid: ruuviTag.uuid) { (observer, result) in
+    switch result {
+    case .just:
+        observer.isConnected = false
+    case .already:
+        observer.isConnected = false
+    case .failure(let error):
+        observer.isConnected = false
+        print(error.localizedDescription)
     }
 }
 ```

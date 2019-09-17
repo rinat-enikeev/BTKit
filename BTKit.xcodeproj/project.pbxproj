@@ -37,6 +37,7 @@
 		0E53A3F7232E2D5000ACED49 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0E53A3F6232E2D5000ACED49 /* Localizable.strings */; };
 		0E53A3F9232E2FA100ACED49 /* BTConnectResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53A3F8232E2FA100ACED49 /* BTConnectResult.swift */; };
 		0E53A3FD2330CB5500ACED49 /* ConnectableValuesTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53A3FC2330CB5500ACED49 /* ConnectableValuesTableViewCell.swift */; };
+		0E53A3FF2330F24100ACED49 /* BTConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53A3FE2330F24100ACED49 /* BTConnection.swift */; };
 		0E70A45822AF821D006CB87C /* CallbackQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45722AF821D006CB87C /* CallbackQueue.swift */; };
 		0E70A45A22AF8313006CB87C /* BTScannerOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45922AF8313006CB87C /* BTScannerOptions.swift */; };
 		0E70A45C22AF8C58006CB87C /* BTScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45B22AF8C58006CB87C /* BTScanner.swift */; };
@@ -119,6 +120,7 @@
 		0E53A3F6232E2D5000ACED49 /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
 		0E53A3F8232E2FA100ACED49 /* BTConnectResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTConnectResult.swift; sourceTree = "<group>"; };
 		0E53A3FC2330CB5500ACED49 /* ConnectableValuesTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectableValuesTableViewCell.swift; sourceTree = "<group>"; };
+		0E53A3FE2330F24100ACED49 /* BTConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTConnection.swift; sourceTree = "<group>"; };
 		0E70A45722AF821D006CB87C /* CallbackQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallbackQueue.swift; sourceTree = "<group>"; };
 		0E70A45922AF8313006CB87C /* BTScannerOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTScannerOptions.swift; sourceTree = "<group>"; };
 		0E70A45B22AF8C58006CB87C /* BTScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTScanner.swift; sourceTree = "<group>"; };
@@ -263,6 +265,7 @@
 				0E70A45922AF8313006CB87C /* BTScannerOptions.swift */,
 				0E53A3E8232CCCD400ACED49 /* BTError.swift */,
 				0E53A3F8232E2FA100ACED49 /* BTConnectResult.swift */,
+				0E53A3FE2330F24100ACED49 /* BTConnection.swift */,
 			);
 			path = Devices;
 			sourceTree = "<group>";
@@ -615,6 +618,7 @@
 				0E375F0B22ACFE760092D269 /* RuuviData5.swift in Sources */,
 				0E375F1322ACFF2F0092D269 /* Data+Ruuvi.swift in Sources */,
 				0E375F2122AD5D1E0092D269 /* RuuviDecoderiOS.swift in Sources */,
+				0E53A3FF2330F24100ACED49 /* BTConnection.swift in Sources */,
 				0EA31071232BBAAC00BC8CF5 /* RuuviNUSService.swift in Sources */,
 				0E375EFF22ACFD410092D269 /* Ruuvi.swift in Sources */,
 				0E375F0C22ACFE760092D269 /* RuuviData2.swift in Sources */,
