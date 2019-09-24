@@ -28,11 +28,15 @@ public enum BTLogicError: Error {
 
 extension BTLogicError: LocalizedError {
     public var errorDescription: String? {
+        var bundle: Bundle = .main
+        if let path = Bundle(for: BundleClass.self).path(forResource: "BTKit", ofType: "bundle") {
+            bundle = Bundle(path: path) ?? Bundle.main
+        }
         switch self {
         case .notConnected:
-            return NSLocalizedString("BTLogicError.notConnected", tableName: nil, bundle: Bundle(for: BundleClass.self), value: "", comment: "")
+            return NSLocalizedString("BTLogicError.notConnected", bundle: bundle, comment: "")
         case .notConnectable:
-            return NSLocalizedString("BTLogicError.notConnectable", tableName: nil, bundle: Bundle(for: BundleClass.self), value: "", comment: "")
+            return NSLocalizedString("BTLogicError.notConnectable", bundle: bundle, comment: "")
         }
     }
 }

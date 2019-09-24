@@ -1,0 +1,3 @@
+// BTLogicError
+"BTLogicError.notConnected" = "BTKit: не подключен к устройству.";
+"BTLogicError.notConnectable" = "BTKit: устройство не поддерживает соединение.";

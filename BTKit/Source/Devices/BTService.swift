@@ -55,7 +55,8 @@ public enum BTRuuviNUSService {
         let nowTI = Date().timeIntervalSince1970
         var now = UInt32(nowTI)
         now = UInt32(bigEndian: now)
-        let fromTI = date.timeIntervalSince1970
+        var fromTI = date.timeIntervalSince1970
+        fromTI = fromTI < 0 ? 0 : fromTI
         var from = UInt32(fromTI)
         from = UInt32(bigEndian: from)
         let nowData = withUnsafeBytes(of: now) { Data($0) }

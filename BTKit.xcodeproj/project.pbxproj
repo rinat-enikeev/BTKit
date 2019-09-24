@@ -34,7 +34,6 @@
 		0E53A3E9232CCCD400ACED49 /* BTError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53A3E8232CCCD400ACED49 /* BTError.swift */; };
 		0E53A3EC232CE65100ACED49 /* Data+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53A3EB232CE65100ACED49 /* Data+Hex.swift */; };
 		0E53A3EE232D1A8400ACED49 /* ConnectableValueTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53A3ED232D1A8400ACED49 /* ConnectableValueTableViewCell.swift */; };
-		0E53A3F7232E2D5000ACED49 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0E53A3F6232E2D5000ACED49 /* Localizable.strings */; };
 		0E53A3F9232E2FA100ACED49 /* BTConnectResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53A3F8232E2FA100ACED49 /* BTConnectResult.swift */; };
 		0E53A3FD2330CB5500ACED49 /* ConnectableValuesTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53A3FC2330CB5500ACED49 /* ConnectableValuesTableViewCell.swift */; };
 		0E53A3FF2330F24100ACED49 /* BTConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53A3FE2330F24100ACED49 /* BTConnection.swift */; };
@@ -46,6 +45,7 @@
 		0EA31066232A88DC00BC8CF5 /* ConnectableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA31065232A88DC00BC8CF5 /* ConnectableViewController.swift */; };
 		0EA3106D232BBA3900BC8CF5 /* BTService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA3106C232BBA3900BC8CF5 /* BTService.swift */; };
 		0EA31071232BBAAC00BC8CF5 /* RuuviNUSService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA31070232BBAAC00BC8CF5 /* RuuviNUSService.swift */; };
+		0EED91D9233A4FD2006802CE /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0EED91DB233A4FD2006802CE /* Localizable.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -117,7 +117,6 @@
 		0E53A3E8232CCCD400ACED49 /* BTError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTError.swift; sourceTree = "<group>"; };
 		0E53A3EB232CE65100ACED49 /* Data+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Data+Hex.swift"; sourceTree = "<group>"; };
 		0E53A3ED232D1A8400ACED49 /* ConnectableValueTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectableValueTableViewCell.swift; sourceTree = "<group>"; };
-		0E53A3F6232E2D5000ACED49 /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
 		0E53A3F8232E2FA100ACED49 /* BTConnectResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTConnectResult.swift; sourceTree = "<group>"; };
 		0E53A3FC2330CB5500ACED49 /* ConnectableValuesTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectableValuesTableViewCell.swift; sourceTree = "<group>"; };
 		0E53A3FE2330F24100ACED49 /* BTConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTConnection.swift; sourceTree = "<group>"; };
@@ -129,6 +128,8 @@
 		0EA31065232A88DC00BC8CF5 /* ConnectableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectableViewController.swift; sourceTree = "<group>"; };
 		0EA3106C232BBA3900BC8CF5 /* BTService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTService.swift; sourceTree = "<group>"; };
 		0EA31070232BBAAC00BC8CF5 /* RuuviNUSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuuviNUSService.swift; sourceTree = "<group>"; };
+		0EED91DA233A4FD2006802CE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		0EED91DC233A4FE8006802CE /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -325,7 +326,7 @@
 		0E375F9D22AE373D0092D269 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				0E53A3F6232E2D5000ACED49 /* Localizable.strings */,
+				0EED91DB233A4FD2006802CE /* Localizable.strings */,
 				0E375F2322AD64970092D269 /* Devices */,
 				0E375F1422ACFFD20092D269 /* Scanner */,
 				0E375EFC22ACFD260092D269 /* Vendor */,
@@ -562,6 +563,7 @@
 			knownRegions = (
 				en,
 				Base,
+				ru,
 			);
 			mainGroup = 0E375EE322ACFB8F0092D269;
 			productRefGroup = 0E375EEE22ACFB8F0092D269 /* Products */;
@@ -580,7 +582,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0E53A3F7232E2D5000ACED49 /* Localizable.strings in Resources */,
+				0EED91D9233A4FD2006802CE /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -693,6 +695,15 @@
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
 		};
+		0EED91DB233A4FD2006802CE /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				0EED91DA233A4FD2006802CE /* en */,
+				0EED91DC233A4FE8006802CE /* ru */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
@@ -700,6 +711,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -764,6 +776,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
