@@ -16,10 +16,10 @@ public protocol BTScanner {
     @discardableResult
     func observe<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, closure: @escaping (T, BTDevice) -> Void) -> ObservationToken
     @discardableResult
-    func connect<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, connected: @escaping (T) -> Void, disconnected: @escaping (T) -> Void) -> ObservationToken
+    func connect<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, connected: @escaping (T, BTError?) -> Void, disconnected: @escaping (T, BTError?) -> Void) -> ObservationToken
     @discardableResult
     func serve<T: AnyObject>(_ observer: T, for uuid: String, _ type: BTServiceType, options: BTScannerOptionsInfo?, request: ((T, CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((T, Data?) -> Void)?, failure: ((T, BTError) -> Void)?) -> ObservationToken
-    func disconnect<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, disconnected: @escaping (T) -> Void) -> ObservationToken
+    func disconnect<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, disconnected: @escaping (T, BTError?) -> Void) -> ObservationToken
 }
 
 public extension BTScanner {
@@ -44,7 +44,7 @@ public extension BTScanner {
     }
     
     @discardableResult
-    func connect<T: AnyObject>(_ observer: T, uuid: String, connected: @escaping (T) -> Void, disconnected: @escaping (T) -> Void) -> ObservationToken {
+    func connect<T: AnyObject>(_ observer: T, uuid: String, connected: @escaping (T, BTError?) -> Void, disconnected: @escaping (T, BTError?) -> Void) -> ObservationToken {
         return connect(observer, uuid: uuid, options: nil, connected: connected, disconnected: disconnected)
     }
     
@@ -54,7 +54,7 @@ public extension BTScanner {
     }
     
     @discardableResult
-    func disconnect<T: AnyObject>(_ observer: T, uuid: String, disconnected: @escaping (T) -> Void) -> ObservationToken {
+    func disconnect<T: AnyObject>(_ observer: T, uuid: String, disconnected: @escaping (T, BTError?) -> Void) -> ObservationToken {
         return disconnect(observer, uuid: uuid, options: nil, disconnected: disconnected)
     }
 }

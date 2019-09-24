@@ -25,20 +25,20 @@ class BTScanneriOS: NSObject, BTScanner {
     }
     
     private class ConnectObservation {
-        var block: () -> Void
+        var block: (BTError?) -> Void
         var uuid: String = ""
         
-        init(block: @escaping (() -> Void), uuid: String) {
+        init(block: @escaping ((BTError?) -> Void), uuid: String) {
             self.block = block
             self.uuid = uuid
         }
     }
     
     private class DisconnectObservation {
-        var block: () -> Void
+        var block: (BTError?) -> Void
         var uuid: String = ""
         
-        init(block: @escaping (() -> Void), uuid: String) {
+        init(block: @escaping ((BTError?) -> Void), uuid: String) {
             self.block = block
             self.uuid = uuid
         }
@@ -284,10 +284,15 @@ extension BTScanneriOS: CBCentralManagerDelegate {
                 observations.connect.values
                     .filter({ $0.uuid == device.uuid })
                     .forEach( { connect in
-                        if !connectedPeripherals.contains(peripheral) {
-                            connectedPeripherals.insert(peripheral)
-                            peripheral.delegate = self
-                            manager.connect(peripheral)
+                        let isConnectable = (advertisementData[CBAdvertisementDataIsConnectable] as? NSNumber)?.boolValue ?? false
+                        if isConnectable {
+                            if !connectedPeripherals.contains(peripheral) {
+                                connectedPeripherals.insert(peripheral)
+                                peripheral.delegate = self
+                                manager.connect(peripheral)
+                            }
+                        } else {
+                            connect.block(.logic(.notConnectable))
                         }
                     } )
             }
@@ -298,13 +303,13 @@ extension BTScanneriOS: CBCentralManagerDelegate {
         peripheral.discoverServices(nil)
         observations.connect.values
             .filter({ $0.uuid == peripheral.identifier.uuidString })
-            .forEach({ $0.block() })
+            .forEach({ $0.block(nil) })
     }
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         observations.disconnect.values
             .filter({ $0.uuid == peripheral.identifier.uuidString })
-            .forEach({ $0.block() })
+            .forEach({ $0.block(nil) })
         connectedPeripherals.remove(peripheral)
     }
     
@@ -500,14 +505,14 @@ extension BTScanneriOS {
     }
     
     @discardableResult
-    func connect<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, connected: @escaping (T) -> Void, disconnected: @escaping (T) -> Void) -> ObservationToken {
+    func connect<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, connected: @escaping (T, BTError?) -> Void, disconnected: @escaping (T, BTError?) -> Void) -> ObservationToken {
         let options = currentDefaultOptions + (options ?? .empty)
         let info = BTKitParsedOptionsInfo(options)
         
         let id = UUID()
         
         queue.async { [weak self] in
-            self?.observations.connect[id] = ConnectObservation(block: { [weak self, weak observer] in
+            self?.observations.connect[id] = ConnectObservation(block: { [weak self, weak observer] error in
                 guard let observer = observer else {
                     self?.observations.connect.removeValue(forKey: id)
                     return
@@ -519,11 +524,11 @@ extension BTScanneriOS {
                         }
                         return
                     }
-                    connected(observer)
+                    connected(observer, error)
                 }
             }, uuid: uuid)
             
-            self?.observations.disconnect[id] = DisconnectObservation(block: { [weak self, weak observer] in
+            self?.observations.disconnect[id] = DisconnectObservation(block: { [weak self, weak observer] error in
                 guard let observer = observer else {
                     self?.observations.disconnect.removeValue(forKey: id)
                     return
@@ -535,7 +540,7 @@ extension BTScanneriOS {
                         }
                         return
                     }
-                    disconnected(observer)
+                    disconnected(observer, error)
                 }
             }, uuid: uuid)
             self?.startIfNeeded()
@@ -631,7 +636,7 @@ extension BTScanneriOS {
         }
     }
     
-    func disconnect<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, disconnected: @escaping (T) -> Void) -> ObservationToken {
+    func disconnect<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, disconnected: @escaping (T, BTError?) -> Void) -> ObservationToken {
         
         let options = currentDefaultOptions + (options ?? .empty)
         let info = BTKitParsedOptionsInfo(options)
@@ -639,7 +644,7 @@ extension BTScanneriOS {
         let id = UUID()
         
         queue.async { [weak self] in
-            self?.observations.disconnect[id] = DisconnectObservation(block: { [weak self, weak observer] in
+            self?.observations.disconnect[id] = DisconnectObservation(block: { [weak self, weak observer] error in
                 guard let observer = observer else {
                     self?.observations.disconnect.removeValue(forKey: id)
                     return
@@ -651,7 +656,7 @@ extension BTScanneriOS {
                         }
                         return
                     }
-                    disconnected(observer)
+                    disconnected(observer, error)
                 }
             }, uuid: uuid)
             

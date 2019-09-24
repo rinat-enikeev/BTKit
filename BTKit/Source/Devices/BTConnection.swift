@@ -7,10 +7,19 @@ public struct BTKitConnection {
             result(observer, .already)
             return nil
         } else {
-            let connectToken = BTKit.scanner.connect(observer, uuid: uuid, connected: { (observer) in
-                result(observer, .just)
-            }) { (observer) in
-                result(observer, .disconnected)
+            let connectToken = BTKit.scanner.connect(observer, uuid: uuid, connected: { (observer, error) in
+                if let error = error {
+                    result(observer, .failure(error))
+                } else {
+                    result(observer, .just)
+                }
+                
+            }) { (observer, error) in
+                if let error = error {
+                    result(observer, .failure(error))
+                } else {
+                    result(observer, .disconnected)
+                }
             }
             return connectToken
         }
@@ -22,8 +31,12 @@ public struct BTKitConnection {
             result(observer, .already)
             return nil
         } else {
-            return BTKit.scanner.disconnect(observer, uuid: uuid, disconnected: { (observer) in
-                result(observer, .just)
+            return BTKit.scanner.disconnect(observer, uuid: uuid, disconnected: { (observer, error) in
+                if let error = error {
+                    result(observer, .failure(error))
+                } else {
+                    result(observer, .just)
+                }
             })
         }
     }
