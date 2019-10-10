@@ -152,38 +152,65 @@ public struct BTKitRuuviNUSService {
     
     @discardableResult
     public func celisus<T: AnyObject>(for observer: T, uuid: String, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
-        return serve(.temperature, for: observer, uuid: uuid, from: date, result: result)
+        return celisus(for: observer, uuid: uuid, from: date, options: nil, result: result)
+    }
+    
+    @discardableResult
+    public func celisus<T: AnyObject>(for observer: T, uuid: String, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
+        return serve(.temperature, for: observer, uuid: uuid, from: date, options: options, result: result)
     }
     
     @discardableResult
     public func humidity<T: AnyObject>(for observer: T, uuid: String, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
-        return serve(.humidity, for: observer, uuid: uuid, from: date, result: result)
+        return humidity(for: observer, uuid: uuid, from: date, options: nil, result: result)
+    }
+    
+    @discardableResult
+    public func humidity<T: AnyObject>(for observer: T, uuid: String, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
+        return serve(.humidity, for: observer, uuid: uuid, from: date, options: options, result: result)
     }
     
     @discardableResult
     public func pressure<T: AnyObject>(for observer: T, uuid: String, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
-        return serve(.pressure, for: observer, uuid: uuid, from: date, result: result)
+            return pressure(for: observer, uuid: uuid, from: date, options: nil, result: result)
+    }
+    
+    @discardableResult
+    public func pressure<T: AnyObject>(for observer: T, uuid: String, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
+        return serve(.pressure, for: observer, uuid: uuid, from: date, options: options, result: result)
     }
     
     @discardableResult
     public func log<T: AnyObject>(for observer: T, uuid: String, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) -> ObservationToken? {
+        return log(for: observer, uuid: uuid, from: date, options: nil, result: result)
+    }
+    
+    @discardableResult
+    public func log<T: AnyObject>(for observer: T, uuid: String, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) -> ObservationToken? {
+        let info = BTKitParsedOptionsInfo(options)
         if !BTKit.scanner.isConnected(uuid: uuid) {
-            result(observer, .failure(.logic(.notConnected)))
+            info.callbackQueue.execute {
+                result(observer, .failure(.logic(.notConnected)))
+            }
             return nil
         } else {
             var values = [RuuviTagEnvLogFull]()
             var lastValue = RuuviTagEnvLogFullClass()
             let service: BTRuuviNUSService = .all
-            let serveToken = BTKit.scanner.serve(observer, for: uuid, .ruuvi(.uart(service)), request: { (observer, peripheral, rx, tx) in
+            let serveToken = BTKit.scanner.serve(observer, for: uuid, .ruuvi(.uart(service)), options: options, request: { (observer, peripheral, rx, tx) in
                 if let rx = rx {
                     peripheral?.writeValue(service.request(from: date), for: rx, type: .withResponse)
                 } else {
-                    result(observer, .failure(.unexpected(.characteristicIsNil)))
+                    info.callbackQueue.execute {
+                        result(observer, .failure(.unexpected(.characteristicIsNil)))
+                    }
                 }
             }, response: { (observer, data) in
                 if let data = data {
                     if service.isEndOfTransmissionFlag(data: data) {
-                        result(observer, .success(values))
+                        info.callbackQueue.execute {
+                            result(observer, .success(values))
+                        }
                     } else if let row = service.responseRow(from: data) {
                         switch row.1 {
                         case .temperature:
@@ -204,39 +231,54 @@ public struct BTKitRuuviNUSService {
                         }
                     }
                 } else {
-                    result(observer, .failure(.unexpected(.dataIsNil)))
+                    info.callbackQueue.execute {
+                        result(observer, .failure(.unexpected(.dataIsNil)))
+                    }
                 }
             }) { (observer, error) in
-                result(observer, .failure(error))
+                info.callbackQueue.execute {
+                    result(observer, .failure(error))
+                }
             }
             return serveToken
         }
     }
     
-    private func serve<T: AnyObject>(_ service: BTRuuviNUSService, for observer: T, uuid: String, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
+    private func serve<T: AnyObject>(_ service: BTRuuviNUSService, for observer: T, uuid: String, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
+        let info = BTKitParsedOptionsInfo(options)
         if !BTKit.scanner.isConnected(uuid: uuid) {
-            result(observer, .failure(.logic(.notConnected)))
+            info.callbackQueue.execute {
+                result(observer, .failure(.logic(.notConnected)))
+            }
             return nil
         } else {
             var values = [RuuviTagEnvLog]()
-            let serveToken = BTKit.scanner.serve(observer, for: uuid, .ruuvi(.uart(service)), request: { (observer, peripheral, rx, tx) in
+            let serveToken = BTKit.scanner.serve(observer, for: uuid, .ruuvi(.uart(service)), options: options, request: { (observer, peripheral, rx, tx) in
                 if let rx = rx {
                     peripheral?.writeValue(service.request(from: date), for: rx, type: .withResponse)
                 } else {
-                    result(observer, .failure(.unexpected(.characteristicIsNil)))
+                    info.callbackQueue.execute {
+                        result(observer, .failure(.unexpected(.characteristicIsNil)))
+                    }
                 }
             }, response: { (observer, data) in
                 if let data = data {
                     if service.isEndOfTransmissionFlag(data: data) {
-                        result(observer, .success(values))
+                        info.callbackQueue.execute {
+                            result(observer, .success(values))
+                        }
                     } else if let row = service.response(from: data) {
                         values.append(RuuviTagEnvLog(type: service, date: row.0, value: row.1))
                     }
                 } else {
-                    result(observer, .failure(.unexpected(.dataIsNil)))
+                    info.callbackQueue.execute {
+                        result(observer, .failure(.unexpected(.dataIsNil)))
+                    }
                 }
             }) { (observer, error) in
-                result(observer, .failure(error))
+                info.callbackQueue.execute {
+                    result(observer, .failure(error))
+                }
             }
             return serveToken
         }

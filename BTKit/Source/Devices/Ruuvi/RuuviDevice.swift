@@ -265,20 +265,37 @@ public extension RuuviTag {
         return BTKit.scanner.isConnected(uuid: uuid)
     }
     
+    
     @discardableResult
     func connect<T: AnyObject>(for observer: T, result: @escaping (T, BTConnectResult) -> Void) -> ObservationToken? {
+        return connect(for: observer, options: nil, result: result)
+    }
+    
+    @discardableResult
+    func connect<T: AnyObject>(for observer: T, options: BTScannerOptionsInfo?, result: @escaping (T, BTConnectResult) -> Void) -> ObservationToken? {
         if !isConnectable {
-            result(observer, .failure(.logic(.notConnectable)))
+            let info = BTKitParsedOptionsInfo(options)
+            info.callbackQueue.execute {
+                result(observer, .failure(.logic(.notConnectable)))
+            }
             return nil
         } else {
-            return BTKit.connection.establish(for: observer, uuid: uuid, result: result)
+            return BTKit.connection.establish(for: observer, uuid: uuid, options: options, result: result)
         }
     }
     
     @discardableResult
     func disconnect<T: AnyObject>(for observer: T, result: @escaping (T, BTDisconnectResult) -> Void) -> ObservationToken? {
+        return disconnect(for: observer, options: nil, result: result)
+    }
+    
+    @discardableResult
+    func disconnect<T: AnyObject>(for observer: T, options: BTScannerOptionsInfo?, result: @escaping (T, BTDisconnectResult) -> Void) -> ObservationToken? {
         if !isConnectable {
-            result(observer, .failure(.logic(.notConnectable)))
+            let info = BTKitParsedOptionsInfo(options)
+            info.callbackQueue.execute {
+                result(observer, .failure(.logic(.notConnectable)))
+            }
             return nil
         } else {
             return BTKit.connection.drop(for: observer, uuid: uuid, result: result)
@@ -286,9 +303,12 @@ public extension RuuviTag {
     }
     
     @discardableResult
-    func celisus<T: AnyObject>(for observer: T, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
+    func celisus<T: AnyObject>(for observer: T, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
         if !isConnectable {
-            result(observer, .failure(.logic(.notConnectable)))
+            let info = BTKitParsedOptionsInfo(options)
+            info.callbackQueue.execute {
+                result(observer, .failure(.logic(.notConnectable)))
+            }
             return nil
         } else {
             return BTKit.service.ruuvi.uart.nus.celisus(for: observer, uuid: uuid, from: date, result: result)
