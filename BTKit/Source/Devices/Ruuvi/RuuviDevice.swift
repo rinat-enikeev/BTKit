@@ -303,6 +303,11 @@ public extension RuuviTag {
     }
     
     @discardableResult
+    func celisus<T: AnyObject>(for observer: T, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
+        return celisus(for: observer, from: date, options: nil, result: result)
+    }
+    
+    @discardableResult
     func celisus<T: AnyObject>(for observer: T, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
         if !isConnectable {
             let info = BTKitParsedOptionsInfo(options)
@@ -317,31 +322,55 @@ public extension RuuviTag {
     
     @discardableResult
     func humidity<T: AnyObject>(for observer: T, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
+        return humidity(for: observer, from: date, options: nil, result: result)
+    }
+    
+    @discardableResult
+    func humidity<T: AnyObject>(for observer: T, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
         if !isConnectable {
-            result(observer, .failure(.logic(.notConnectable)))
+            let info = BTKitParsedOptionsInfo(options)
+            info.callbackQueue.execute {
+                result(observer, .failure(.logic(.notConnectable)))
+            }
             return nil
         } else {
-            return BTKit.service.ruuvi.uart.nus.humidity(for: observer, uuid: uuid, from: date, result: result)
+            return BTKit.service.ruuvi.uart.nus.humidity(for: observer, uuid: uuid, from: date, options: options, result: result)
         }
     }
     
     @discardableResult
     func pressure<T: AnyObject>(for observer: T, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
+        return pressure(for: observer, from: date, options: nil, result: result)
+    }
+    
+    @discardableResult
+    func pressure<T: AnyObject>(for observer: T, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
         if !isConnectable {
-            result(observer, .failure(.logic(.notConnectable)))
+            let info = BTKitParsedOptionsInfo(options)
+            info.callbackQueue.execute {
+                result(observer, .failure(.logic(.notConnectable)))
+            }
             return nil
         } else {
-            return BTKit.service.ruuvi.uart.nus.pressure(for: observer, uuid: uuid, from: date, result: result)
+            return BTKit.service.ruuvi.uart.nus.pressure(for: observer, uuid: uuid, from: date, options: options, result: result)
         }
     }
     
     @discardableResult
     func log<T: AnyObject>(for observer: T, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) -> ObservationToken? {
+        return log(for: observer, from: date, options: nil, result: result)
+    }
+    
+    @discardableResult
+    func log<T: AnyObject>(for observer: T, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) -> ObservationToken? {
         if !isConnectable {
-            result(observer, .failure(.logic(.notConnectable)))
+            let info = BTKitParsedOptionsInfo(options)
+            info.callbackQueue.execute {
+                result(observer, .failure(.logic(.notConnectable)))
+            }
             return nil
         } else {
-            return BTKit.service.ruuvi.uart.nus.log(for: observer, uuid: uuid, from: date, result: result)
+            return BTKit.service.ruuvi.uart.nus.log(for: observer, uuid: uuid, from: date, options: options, result: result)
         }
     }
 }
