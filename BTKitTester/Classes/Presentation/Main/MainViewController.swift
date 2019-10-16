@@ -107,7 +107,10 @@ extension MainViewController {
                 openConnectable(ruuviTag: ruuviTag)
             }
         case MainSection.unknown.rawValue:
-            break
+            let device = unknowns[indexPath.row]
+            if device.isConnectable {
+                openUnknown(device: device)
+            }
         default:
             fatalError()
         }
@@ -131,6 +134,13 @@ extension MainViewController {
         let storyboard = UIStoryboard(name: "Connectable", bundle: .main)
         let controller = storyboard.instantiateInitialViewController() as! ConnectableViewController
         controller.ruuviTag = ruuviTag
+        navigationController?.pushViewController(controller, animated: true)
+    }
+    
+    private func openUnknown(device: BTUnknownDevice) {
+        let storyboard = UIStoryboard(name: "Unknown", bundle: .main)
+        let controller = storyboard.instantiateInitialViewController() as! UnknownViewController
+        controller.device = device
         navigationController?.pushViewController(controller, animated: true)
     }
 }

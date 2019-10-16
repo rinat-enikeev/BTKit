@@ -44,6 +44,7 @@
 		0E9D5F4E2355F4900076FFD8 /* BTBackgroundScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E9D5F4D2355F4900076FFD8 /* BTBackgroundScanner.swift */; };
 		0E9D5F502356E9940076FFD8 /* MainUnknownTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E9D5F4F2356E9940076FFD8 /* MainUnknownTableViewCell.swift */; };
 		0E9D5F532356EBED0076FFD8 /* Unknown.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0E9D5F522356EBED0076FFD8 /* Unknown.storyboard */; };
+		0E9D5F552356F9760076FFD8 /* UnknownViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E9D5F542356F9760076FFD8 /* UnknownViewController.swift */; };
 		0EA31060232A82C600BC8CF5 /* MainRuuviTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA3105F232A82C600BC8CF5 /* MainRuuviTableViewCell.swift */; };
 		0EA31064232A86D100BC8CF5 /* Connectable.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0EA31063232A86D100BC8CF5 /* Connectable.storyboard */; };
 		0EA31066232A88DC00BC8CF5 /* ConnectableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA31065232A88DC00BC8CF5 /* ConnectableViewController.swift */; };
@@ -131,6 +132,7 @@
 		0E9D5F4D2355F4900076FFD8 /* BTBackgroundScanner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BTBackgroundScanner.swift; sourceTree = "<group>"; };
 		0E9D5F4F2356E9940076FFD8 /* MainUnknownTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainUnknownTableViewCell.swift; sourceTree = "<group>"; };
 		0E9D5F522356EBED0076FFD8 /* Unknown.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Unknown.storyboard; sourceTree = "<group>"; };
+		0E9D5F542356F9760076FFD8 /* UnknownViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnknownViewController.swift; sourceTree = "<group>"; };
 		0EA3105F232A82C600BC8CF5 /* MainRuuviTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainRuuviTableViewCell.swift; sourceTree = "<group>"; };
 		0EA31063232A86D100BC8CF5 /* Connectable.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Connectable.storyboard; sourceTree = "<group>"; };
 		0EA31065232A88DC00BC8CF5 /* ConnectableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectableViewController.swift; sourceTree = "<group>"; };
@@ -380,6 +382,7 @@
 			isa = PBXGroup;
 			children = (
 				0E9D5F522356EBED0076FFD8 /* Unknown.storyboard */,
+				0E9D5F542356F9760076FFD8 /* UnknownViewController.swift */,
 			);
 			path = Unknown;
 			sourceTree = "<group>";
@@ -674,6 +677,7 @@
 				0E53A3EE232D1A8400ACED49 /* ConnectableValueTableViewCell.swift in Sources */,
 				0E9D5F502356E9940076FFD8 /* MainUnknownTableViewCell.swift in Sources */,
 				0E375F4222AD6CDB0092D269 /* MainViewController.swift in Sources */,
+				0E9D5F552356F9760076FFD8 /* UnknownViewController.swift in Sources */,
 				0E53A3EC232CE65100ACED49 /* Data+Hex.swift in Sources */,
 				0EA31060232A82C600BC8CF5 /* MainRuuviTableViewCell.swift in Sources */,
 				0E375F4022AD6CDB0092D269 /* AppDelegate.swift in Sources */,

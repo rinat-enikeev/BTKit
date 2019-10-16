@@ -10,6 +10,12 @@ public struct BTUnknownDevice {
     public var name: String?
 }
 
+public extension BTUnknownDevice {
+    var isConnected: Bool {
+        return BTKit.scanner.isConnected(uuid: uuid)
+    }
+}
+
 public extension BTDevice {
     var ruuvi: RuuviDevice? {
         if case let .ruuvi(device) = self {
@@ -40,6 +46,18 @@ public extension BTDevice {
             }
         case .unknown(let unknownDevice):
             return unknownDevice.rssi
+        }
+    }
+    
+    var isConnectable: Bool {
+        switch self {
+        case .ruuvi(let ruuviDevice):
+            switch ruuviDevice {
+            case .tag(let ruuviTag):
+                return ruuviTag.isConnectable
+            }
+        case .unknown(let unknownDevice):
+            return unknownDevice.isConnectable
         }
     }
 }

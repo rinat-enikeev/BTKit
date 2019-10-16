@@ -274,6 +274,7 @@ extension BTScanneriOS: CBCentralManagerDelegate {
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
         guard RSSI.intValue != 127 else { return }
         let uuid = peripheral.identifier.uuidString
+        let isConnectable = (advertisementData[CBAdvertisementDataIsConnectable] as? NSNumber)?.boolValue ?? false
         for decoder in decoders {
             if let device = decoder.decode(uuid: uuid, rssi: RSSI, advertisementData: advertisementData) {
                 observations.device.values.forEach { (closure) in
@@ -283,29 +284,33 @@ extension BTScanneriOS: CBCentralManagerDelegate {
                 observations.observe.values
                     .filter({ $0.uuid == device.uuid })
                     .forEach( { $0.block(device) } )
-                observations.connect.values
-                    .filter({ $0.uuid == device.uuid })
-                    .forEach( { connect in
-                        let isConnectable = (advertisementData[CBAdvertisementDataIsConnectable] as? NSNumber)?.boolValue ?? false
-                        if isConnectable {
-                            if !connectedPeripherals.contains(peripheral) {
-                                connectedPeripherals.insert(peripheral)
-                                peripheral.delegate = self
-                                manager.connect(peripheral)
-                            }
-                        } else {
-                            connect.block(.logic(.notConnectable))
-                        }
-                    } )
+                connectIfNeeded(peripheral: peripheral, device: device)
                 return
             }
         }
-        let isConnectable = (advertisementData[CBAdvertisementDataIsConnectable] as? NSNumber)?.boolValue ?? false
+        
         let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String
         let unknownDevice = BTUnknownDevice(uuid: uuid, rssi: RSSI.intValue, isConnectable: isConnectable, name: name)
         observations.unknown.values.forEach { (closure) in
             closure(unknownDevice)
         }
+        connectIfNeeded(peripheral: peripheral, device: .unknown(unknownDevice))
+    }
+    
+    private func connectIfNeeded(peripheral: CBPeripheral, device: BTDevice) {
+        observations.connect.values
+        .filter({ $0.uuid == device.uuid })
+        .forEach( { connect in
+            if device.isConnectable {
+                if !connectedPeripherals.contains(peripheral) {
+                    connectedPeripherals.insert(peripheral)
+                    peripheral.delegate = self
+                    manager.connect(peripheral)
+                }
+            } else {
+                connect.block(.logic(.notConnectable))
+            }
+        } )
     }
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
