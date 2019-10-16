@@ -1,5 +1,5 @@
 //
-//  MainTableViewCell.swift
+//  MainRuuviTableViewCell.swift
 //  BTKitTester
 //
 //  Created by Rinat Enikeev on 9/12/19.
@@ -8,6 +8,6 @@
 
 import UIKit
 
-class MainTableViewCell: UITableViewCell {
+class MainRuuviTableViewCell: UITableViewCell {
     @IBOutlet weak var uuidOrMacLabel: UILabel!
 }

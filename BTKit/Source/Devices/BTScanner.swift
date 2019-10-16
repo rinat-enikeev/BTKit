@@ -20,6 +20,8 @@ public protocol BTScanner {
     @discardableResult
     func serve<T: AnyObject>(_ observer: T, for uuid: String, _ type: BTServiceType, options: BTScannerOptionsInfo?, request: ((T, CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((T, Data?) -> Void)?, failure: ((T, BTError) -> Void)?) -> ObservationToken
     func disconnect<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, disconnected: @escaping (T, BTError?) -> Void) -> ObservationToken
+    @discardableResult
+    func unknown<T: AnyObject>(_ observer: T, options: BTScannerOptionsInfo?, closure: @escaping (T, BTUnknownDevice) -> Void) -> ObservationToken
 }
 
 public extension BTScanner {
@@ -57,6 +59,12 @@ public extension BTScanner {
     func disconnect<T: AnyObject>(_ observer: T, uuid: String, disconnected: @escaping (T, BTError?) -> Void) -> ObservationToken {
         return disconnect(observer, uuid: uuid, options: nil, disconnected: disconnected)
     }
+    
+    @discardableResult
+    func unknown<T: AnyObject>(_ observer: T, closure: @escaping (T, BTUnknownDevice) -> Void) -> ObservationToken {
+        return unknown(observer, options: nil, closure: closure)
+    }
+    
 }
 
 public enum BTScannerState : Int {

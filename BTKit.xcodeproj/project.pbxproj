@@ -40,7 +40,10 @@
 		0E70A45822AF821D006CB87C /* CallbackQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45722AF821D006CB87C /* CallbackQueue.swift */; };
 		0E70A45A22AF8313006CB87C /* BTScannerOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45922AF8313006CB87C /* BTScannerOptions.swift */; };
 		0E70A45C22AF8C58006CB87C /* BTScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45B22AF8C58006CB87C /* BTScanner.swift */; };
-		0EA31060232A82C600BC8CF5 /* MainTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA3105F232A82C600BC8CF5 /* MainTableViewCell.swift */; };
+		0E9D5F4C2355F4890076FFD8 /* BTBackgroundScanneriOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E9D5F4B2355F4890076FFD8 /* BTBackgroundScanneriOS.swift */; };
+		0E9D5F4E2355F4900076FFD8 /* BTBackgroundScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E9D5F4D2355F4900076FFD8 /* BTBackgroundScanner.swift */; };
+		0E9D5F502356E9940076FFD8 /* MainUnknownTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E9D5F4F2356E9940076FFD8 /* MainUnknownTableViewCell.swift */; };
+		0EA31060232A82C600BC8CF5 /* MainRuuviTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA3105F232A82C600BC8CF5 /* MainRuuviTableViewCell.swift */; };
 		0EA31064232A86D100BC8CF5 /* Connectable.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0EA31063232A86D100BC8CF5 /* Connectable.storyboard */; };
 		0EA31066232A88DC00BC8CF5 /* ConnectableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA31065232A88DC00BC8CF5 /* ConnectableViewController.swift */; };
 		0EA3106D232BBA3900BC8CF5 /* BTService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA3106C232BBA3900BC8CF5 /* BTService.swift */; };
@@ -123,7 +126,10 @@
 		0E70A45722AF821D006CB87C /* CallbackQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallbackQueue.swift; sourceTree = "<group>"; };
 		0E70A45922AF8313006CB87C /* BTScannerOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTScannerOptions.swift; sourceTree = "<group>"; };
 		0E70A45B22AF8C58006CB87C /* BTScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTScanner.swift; sourceTree = "<group>"; };
-		0EA3105F232A82C600BC8CF5 /* MainTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTableViewCell.swift; sourceTree = "<group>"; };
+		0E9D5F4B2355F4890076FFD8 /* BTBackgroundScanneriOS.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BTBackgroundScanneriOS.swift; sourceTree = "<group>"; };
+		0E9D5F4D2355F4900076FFD8 /* BTBackgroundScanner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BTBackgroundScanner.swift; sourceTree = "<group>"; };
+		0E9D5F4F2356E9940076FFD8 /* MainUnknownTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainUnknownTableViewCell.swift; sourceTree = "<group>"; };
+		0EA3105F232A82C600BC8CF5 /* MainRuuviTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainRuuviTableViewCell.swift; sourceTree = "<group>"; };
 		0EA31063232A86D100BC8CF5 /* Connectable.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Connectable.storyboard; sourceTree = "<group>"; };
 		0EA31065232A88DC00BC8CF5 /* ConnectableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectableViewController.swift; sourceTree = "<group>"; };
 		0EA3106C232BBA3900BC8CF5 /* BTService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTService.swift; sourceTree = "<group>"; };
@@ -239,6 +245,7 @@
 		0E375F1722AD004F0092D269 /* iOS */ = {
 			isa = PBXGroup;
 			children = (
+				0E9D5F4B2355F4890076FFD8 /* BTBackgroundScanneriOS.swift */,
 				0E375F1822AD00600092D269 /* BTScanneriOS.swift */,
 			);
 			path = iOS;
@@ -260,6 +267,7 @@
 				0E375F2622AD65180092D269 /* Ruuvi */,
 				0E375F2422AD650F0092D269 /* BTDevice.swift */,
 				0E70A45B22AF8C58006CB87C /* BTScanner.swift */,
+				0E9D5F4D2355F4900076FFD8 /* BTBackgroundScanner.swift */,
 				0E375F1022ACFF070092D269 /* BTContract.swift */,
 				0EA3106C232BBA3900BC8CF5 /* BTService.swift */,
 				0E375F1E22AD046A0092D269 /* ObservationToken.swift */,
@@ -398,7 +406,8 @@
 			children = (
 				0E375F4322AD6CDB0092D269 /* Main.storyboard */,
 				0E375F4122AD6CDB0092D269 /* MainViewController.swift */,
-				0EA3105F232A82C600BC8CF5 /* MainTableViewCell.swift */,
+				0EA3105F232A82C600BC8CF5 /* MainRuuviTableViewCell.swift */,
+				0E9D5F4F2356E9940076FFD8 /* MainUnknownTableViewCell.swift */,
 			);
 			path = Main;
 			sourceTree = "<group>";
@@ -614,6 +623,7 @@
 				0E375F0A22ACFE760092D269 /* RuuviData4.swift in Sources */,
 				0E70A45822AF821D006CB87C /* CallbackQueue.swift in Sources */,
 				0E375F2522AD650F0092D269 /* BTDevice.swift in Sources */,
+				0E9D5F4C2355F4890076FFD8 /* BTBackgroundScanneriOS.swift in Sources */,
 				0EA3106D232BBA3900BC8CF5 /* BTService.swift in Sources */,
 				0E375F1122ACFF070092D269 /* BTContract.swift in Sources */,
 				0E53A3F9232E2FA100ACED49 /* BTConnectResult.swift in Sources */,
@@ -622,6 +632,7 @@
 				0E375F2122AD5D1E0092D269 /* RuuviDecoderiOS.swift in Sources */,
 				0E53A3FF2330F24100ACED49 /* BTConnection.swift in Sources */,
 				0EA31071232BBAAC00BC8CF5 /* RuuviNUSService.swift in Sources */,
+				0E9D5F4E2355F4900076FFD8 /* BTBackgroundScanner.swift in Sources */,
 				0E375EFF22ACFD410092D269 /* Ruuvi.swift in Sources */,
 				0E375F0C22ACFE760092D269 /* RuuviData2.swift in Sources */,
 				0E70A45C22AF8C58006CB87C /* BTScanner.swift in Sources */,
@@ -649,9 +660,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				0E53A3EE232D1A8400ACED49 /* ConnectableValueTableViewCell.swift in Sources */,
+				0E9D5F502356E9940076FFD8 /* MainUnknownTableViewCell.swift in Sources */,
 				0E375F4222AD6CDB0092D269 /* MainViewController.swift in Sources */,
 				0E53A3EC232CE65100ACED49 /* Data+Hex.swift in Sources */,
-				0EA31060232A82C600BC8CF5 /* MainTableViewCell.swift in Sources */,
+				0EA31060232A82C600BC8CF5 /* MainRuuviTableViewCell.swift in Sources */,
 				0E375F4022AD6CDB0092D269 /* AppDelegate.swift in Sources */,
 				0E53A3FD2330CB5500ACED49 /* ConnectableValuesTableViewCell.swift in Sources */,
 				0EA31066232A88DC00BC8CF5 /* ConnectableViewController.swift in Sources */,

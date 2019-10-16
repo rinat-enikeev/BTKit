@@ -1,5 +1,13 @@
 public enum BTDevice {
     case ruuvi(RuuviDevice)
+    case unknown(BTUnknownDevice)
+}
+
+public struct BTUnknownDevice {
+    public var uuid: String
+    public var rssi: Int
+    public var isConnectable: Bool
+    public var name: String?
 }
 
 public extension BTDevice {
@@ -18,6 +26,8 @@ public extension BTDevice {
             case .tag(let ruuviTag):
                 return ruuviTag.uuid
             }
+        case .unknown(let unknownDevice):
+            return unknownDevice.uuid
         }
     }
     
@@ -28,6 +38,8 @@ public extension BTDevice {
             case .tag(let ruuviTag):
                 return ruuviTag.rssi
             }
+        case .unknown(let unknownDevice):
+            return unknownDevice.rssi
         }
     }
 }
@@ -41,6 +53,19 @@ extension BTDevice: Hashable {
 
 extension BTDevice: Equatable {
     public static func ==(lhs: BTDevice, rhs: BTDevice) -> Bool {
+        return lhs.uuid == rhs.uuid
+    }
+}
+
+extension BTUnknownDevice: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        let key = uuid
+        hasher.combine(key)
+    }
+}
+
+extension BTUnknownDevice: Equatable {
+    public static func ==(lhs: BTUnknownDevice, rhs: BTUnknownDevice) -> Bool {
         return lhs.uuid == rhs.uuid
     }
 }

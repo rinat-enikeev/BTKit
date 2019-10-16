@@ -9,16 +9,26 @@
 import UIKit
 import BTKit
 
+enum MainSection: Int, CaseIterable {
+    case ruuvi = 0
+    case unknown = 1
+}
+
 class MainViewController: UITableViewController {
 
     private var ruuviTags: [RuuviTag] = [RuuviTag]()
     private var ruuviTagsSet: Set<RuuviTag> = Set<RuuviTag>()
+    private var unknowns: [BTUnknownDevice] = [BTUnknownDevice]()
+    private var unknownSet: Set<BTUnknownDevice> = Set<BTUnknownDevice>()
     private var scanToken: ObservationToken?
-    private let cellReuseIdentifier = "MainTableViewCellReuseIdentifier"
+    private var unknownToken: ObservationToken?
+    private let ruuviCellReuseIdentifier = "MainRuuviTableViewCellReuseIdentifier"
+    private let unknownCellReuseIdentifier = "MainUnknownTableViewCellReuseIdentifier"
     private var reloadingTimer: Timer?
     
     deinit {
         scanToken?.invalidate()
+        unknownToken?.invalidate()
         reloadingTimer?.invalidate()
     }
 }
@@ -41,20 +51,48 @@ extension MainViewController {
 
 // MARK: - UITableViewDataSource
 extension MainViewController {
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        return MainSection.allCases.count
+    }
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return ruuviTags.count
+        switch section {
+        case MainSection.ruuvi.rawValue:
+            return ruuviTags.count
+        case MainSection.unknown.rawValue:
+            return unknowns.count
+        default:
+            fatalError()
+        }
+        
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellReuseIdentifier, for: indexPath) as! MainTableViewCell
-        let ruuviTag = ruuviTags[indexPath.row]
-        configure(cell: cell, ruuviTag: ruuviTag)
-        return cell
+        switch indexPath.section {
+        case MainSection.ruuvi.rawValue:
+            let cell = tableView.dequeueReusableCell(withIdentifier: ruuviCellReuseIdentifier, for: indexPath) as! MainRuuviTableViewCell
+            let ruuviTag = ruuviTags[indexPath.row]
+            configure(cell: cell, ruuviTag: ruuviTag)
+            return cell
+        case MainSection.unknown.rawValue:
+            let cell = tableView.dequeueReusableCell(withIdentifier: unknownCellReuseIdentifier, for: indexPath) as! MainUnknownTableViewCell
+            let unknownDevice = unknowns[indexPath.row]
+            configure(cell: cell, unknownDevice: unknownDevice)
+            return cell
+        default:
+            fatalError()
+        }
+        
     }
     
-    private func configure(cell: MainTableViewCell, ruuviTag: RuuviTag) {
+    private func configure(cell: MainRuuviTableViewCell, ruuviTag: RuuviTag) {
         cell.uuidOrMacLabel.text = ruuviTag.mac ?? ruuviTag.uuid
         cell.accessoryType = ruuviTag.isConnectable ? .detailDisclosureButton : .none
+    }
+    
+    private func configure(cell: MainUnknownTableViewCell, unknownDevice: BTUnknownDevice) {
+        cell.nameLabel.text = unknownDevice.name ?? unknownDevice.uuid
+        cell.accessoryType = unknownDevice.isConnectable ? .detailDisclosureButton : .none
     }
 }
 
@@ -62,9 +100,27 @@ extension MainViewController {
 extension MainViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        let ruuviTag = ruuviTags[indexPath.row]
-        if ruuviTag.isConnectable {
-            openConnectable(ruuviTag: ruuviTag)
+        switch indexPath.section {
+        case MainSection.ruuvi.rawValue:
+            let ruuviTag = ruuviTags[indexPath.row]
+            if ruuviTag.isConnectable {
+                openConnectable(ruuviTag: ruuviTag)
+            }
+        case MainSection.unknown.rawValue:
+            break
+        default:
+            fatalError()
+        }
+    }
+    
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        switch section {
+        case MainSection.ruuvi.rawValue:
+            return "Ruuvi"
+        case MainSection.unknown.rawValue:
+            return "Unknown"
+        default:
+            return nil
         }
     }
 }
@@ -87,18 +143,26 @@ extension MainViewController {
                 observer.ruuviTagsSet.update(with: tag)
             }
         }
+        unknownToken = BTKit.scanner.unknown(self, closure: { (observer, device) in
+            observer.unknownSet.update(with: device)
+        })
     }
     
     private func stopObserving() {
         scanToken?.invalidate()
+        unknownToken?.invalidate()
     }
     
     private func startReloading() {
         reloadingTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true, block: { [weak self] _ in
             self?.updateRuuviTags()
+            self?.updateUnknowns()
+            self?.tableView.reloadData()
         })
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             self?.updateRuuviTags()
+            self?.updateUnknowns()
+            self?.tableView.reloadData()
         }
     }
     
@@ -109,6 +173,9 @@ extension MainViewController {
     
     private func updateRuuviTags() {
         ruuviTags = ruuviTagsSet.sorted(by: { $0.rssi > $1.rssi })
-        tableView.reloadData()
+    }
+    
+    private func updateUnknowns() {
+        unknowns = unknownSet.sorted(by: { $0.rssi > $1.rssi })
     }
 }

@@ -61,18 +61,19 @@ class BTScanneriOS: NSObject, BTScanner {
     }
     
     private var connectedPeripherals = Set<CBPeripheral>()
-    private let queue = DispatchQueue(label: "CBCentralManager", qos: .userInteractive)
+    private let queue = DispatchQueue(label: "BTScanneriOS", qos: .userInteractive)
     private lazy var manager: CBCentralManager = {
         return CBCentralManager(delegate: self, queue: queue)
     }()
     private var observations = (
-        state: [UUID : (BTScannerState) -> Void](),
-        device: [UUID : (BTDevice) -> Void](),
+        state: [UUID: (BTScannerState) -> Void](),
+        device: [UUID: (BTDevice) -> Void](),
         lost: [UUID: LostObservation](),
         observe: [UUID: ObserveObservation](),
         connect: [UUID: ConnectObservation](),
         disconnect: [UUID: DisconnectObservation](),
-        service: [UUID: ServiceObservation]()
+        service: [UUID: ServiceObservation](),
+        unknown: [UUID: (BTUnknownDevice) -> Void]()
     )
     private var isReady = false { didSet { startIfNeeded() } }
     private var decoders: [BTDecoder]
@@ -271,9 +272,10 @@ extension BTScanneriOS: CBCentralManagerDelegate {
     }
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        guard RSSI.intValue != 127 else { return } 
+        guard RSSI.intValue != 127 else { return }
+        let uuid = peripheral.identifier.uuidString
         for decoder in decoders {
-            if let device = decoder.decode(uuid: peripheral.identifier.uuidString, rssi: RSSI, advertisementData: advertisementData) {
+            if let device = decoder.decode(uuid: uuid, rssi: RSSI, advertisementData: advertisementData) {
                 observations.device.values.forEach { (closure) in
                     closure(device)
                 }
@@ -295,7 +297,14 @@ extension BTScanneriOS: CBCentralManagerDelegate {
                             connect.block(.logic(.notConnectable))
                         }
                     } )
+                return
             }
+        }
+        let isConnectable = (advertisementData[CBAdvertisementDataIsConnectable] as? NSNumber)?.boolValue ?? false
+        let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String
+        let unknownDevice = BTUnknownDevice(uuid: uuid, rssi: RSSI.intValue, isConnectable: isConnectable, name: name)
+        observations.unknown.values.forEach { (closure) in
+            closure(unknownDevice)
         }
     }
     
@@ -678,6 +687,46 @@ extension BTScanneriOS {
         return ObservationToken { [weak self] in
             self?.queue.async { [weak self] in
                 self?.observations.disconnect.removeValue(forKey: id)
+                self?.stopIfNeeded()
+            }
+        }
+    }
+    
+    @discardableResult
+    func unknown<T: AnyObject>(
+        _ observer: T,
+        options: BTScannerOptionsInfo? = nil,
+        closure: @escaping (T, BTUnknownDevice) -> Void
+        ) -> ObservationToken {
+        
+        let options = currentDefaultOptions + (options ?? .empty)
+        let info = BTKitParsedOptionsInfo(options)
+        
+        let id = UUID()
+        
+        queue.async { [weak self] in
+            self?.observations.unknown[id] = { [weak self, weak observer] device in
+                guard let observer = observer else {
+                    self?.observations.unknown.removeValue(forKey: id)
+                    return
+                }
+                info.callbackQueue.execute { [weak observer, weak self] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.unknown.removeValue(forKey: id)
+                        }
+                        return
+                    }
+                    closure(observer, device)
+                }
+            }
+            
+            self?.startIfNeeded()
+        }
+        
+        return ObservationToken { [weak self] in
+            self?.queue.async { [weak self] in
+                self?.observations.unknown.removeValue(forKey: id)
                 self?.stopIfNeeded()
             }
         }
