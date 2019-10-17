@@ -300,13 +300,11 @@ extension BTScanneriOS: CBCentralManagerDelegate {
         observations.connect.values
         .filter({ $0.uuid == device.uuid })
         .forEach( { connect in
-            if device.isConnectable {
-                if !connectedPeripherals.contains(peripheral) {
-                    connectedPeripherals.insert(peripheral)
-                    peripheral.delegate = self
-                    manager.connect(peripheral)
-                }
-            } else {
+            if device.isConnectable && !connectedPeripherals.contains(peripheral) {
+                connectedPeripherals.insert(peripheral)
+                peripheral.delegate = self
+                manager.connect(peripheral)
+            } else if !device.isConnectable {
                 connect.block(.logic(.notConnectable))
             }
         } )
@@ -667,6 +665,7 @@ extension BTScanneriOS {
         }
     }
     
+    @discardableResult
     func disconnect<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, disconnected: @escaping (T, BTError?) -> Void) -> ObservationToken {
         
         let options = currentDefaultOptions + (options ?? .empty)

@@ -16,8 +16,10 @@ class HeartbeatPersistenceUserDefaults: HeartbeatPersistence {
     
     func persist(uuid: String) {
         if var array = UserDefaults.standard.stringArray(forKey: key) {
-            array.append(uuid)
-            UserDefaults.standard.set(array, forKey: key)
+            if !array.contains(uuid) {
+                array.append(uuid)
+                UserDefaults.standard.set(array, forKey: key)
+            }
         } else {
             UserDefaults.standard.set([uuid], forKey: key)
         }

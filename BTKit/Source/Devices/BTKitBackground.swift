@@ -38,4 +38,29 @@ public struct BTKitRuuviHeartbeatBackground {
         }
         return token
     }
+    
+    
+    @discardableResult
+    public func unsubscribe<T:AnyObject>(for observer: T, uuid: String, result: @escaping (T, BTDisconnectResult) -> Void) -> ObservationToken? {
+        return unsubscribe(for: observer, uuid: uuid, options: nil, result: result)
+    }
+    
+    @discardableResult
+    public func unsubscribe<T:AnyObject>(for observer: T, uuid: String, options: BTScannerOptionsInfo?, result: @escaping (T, BTDisconnectResult) -> Void) -> ObservationToken? {
+        if !nus.isConnected(uuid: uuid) {
+            let info = BTKitParsedOptionsInfo(options)
+            info.callbackQueue.execute {
+                result(observer, .already)
+            }
+            return nil
+        } else {
+            return nus.disconnect(observer, uuid: uuid, options: options, disconnected: { (observer, error) in
+                if let error = error {
+                    result(observer, .failure(error))
+                } else {
+                    result(observer, .just)
+                }
+            })
+        }
+    }
 }

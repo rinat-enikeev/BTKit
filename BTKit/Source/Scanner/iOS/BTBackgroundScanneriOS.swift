@@ -162,6 +162,57 @@ extension BTBackgroundScanneriOS {
             self?.queue.async { [weak self] in
                 self?.observations.connect.removeValue(forKey: id)
                 self?.observations.disconnect.removeValue(forKey: id)
+                self?.observations.heartbeat.removeValue(forKey: id)
+                self?.stopIfNeeded()
+            }
+        }
+    }
+    
+    @discardableResult
+    func disconnect<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, disconnected: @escaping (T, BTError?) -> Void) -> ObservationToken {
+        
+        let options = currentDefaultOptions + (options ?? .empty)
+        let info = BTKitParsedOptionsInfo(options)
+        
+        let id = UUID()
+        
+        queue.async { [weak self] in
+            self?.observations.disconnect[id] = DisconnectObservation(block: { [weak self, weak observer] error in
+                guard let observer = observer else {
+                    self?.observations.disconnect.removeValue(forKey: id)
+                    self?.stopIfNeeded()
+                    return
+                }
+                info.callbackQueue.execute { [weak observer, weak self] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.disconnect.removeValue(forKey: id)
+                            self?.stopIfNeeded()
+                        }
+                        return
+                    }
+                    disconnected(observer, error)
+                }
+            }, uuid: uuid)
+            
+            self?.startIfNeeded()
+        }
+        
+        queue.async { [weak self] in
+            if let connectedClients = self?.observations.connect.values.filter({ $0.uuid == uuid }).count, connectedClients == 0 {
+                self?.connectedPeripherals
+                    .filter( { $0.identifier.uuidString == uuid } )
+                    .forEach({ (peripheral) in
+                        if peripheral.state != .disconnected {
+                            self?.manager.cancelPeripheralConnection(peripheral)
+                        }
+                    })
+            }
+        }
+        
+        return ObservationToken { [weak self] in
+            self?.queue.async { [weak self] in
+                self?.observations.disconnect.removeValue(forKey: id)
                 self?.stopIfNeeded()
             }
         }
@@ -181,15 +232,26 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
         guard RSSI.intValue != 127 else { return }
-        if !connectedPeripherals.contains(peripheral) {
-            connectedPeripherals.insert(peripheral)
-            peripheral.delegate = self
-            manager.connect(peripheral)
-        }
+        let uuid = peripheral.identifier.uuidString
+        let isConnectable = (advertisementData[CBAdvertisementDataIsConnectable] as? NSNumber)?.boolValue ?? false
+        observations.connect.values
+            .filter({ $0.uuid == uuid })
+            .forEach( { connect in
+                if isConnectable && !connectedPeripherals.contains(peripheral) {
+                    connectedPeripherals.insert(peripheral)
+                    peripheral.delegate = self
+                    manager.connect(peripheral)
+                } else if !isConnectable {
+                    connect.block(.logic(.notConnectable))
+                }
+            } )
     }
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         peripheral.discoverServices([service.uuid])
+        observations.connect.values
+            .filter({ $0.uuid == peripheral.identifier.uuidString })
+            .forEach({ $0.block(nil) })
     }
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {

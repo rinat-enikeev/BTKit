@@ -17,6 +17,12 @@ class HeartbeatServiceBTKit: HeartbeatService {
     private let heartbeatPersistence: HeartbeatPersistence = HeartbeatPersistenceUserDefaults.shared
     
     private var tokens = [String: ObservationToken]()
+    private var disconnectToken: ObservationToken?
+    
+    deinit {
+        tokens.forEach({ $0.value.invalidate() })
+        disconnectToken?.invalidate()
+    }
     
     func subscribe(to uuid: String) {
         heartbeatPersistence.persist(uuid: uuid)
@@ -60,5 +66,16 @@ class HeartbeatServiceBTKit: HeartbeatService {
     private func stopListening(to uuid: String) {
         tokens[uuid]?.invalidate()
         tokens.removeValue(forKey: uuid)
+        disconnectToken = BTKit.background.ruuvi.heartbeat.unsubscribe(for: self, uuid: uuid) { (observer, result) in
+            observer.disconnectToken?.invalidate()
+            switch result {
+            case .already:
+                print("already disconnected")
+            case .just:
+                print("just disconnected")
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
     }
 }
