@@ -649,6 +649,7 @@ extension BTScanneriOS {
                 guard let observer = observer else {
                     self?.queue.async { [weak self] in
                         self?.observations.service.removeValue(forKey: id)
+                        self?.stopIfNeeded()
                     }
                     return
                 }

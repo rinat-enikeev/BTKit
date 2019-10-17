@@ -45,7 +45,8 @@ class HeartbeatServiceBTKit: HeartbeatService {
     }
     
     private func startListening(to uuid: String) {
-        tokens[uuid] = BTKit.background.ruuvi.heartbeat.subscribe(for: self, uuid: uuid) { (observer, result) in
+        var readLogsToken: ObservationToken?
+        tokens[uuid] = BTKit.background.ruuvi.heartbeat.subscribe(for: self, uuid: uuid, heartbeat: { (observer, readLogs, result) in
             switch result {
             case .success(let ruuviTag):
                 print(ruuviTag)
@@ -60,7 +61,17 @@ class HeartbeatServiceBTKit: HeartbeatService {
             case .failure(let error):
                 print(error.localizedDescription)
             }
-        }
+        }, connected: { (observer, readLogs, error) in
+            readLogsToken = readLogs(Date.distantPast)
+        }, receiveLogs: { observer, result in
+            readLogsToken?.invalidate()
+            switch result {
+            case .success(let logs):
+                print(logs)
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        })
     }
     
     private func stopListening(to uuid: String) {

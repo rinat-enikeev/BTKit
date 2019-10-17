@@ -24,7 +24,8 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
         state: [UUID: (BTScannerState) -> Void](),
         connect: [UUID: ConnectObservation](),
         heartbeat: [UUID: HeartbeatObservation](),
-        disconnect: [UUID: DisconnectObservation]()
+        disconnect: [UUID: DisconnectObservation](),
+        service: [UUID: ServiceObservation]()
     )
     private var isReady = false { didSet { startIfNeeded() } }
     
@@ -58,6 +59,22 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
         }
     }
     
+    private class ServiceObservation {
+        var request: ((CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?
+        var response: ((Data?) -> Void)?
+        var failure: ((BTError) -> Void)?
+        var uuid: String = ""
+        var type: BTServiceType
+        
+        init(uuid: String, type: BTServiceType, request: ((CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((Data?) -> Void)?, failure: ((BTError) -> Void)?) {
+            self.uuid = uuid
+            self.type = type
+            self.request = request
+            self.response = response
+            self.failure = failure
+        }
+    }
+    
     required init(service: BTService) {
         self.service = service
         super.init()
@@ -84,6 +101,7 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
         || observations.disconnect.count > 0
         || observations.heartbeat.count > 0
         || observations.state.count > 0
+        || observations.service.count > 0
     }
     
 }
@@ -217,6 +235,93 @@ extension BTBackgroundScanneriOS {
             }
         }
     }
+    
+    @discardableResult
+    func serve<T: AnyObject>(_ observer: T, for uuid: String, _ type: BTServiceType, options: BTScannerOptionsInfo?, request: ((T, CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((T, Data?) -> Void)?, failure: ((T, BTError) -> Void)?) -> ObservationToken {
+        
+        let options = currentDefaultOptions + (options ?? .empty)
+        let info = BTKitParsedOptionsInfo(options)
+        
+        let id = UUID()
+        
+        queue.async { [weak self] in
+            self?.observations.service[id] = ServiceObservation(uuid: uuid, type: type, request: { [weak self, weak observer] (peripheral, rx, tx) in
+                guard let observer = observer else {
+                    self?.observations.service.removeValue(forKey: id)
+                    self?.stopIfNeeded()
+                    return
+                }
+                info.callbackQueue.execute { [weak observer, weak self] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.service.removeValue(forKey: id)
+                            self?.stopIfNeeded()
+                        }
+                        return
+                    }
+                    request?(observer, peripheral, rx, tx)
+                }
+            }, response: { [weak self, weak observer] (data) in
+                guard let observer = observer else {
+                    self?.observations.service.removeValue(forKey: id)
+                    self?.stopIfNeeded()
+                    return
+                }
+                info.callbackQueue.execute { [weak observer, weak self] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.service.removeValue(forKey: id)
+                            self?.stopIfNeeded()
+                        }
+                        return
+                    }
+                    response?(observer, data)
+                }
+            }, failure: { [weak self, weak observer] (error) in
+                guard let observer = observer else {
+                    self?.observations.service.removeValue(forKey: id)
+                    self?.stopIfNeeded()
+                    return
+                }
+                info.callbackQueue.execute { [weak observer, weak self] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.service.removeValue(forKey: id)
+                            self?.stopIfNeeded()
+                        }
+                        return
+                    }
+                    failure?(observer, error)
+                }
+            })
+            
+            self?.startIfNeeded()
+        }
+        
+        // call if service is ready
+        if let uart = service as? BTUARTService,
+            uart.uuid == type.uuid,
+            uart.isReady {
+            info.callbackQueue.execute { [weak observer, weak self] in
+                guard let observer = observer else {
+                    self?.queue.async { [weak self] in
+                        self?.observations.service.removeValue(forKey: id)
+                        self?.stopIfNeeded()
+                    }
+                    return
+                }
+                let peripheral = self?.connectedPeripherals.first(where: { $0.identifier.uuidString == uuid })
+                request?(observer, peripheral, uart.rx, uart.tx)
+            }
+        }
+        
+        return ObservationToken { [weak self] in
+            self?.queue.async { [weak self] in
+                self?.observations.service.removeValue(forKey: id)
+                self?.stopIfNeeded()
+            }
+        }
+    }
 }
 
 extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
@@ -317,11 +422,28 @@ extension BTBackgroundScanneriOS: CBPeripheralDelegate {
                 $0.block(characteristic.value, nil)
             } )
         
+        observations.service.values
+            .filter( {
+                $0.uuid == peripheral.identifier.uuidString &&
+                $0.type.uuid == service.uuid
+            } )
+            .forEach( {
+                $0.response?(characteristic.value)
+            } )
+        
     }
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
         if let uart = self.service as? BTUARTService {
             uart.isReady = true
+            observations.service.values
+                .filter( {
+                    $0.uuid == peripheral.identifier.uuidString &&
+                    $0.type.uuid == uart.uuid
+                } )
+                .forEach( {
+                    $0.request?(peripheral, uart.rx, uart.tx)
+                } )
         }
     }
 }
