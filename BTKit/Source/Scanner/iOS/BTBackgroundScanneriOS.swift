@@ -9,7 +9,7 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
     
     private let queue = DispatchQueue(label: "BTBackgroundScanneriOS", qos: .userInteractive)
     private lazy var manager: CBCentralManager = {
-        return CBCentralManager(delegate: self, queue: queue, options: [CBCentralManagerOptionRestoreIdentifierKey: restoreId])
+        return CBCentralManager(delegate: self, queue: queue, options: [CBCentralManagerOptionRestoreIdentifierKey: restoreId, CBCentralManagerScanOptionAllowDuplicatesKey: NSNumber(value: true)])
     }()
     private var service: BTService
     private var connectedPeripherals = Set<CBPeripheral>()
@@ -75,7 +75,7 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
     
     private func startIfNeeded() {
         if shouldBeRunning() && !manager.isScanning && isReady {
-            manager.scanForPeripherals(withServices: [service.uuid], options: [CBCentralManagerOptionRestoreIdentifierKey: restoreId])
+            manager.scanForPeripherals(withServices: [service.uuid], options: [CBCentralManagerOptionRestoreIdentifierKey: restoreId, CBCentralManagerScanOptionAllowDuplicatesKey: NSNumber(value: true)])
         }
     }
     
