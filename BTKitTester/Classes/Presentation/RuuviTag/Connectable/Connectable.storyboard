@@ -16,7 +16,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <view key="tableHeaderView" contentMode="scaleToFill" id="LL7-K6-3TG">
-                            <rect key="frame" x="0.0" y="0.0" width="414" height="113"/>
+                            <rect key="frame" x="0.0" y="0.0" width="414" height="166"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             <subviews>
                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="UUID or MAC" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Qrd-XJ-jzS">
@@ -55,7 +55,7 @@
                                     </constraints>
                                 </view>
                                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="EeI-Ea-Rub">
-                                    <rect key="frame" x="74.5" y="75" width="265" height="30"/>
+                                    <rect key="frame" x="74.5" y="116" width="265" height="30"/>
                                     <subviews>
                                         <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="1000" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gOV-t9-g5O">
                                             <rect key="frame" x="96" y="0.0" width="62" height="30"/>
@@ -103,12 +103,43 @@
                                         <constraint firstAttribute="bottom" secondItem="nTh-ER-Lug" secondAttribute="bottom" id="ut6-P4-y7M"/>
                                     </constraints>
                                 </view>
+                                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bn2-SP-Kst">
+                                    <rect key="frame" x="121" y="75" width="172" height="30"/>
+                                    <subviews>
+                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Leb-fi-bMe">
+                                            <rect key="frame" x="0.0" y="0.0" width="69" height="30"/>
+                                            <state key="normal" title="Subscribe"/>
+                                            <connections>
+                                                <action selector="subscribeButtonTouchUpInside:" destination="Uhr-O6-bc1" eventType="touchUpInside" id="4d4-NY-qKM"/>
+                                            </connections>
+                                        </button>
+                                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WNq-E3-G6p">
+                                            <rect key="frame" x="85" y="0.0" width="87" height="30"/>
+                                            <state key="normal" title="Unsubscribe"/>
+                                            <connections>
+                                                <action selector="unsubscribeButtonTouchUpInside:" destination="Uhr-O6-bc1" eventType="touchUpInside" id="4iK-Ej-zh8"/>
+                                            </connections>
+                                        </button>
+                                    </subviews>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <constraints>
+                                        <constraint firstAttribute="trailing" secondItem="WNq-E3-G6p" secondAttribute="trailing" id="0sF-oC-VIv"/>
+                                        <constraint firstItem="Leb-fi-bMe" firstAttribute="top" secondItem="bn2-SP-Kst" secondAttribute="top" id="F5x-p6-0C9"/>
+                                        <constraint firstItem="WNq-E3-G6p" firstAttribute="top" secondItem="bn2-SP-Kst" secondAttribute="top" id="JJg-NS-7HW"/>
+                                        <constraint firstAttribute="bottom" secondItem="Leb-fi-bMe" secondAttribute="bottom" id="ad5-jd-pSi"/>
+                                        <constraint firstItem="WNq-E3-G6p" firstAttribute="leading" secondItem="Leb-fi-bMe" secondAttribute="trailing" constant="16" id="dQs-qV-J9X"/>
+                                        <constraint firstAttribute="bottom" secondItem="WNq-E3-G6p" secondAttribute="bottom" id="rhg-VJ-cSI"/>
+                                        <constraint firstItem="Leb-fi-bMe" firstAttribute="leading" secondItem="bn2-SP-Kst" secondAttribute="leading" id="vLC-yR-HcI"/>
+                                    </constraints>
+                                </view>
                             </subviews>
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
+                                <constraint firstItem="bn2-SP-Kst" firstAttribute="top" secondItem="4U0-C6-frM" secondAttribute="bottom" constant="8" id="45M-NI-XaP"/>
                                 <constraint firstItem="4U0-C6-frM" firstAttribute="top" secondItem="Qrd-XJ-jzS" secondAttribute="bottom" constant="8" id="Bew-vz-ltJ"/>
+                                <constraint firstItem="EeI-Ea-Rub" firstAttribute="top" secondItem="bn2-SP-Kst" secondAttribute="bottom" constant="11" id="M7B-Mi-JLc"/>
                                 <constraint firstItem="Qrd-XJ-jzS" firstAttribute="centerX" secondItem="LL7-K6-3TG" secondAttribute="centerX" id="NfH-V8-oJT"/>
-                                <constraint firstItem="EeI-Ea-Rub" firstAttribute="top" secondItem="4U0-C6-frM" secondAttribute="bottom" constant="8" id="XbQ-PL-ZOE"/>
+                                <constraint firstItem="bn2-SP-Kst" firstAttribute="centerX" secondItem="4U0-C6-frM" secondAttribute="centerX" id="Q9e-ge-iff"/>
                                 <constraint firstItem="4U0-C6-frM" firstAttribute="centerX" secondItem="Qrd-XJ-jzS" secondAttribute="centerX" id="Y60-W2-tpR"/>
                                 <constraint firstItem="Qrd-XJ-jzS" firstAttribute="top" secondItem="LL7-K6-3TG" secondAttribute="top" constant="8" id="ZRD-iy-dCP"/>
                                 <constraint firstItem="EeI-Ea-Rub" firstAttribute="centerX" secondItem="4U0-C6-frM" secondAttribute="centerX" id="zEf-B3-vcG"/>
@@ -116,7 +147,7 @@
                         </view>
                         <prototypes>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="ConnectableValueTableViewCellCellReuseIdentifier" id="Oe1-VW-YcR" customClass="ConnectableValueTableViewCell" customModule="BTKitTester" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="141" width="414" height="43.5"/>
+                                <rect key="frame" x="0.0" y="194" width="414" height="43.5"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="Oe1-VW-YcR" id="JBt-Av-86z">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
@@ -148,7 +179,7 @@
                                 </connections>
                             </tableViewCell>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="ConnectableValuesTableViewCellReuseIdentifier" id="n2W-xv-pL7" customClass="ConnectableValuesTableViewCell" customModule="BTKitTester" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="184.5" width="414" height="43.5"/>
+                                <rect key="frame" x="0.0" y="237.5" width="414" height="43.5"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="n2W-xv-pL7" id="HNL-B6-IsZ">
                                     <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
@@ -209,7 +240,9 @@
                         <outlet property="disconnectButton" destination="dAn-Z1-FMY" id="xW3-A1-sTU"/>
                         <outlet property="humidityButton" destination="gOV-t9-g5O" id="Dmj-gD-nFJ"/>
                         <outlet property="pressureButton" destination="gmq-dB-NhM" id="Bud-qu-2lD"/>
+                        <outlet property="subscribeButton" destination="Leb-fi-bMe" id="9n6-ht-ltZ"/>
                         <outlet property="temperatureButton" destination="nTh-ER-Lug" id="2Aa-Jb-CiV"/>
+                        <outlet property="unsubscribeButton" destination="WNq-E3-G6p" id="h5u-nJ-GMQ"/>
                         <outlet property="uuidOrMacLabel" destination="Qrd-XJ-jzS" id="ZDl-ox-Dqh"/>
                     </connections>
                 </tableViewController>

@@ -237,10 +237,11 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
         observations.connect.values
             .filter({ $0.uuid == uuid })
             .forEach( { connect in
-                if isConnectable && !connectedPeripherals.contains(peripheral) {
-                    connectedPeripherals.insert(peripheral)
+                if isConnectable && peripheral.state == .disconnected {
+                    connectedPeripherals.update(with: peripheral)
                     peripheral.delegate = self
                     manager.connect(peripheral)
+                    print(peripheral.identifier.uuidString)
                 } else if !isConnectable {
                     connect.block(.logic(.notConnectable))
                 }
@@ -261,6 +262,11 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
         connectedPeripherals.remove(peripheral)
     }
       
+    func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
+        if invalidatedServices.contains(where: { $0.uuid == service.uuid }), connectedPeripherals.contains(peripheral) {
+            manager.cancelPeripheralConnection(peripheral)
+        }
+    }
     
     func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
         if let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] {

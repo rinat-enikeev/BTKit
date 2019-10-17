@@ -25,10 +25,14 @@ class ConnectableViewController: UITableViewController {
     @IBOutlet weak var humidityButton: UIButton!
     @IBOutlet weak var pressureButton: UIButton!
     @IBOutlet weak var allButton: UIButton!
+    @IBOutlet weak var unsubscribeButton: UIButton!
+    @IBOutlet weak var subscribeButton: UIButton!
     
-    var isConnected: Bool = false { didSet { updateUIIsConnected() } }
-    var isReading: Bool = false { didSet { updateUIIsReading() } }
+    private var isConnected: Bool = false { didSet { updateUIIsConnected() } }
+    private var isSubscribed: Bool = false { didSet { updateUIIsSubscribed() } }
+    private var isReading: Bool = false { didSet { updateUIIsReading() } }
     
+    private let heartbeatService: HeartbeatService = HeartbeatServiceBTKit.shared
     private var source: ConnectableTableSource = .values
     private var values = [RuuviTagEnvLog]()
     private var logs = [RuuviTagEnvLogFull]()
@@ -59,6 +63,16 @@ class ConnectableViewController: UITableViewController {
 
 // MARK: - IBActions
 extension ConnectableViewController {
+    @IBAction func subscribeButtonTouchUpInside(_ sender: Any) {
+        heartbeatService.subscribe(to: ruuviTag.uuid)
+        isSubscribed = true
+    }
+    
+    @IBAction func unsubscribeButtonTouchUpInside(_ sender: Any) {
+        heartbeatService.unsubscribe(from: ruuviTag.uuid)
+        isSubscribed = false
+    }
+    
     @IBAction func connectButtonTouchUpInside(_ sender: Any) {
         connectToken?.invalidate()
         connectToken = BTKit.connection.establish(for: self, uuid: ruuviTag.uuid) { (observer, result) in
@@ -175,6 +189,7 @@ extension ConnectableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         isConnected = ruuviTag.isConnected
+        isSubscribed = heartbeatService.isSubscribed(uuid: ruuviTag.uuid)
         updateUI()
     }
 }
@@ -232,6 +247,13 @@ extension ConnectableViewController {
             humidityButton.isEnabled = isConnected
             pressureButton.isEnabled = isConnected
             allButton.isEnabled = isConnected
+        }
+    }
+    
+    private func updateUIIsSubscribed() {
+        if isViewLoaded {
+            subscribeButton.isEnabled = !isSubscribed
+            unsubscribeButton.isEnabled = isSubscribed
         }
     }
     
