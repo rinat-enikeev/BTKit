@@ -39,7 +39,7 @@ class HeartbeatServiceBTKit: HeartbeatService {
     }
     
     private func startListening(to uuid: String) {
-        tokens[uuid] = BTKit.background.ruuvi.heartbeat(for: self, uuid: uuid) { (observer, result) in
+        tokens[uuid] = BTKit.background.ruuvi.heartbeat.subscribe(for: self, uuid: uuid) { (observer, result) in
             switch result {
             case .success(let ruuviTag):
                 print(ruuviTag)

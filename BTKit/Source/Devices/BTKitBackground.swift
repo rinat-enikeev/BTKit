@@ -5,16 +5,20 @@ public struct BTKitBackground {
 }
 
 public struct BTKitRuuviBackground {
+    public let heartbeat = BTKitRuuviHeartbeatBackground()
+}
+
+public struct BTKitRuuviHeartbeatBackground {
     
     private let nus = BTKit.backgroundScanner(for: RuuviNUSService())
     
     @discardableResult
-    public func heartbeat<T: AnyObject>(for observer: T, uuid: String, result: @escaping (T, Result<RuuviTag, BTError>) -> Void) -> ObservationToken? {
-        return heartbeat(for: observer, uuid: uuid, options: nil, result: result)
+    public func subscribe<T: AnyObject>(for observer: T, uuid: String, result: @escaping (T, Result<RuuviTag, BTError>) -> Void) -> ObservationToken? {
+        return subscribe(for: observer, uuid: uuid, options: nil, result: result)
     }
     
     @discardableResult
-    public func heartbeat<T: AnyObject>(for observer: T, uuid: String, options: BTScannerOptionsInfo?, result: @escaping (T, Result<RuuviTag, BTError>) -> Void) -> ObservationToken? {
+    public func subscribe<T: AnyObject>(for observer: T, uuid: String, options: BTScannerOptionsInfo?, result: @escaping (T, Result<RuuviTag, BTError>) -> Void) -> ObservationToken? {
         let token = nus.connect(observer, uuid: uuid, options: options, connected: { (observer, error) in
             if let error = error {
                 result(observer, .failure(error))
