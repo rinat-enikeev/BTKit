@@ -43,5 +43,9 @@
 	</array>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Please allow bluetooth to enable app functionality</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>bluetooth-central</string>
+	</array>
 </dict>
 </plist>

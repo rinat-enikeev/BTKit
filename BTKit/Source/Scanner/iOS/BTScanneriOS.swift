@@ -156,14 +156,7 @@ class BTScanneriOS: NSObject, BTScanner {
     }
     
     private func startIfNeeded() {
-        let shouldBeRunning = observations.state.count > 0
-            || observations.device.count > 0
-            || observations.lost.count > 0
-            || observations.observe.count > 0
-            || observations.connect.count > 0
-            || observations.service.count > 0
-        
-        if shouldBeRunning && !manager.isScanning && isReady {
+        if shouldBeRunning() && !manager.isScanning && isReady {
             manager.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: NSNumber(value: true)])
         }
         
@@ -174,12 +167,7 @@ class BTScanneriOS: NSObject, BTScanner {
     }
     
     private func stopIfNeeded() {
-        let shouldBeRunning = observations.state.count > 0
-            || observations.device.count > 0
-            || observations.lost.count > 0
-            || observations.observe.count > 0
-        
-        if !shouldBeRunning && manager.isScanning {
+        if !shouldBeRunning() && manager.isScanning {
             manager.stopScan()
         }
         
@@ -188,8 +176,18 @@ class BTScanneriOS: NSObject, BTScanner {
             stopLostDevicesTimer()
         }
     }
+    
+    private func shouldBeRunning() -> Bool {
+        return observations.state.count > 0
+        || observations.device.count > 0
+        || observations.lost.count > 0
+        || observations.observe.count > 0
+        || observations.connect.count > 0
+        || observations.service.count > 0
+    }
 }
 
+// MARK: - CBPeripheralDelegate
 extension BTScanneriOS: CBPeripheralDelegate {
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         guard let discovered = peripheral.services else { return }
@@ -260,6 +258,7 @@ extension BTScanneriOS: CBPeripheralDelegate {
     }
 }
 
+// MARK: - CBCentralManagerDelegate
 extension BTScanneriOS: CBCentralManagerDelegate {
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         isReady = central.state == CBManagerState.poweredOn
@@ -353,6 +352,7 @@ extension BTScanneriOS {
             self?.observations.lost[id] = LostObservation(block: { [weak self, weak observer] (device) in
                 guard let observer = observer else {
                     self?.observations.lost.removeValue(forKey: id)
+                    self?.stopIfNeeded()
                     return
                 }
                 
@@ -360,6 +360,7 @@ extension BTScanneriOS {
                     guard let observer = observer else {
                         self?.queue.async { [weak self] in
                             self?.observations.lost.removeValue(forKey: id)
+                            self?.stopIfNeeded()
                         }
                         return
                     }
@@ -396,12 +397,14 @@ extension BTScanneriOS {
             self?.observations.state[id] = { [weak self, weak observer] state in
                 guard let observer = observer else {
                     self?.observations.state.removeValue(forKey: id)
+                    self?.stopIfNeeded()
                     return
                 }
                 info.callbackQueue.execute { [weak self, weak observer] in
                     guard let observer = observer else {
                         self?.queue.async { [weak self] in
                             self?.observations.state.removeValue(forKey: id)
+                            self?.stopIfNeeded()
                         }
                         return
                     }
@@ -456,12 +459,14 @@ extension BTScanneriOS {
                 self?.observations.device[id] = { [weak self, weak observer] device in
                     guard let observer = observer else {
                         self?.observations.device.removeValue(forKey: id)
+                        self?.stopIfNeeded()
                         return
                     }
                     info.callbackQueue.execute { [weak observer, weak self] in
                         guard let observer = observer else {
                             self?.queue.async { [weak self] in
                                 self?.observations.device.removeValue(forKey: id)
+                                self?.stopIfNeeded()
                             }
                             return
                         }
@@ -495,12 +500,14 @@ extension BTScanneriOS {
             self?.observations.observe[id] = ObserveObservation(block: { [weak self, weak observer] device in
                 guard let observer = observer else {
                     self?.observations.observe.removeValue(forKey: id)
+                    self?.stopIfNeeded()
                     return
                 }
                 info.callbackQueue.execute { [weak observer, weak self] in
                     guard let observer = observer else {
                         self?.queue.async { [weak self] in
                             self?.observations.observe.removeValue(forKey: id)
+                            self?.stopIfNeeded()
                         }
                         return
                     }
@@ -529,12 +536,14 @@ extension BTScanneriOS {
             self?.observations.connect[id] = ConnectObservation(block: { [weak self, weak observer] error in
                 guard let observer = observer else {
                     self?.observations.connect.removeValue(forKey: id)
+                    self?.stopIfNeeded()
                     return
                 }
                 info.callbackQueue.execute { [weak observer, weak self] in
                     guard let observer = observer else {
                         self?.queue.async { [weak self] in
                             self?.observations.connect.removeValue(forKey: id)
+                            self?.stopIfNeeded()
                         }
                         return
                     }
@@ -545,12 +554,14 @@ extension BTScanneriOS {
             self?.observations.disconnect[id] = DisconnectObservation(block: { [weak self, weak observer] error in
                 guard let observer = observer else {
                     self?.observations.disconnect.removeValue(forKey: id)
+                    self?.stopIfNeeded()
                     return
                 }
                 info.callbackQueue.execute { [weak observer, weak self] in
                     guard let observer = observer else {
                         self?.queue.async { [weak self] in
                             self?.observations.disconnect.removeValue(forKey: id)
+                            self?.stopIfNeeded()
                         }
                         return
                     }
@@ -581,12 +592,14 @@ extension BTScanneriOS {
             self?.observations.service[id] = ServiceObservation(uuid: uuid, type: type, request: { [weak self, weak observer] (peripheral, rx, tx) in
                 guard let observer = observer else {
                     self?.observations.service.removeValue(forKey: id)
+                    self?.stopIfNeeded()
                     return
                 }
                 info.callbackQueue.execute { [weak observer, weak self] in
                     guard let observer = observer else {
                         self?.queue.async { [weak self] in
                             self?.observations.service.removeValue(forKey: id)
+                            self?.stopIfNeeded()
                         }
                         return
                     }
@@ -595,12 +608,14 @@ extension BTScanneriOS {
             }, response: { [weak self, weak observer] (data) in
                 guard let observer = observer else {
                     self?.observations.service.removeValue(forKey: id)
+                    self?.stopIfNeeded()
                     return
                 }
                 info.callbackQueue.execute { [weak observer, weak self] in
                     guard let observer = observer else {
                         self?.queue.async { [weak self] in
                             self?.observations.service.removeValue(forKey: id)
+                            self?.stopIfNeeded()
                         }
                         return
                     }
@@ -609,12 +624,14 @@ extension BTScanneriOS {
             }, failure: { [weak self, weak observer] (error) in
                 guard let observer = observer else {
                     self?.observations.service.removeValue(forKey: id)
+                    self?.stopIfNeeded()
                     return
                 }
                 info.callbackQueue.execute { [weak observer, weak self] in
                     guard let observer = observer else {
                         self?.queue.async { [weak self] in
                             self?.observations.service.removeValue(forKey: id)
+                            self?.stopIfNeeded()
                         }
                         return
                     }
@@ -661,12 +678,14 @@ extension BTScanneriOS {
             self?.observations.disconnect[id] = DisconnectObservation(block: { [weak self, weak observer] error in
                 guard let observer = observer else {
                     self?.observations.disconnect.removeValue(forKey: id)
+                    self?.stopIfNeeded()
                     return
                 }
                 info.callbackQueue.execute { [weak observer, weak self] in
                     guard let observer = observer else {
                         self?.queue.async { [weak self] in
                             self?.observations.disconnect.removeValue(forKey: id)
+                            self?.stopIfNeeded()
                         }
                         return
                     }
@@ -713,12 +732,14 @@ extension BTScanneriOS {
             self?.observations.unknown[id] = { [weak self, weak observer] device in
                 guard let observer = observer else {
                     self?.observations.unknown.removeValue(forKey: id)
+                    self?.stopIfNeeded()
                     return
                 }
                 info.callbackQueue.execute { [weak observer, weak self] in
                     guard let observer = observer else {
                         self?.queue.async { [weak self] in
                             self?.observations.unknown.removeValue(forKey: id)
+                            self?.stopIfNeeded()
                         }
                         return
                     }

@@ -7,15 +7,28 @@
 //
 
 import UIKit
+import UserNotifications
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
+    var heartbeatService: HeartbeatService = HeartbeatServiceBTKit.shared
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        let content = UNMutableNotificationContent()
+        content.title = launchOptions?[.bluetoothCentrals] as? String ?? "Nothing"
+        content.body = " Notification triggered"
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.5, repeats: false)
+        let request = UNNotificationRequest(identifier: "notification.id.03", content: content, trigger: trigger)
+        UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
+        
+        
+        heartbeatService.restore()
+        
         return true
     }
 

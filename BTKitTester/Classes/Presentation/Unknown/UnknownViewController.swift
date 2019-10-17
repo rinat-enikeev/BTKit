@@ -11,71 +11,50 @@ import BTKit
 
 class UnknownViewController: UIViewController {
     
-    @IBOutlet weak var disconnectButton: UIButton!
-    @IBOutlet weak var connectButton: UIButton!
+    @IBOutlet weak var unsubscribeButton: UIButton!
+    @IBOutlet weak var subscribeButton: UIButton!
     @IBOutlet weak var nameLabel: UILabel!
     
     var device: BTUnknownDevice!
     
-    var isConnected: Bool = false { didSet { updateUIIsConnected() } }
-    
-    private var connectToken: ObservationToken?
-    private var disconnectToken: ObservationToken?
-    
-    deinit {
-        connectToken?.invalidate()
-        disconnectToken?.invalidate()
-    }
+    private var isSubscribed: Bool = false { didSet { updateUIIsSubscribed() } }
+    private let heartbeatService: HeartbeatService = HeartbeatServiceBTKit.shared
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        isConnected = device.isConnected
+        isSubscribed = heartbeatService.isSubscribed(uuid: device.uuid)
         updateUI()
     }
     
-    @IBAction func connectButtonTouchUpInside(_ sender: Any) {
-        connectToken?.invalidate()
-        connectToken = BTKit.connection.establish(for: self, uuid: device.uuid) { (observer, result) in
-            switch result {
-            case .already:
-                observer.isConnected = true
-            case .just:
-                observer.isConnected = true
-            case .disconnected:
-                observer.isConnected = false
-            case .failure(let error):
-                print(error.localizedDescription)
-                observer.isConnected = false
-            }
-        }
+    @IBAction func subscribeButtonTouchUpInside(_ sender: Any) {
+        heartbeatService.subscribe(to: device.uuid)
+        isSubscribed = true
     }
     
+    @IBAction func terminateButtonTouchUpInside(_ sender: Any) {
+        exit(0)
+    }
     
-    @IBAction func disconnectButtonTouchUpInside(_ sender: Any) {
-        connectToken?.invalidate()
-        disconnectToken?.invalidate()
-        disconnectToken = BTKit.connection.drop(for: self, uuid: device.uuid) { (observer, result) in
-            observer.disconnectToken?.invalidate()
-            switch result {
-            case .just:
-                observer.isConnected = false
-            case .already:
-                observer.isConnected = false
-            case .failure(let error):
-                observer.isConnected = false
-                print(error.localizedDescription)
-            }
-        }
+    @IBAction func unsubscribeButtonTouchUpInside(_ sender: Any) {
+        heartbeatService.unsubscribe(from: device.uuid)
+        isSubscribed = false
     }
     
     private func updateUI() {
-        updateUIIsConnected()
+        updateUIIsSubscribed()
+        updateName()
     }
     
-    private func updateUIIsConnected() {
+    private func updateUIIsSubscribed() {
         if isViewLoaded {
-            connectButton.isEnabled = !isConnected
-            disconnectButton.isEnabled = isConnected
+            subscribeButton.isEnabled = !isSubscribed
+            unsubscribeButton.isEnabled = isSubscribed
+        }
+    }
+    
+    private func updateName() {
+        if isViewLoaded {
+            nameLabel.text = device.name ?? device.uuid
         }
     }
 }

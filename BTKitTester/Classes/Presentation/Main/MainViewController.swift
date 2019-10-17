@@ -8,6 +8,7 @@
 
 import UIKit
 import BTKit
+import UserNotifications
 
 enum MainSection: Int, CaseIterable {
     case ruuvi = 0
@@ -35,6 +36,18 @@ class MainViewController: UITableViewController {
 
 // MARK: - View lifecycle
 extension MainViewController {
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) {
+            (granted, error) in
+            if granted {
+                print("yes")
+            } else {
+                print("No")
+            }
+        }
+    }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)

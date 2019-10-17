@@ -40,6 +40,10 @@
 		0E70A45822AF821D006CB87C /* CallbackQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45722AF821D006CB87C /* CallbackQueue.swift */; };
 		0E70A45A22AF8313006CB87C /* BTScannerOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45922AF8313006CB87C /* BTScannerOptions.swift */; };
 		0E70A45C22AF8C58006CB87C /* BTScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45B22AF8C58006CB87C /* BTScanner.swift */; };
+		0E7E7B5E2358572D009F24EE /* HeartbeatPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E7E7B5D2358572D009F24EE /* HeartbeatPersistence.swift */; };
+		0E7E7B61235857A7009F24EE /* HeartbeatPersistenceUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E7E7B60235857A7009F24EE /* HeartbeatPersistenceUserDefaults.swift */; };
+		0E7E7B652358589F009F24EE /* HeartbeatService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E7E7B642358589F009F24EE /* HeartbeatService.swift */; };
+		0E7E7B6823585907009F24EE /* HeartbeatServiceBTKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E7E7B6723585907009F24EE /* HeartbeatServiceBTKit.swift */; };
 		0E9D5F4C2355F4890076FFD8 /* BTBackgroundScanneriOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E9D5F4B2355F4890076FFD8 /* BTBackgroundScanneriOS.swift */; };
 		0E9D5F4E2355F4900076FFD8 /* BTBackgroundScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E9D5F4D2355F4900076FFD8 /* BTBackgroundScanner.swift */; };
 		0E9D5F502356E9940076FFD8 /* MainUnknownTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E9D5F4F2356E9940076FFD8 /* MainUnknownTableViewCell.swift */; };
@@ -50,6 +54,7 @@
 		0EA31066232A88DC00BC8CF5 /* ConnectableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA31065232A88DC00BC8CF5 /* ConnectableViewController.swift */; };
 		0EA3106D232BBA3900BC8CF5 /* BTService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA3106C232BBA3900BC8CF5 /* BTService.swift */; };
 		0EA31071232BBAAC00BC8CF5 /* RuuviNUSService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA31070232BBAAC00BC8CF5 /* RuuviNUSService.swift */; };
+		0EB18A4B23585163001589B1 /* BTKitBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB18A4A23585163001589B1 /* BTKitBackground.swift */; };
 		0EED91D9233A4FD2006802CE /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0EED91DB233A4FD2006802CE /* Localizable.strings */; };
 /* End PBXBuildFile section */
 
@@ -128,6 +133,10 @@
 		0E70A45722AF821D006CB87C /* CallbackQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallbackQueue.swift; sourceTree = "<group>"; };
 		0E70A45922AF8313006CB87C /* BTScannerOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTScannerOptions.swift; sourceTree = "<group>"; };
 		0E70A45B22AF8C58006CB87C /* BTScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTScanner.swift; sourceTree = "<group>"; };
+		0E7E7B5D2358572D009F24EE /* HeartbeatPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartbeatPersistence.swift; sourceTree = "<group>"; };
+		0E7E7B60235857A7009F24EE /* HeartbeatPersistenceUserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartbeatPersistenceUserDefaults.swift; sourceTree = "<group>"; };
+		0E7E7B642358589F009F24EE /* HeartbeatService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartbeatService.swift; sourceTree = "<group>"; };
+		0E7E7B6723585907009F24EE /* HeartbeatServiceBTKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartbeatServiceBTKit.swift; sourceTree = "<group>"; };
 		0E9D5F4B2355F4890076FFD8 /* BTBackgroundScanneriOS.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BTBackgroundScanneriOS.swift; sourceTree = "<group>"; };
 		0E9D5F4D2355F4900076FFD8 /* BTBackgroundScanner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BTBackgroundScanner.swift; sourceTree = "<group>"; };
 		0E9D5F4F2356E9940076FFD8 /* MainUnknownTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainUnknownTableViewCell.swift; sourceTree = "<group>"; };
@@ -138,6 +147,7 @@
 		0EA31065232A88DC00BC8CF5 /* ConnectableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectableViewController.swift; sourceTree = "<group>"; };
 		0EA3106C232BBA3900BC8CF5 /* BTService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTService.swift; sourceTree = "<group>"; };
 		0EA31070232BBAAC00BC8CF5 /* RuuviNUSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuuviNUSService.swift; sourceTree = "<group>"; };
+		0EB18A4A23585163001589B1 /* BTKitBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTKitBackground.swift; sourceTree = "<group>"; };
 		0EED91DA233A4FD2006802CE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		0EED91DC233A4FE8006802CE /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -272,6 +282,8 @@
 				0E375F2422AD650F0092D269 /* BTDevice.swift */,
 				0E70A45B22AF8C58006CB87C /* BTScanner.swift */,
 				0E9D5F4D2355F4900076FFD8 /* BTBackgroundScanner.swift */,
+				0EB18A4A23585163001589B1 /* BTKitBackground.swift */,
+				0E53A3FE2330F24100ACED49 /* BTConnection.swift */,
 				0E375F1022ACFF070092D269 /* BTContract.swift */,
 				0EA3106C232BBA3900BC8CF5 /* BTService.swift */,
 				0E375F1E22AD046A0092D269 /* ObservationToken.swift */,
@@ -279,7 +291,6 @@
 				0E70A45922AF8313006CB87C /* BTScannerOptions.swift */,
 				0E53A3E8232CCCD400ACED49 /* BTError.swift */,
 				0E53A3F8232E2FA100ACED49 /* BTConnectResult.swift */,
-				0E53A3FE2330F24100ACED49 /* BTConnection.swift */,
 			);
 			path = Devices;
 			sourceTree = "<group>";
@@ -378,6 +389,48 @@
 			path = Extensions;
 			sourceTree = "<group>";
 		};
+		0E7E7B5C235856F6009F24EE /* Heartbeat */ = {
+			isa = PBXGroup;
+			children = (
+				0E7E7B5F2358578D009F24EE /* UserDefaults */,
+				0E7E7B5D2358572D009F24EE /* HeartbeatPersistence.swift */,
+			);
+			path = Heartbeat;
+			sourceTree = "<group>";
+		};
+		0E7E7B5F2358578D009F24EE /* UserDefaults */ = {
+			isa = PBXGroup;
+			children = (
+				0E7E7B60235857A7009F24EE /* HeartbeatPersistenceUserDefaults.swift */,
+			);
+			path = UserDefaults;
+			sourceTree = "<group>";
+		};
+		0E7E7B622358587F009F24EE /* Business */ = {
+			isa = PBXGroup;
+			children = (
+				0E7E7B6323585891009F24EE /* Heartbeat */,
+			);
+			path = Business;
+			sourceTree = "<group>";
+		};
+		0E7E7B6323585891009F24EE /* Heartbeat */ = {
+			isa = PBXGroup;
+			children = (
+				0E7E7B66235858F7009F24EE /* BTKit */,
+				0E7E7B642358589F009F24EE /* HeartbeatService.swift */,
+			);
+			path = Heartbeat;
+			sourceTree = "<group>";
+		};
+		0E7E7B66235858F7009F24EE /* BTKit */ = {
+			isa = PBXGroup;
+			children = (
+				0E7E7B6723585907009F24EE /* HeartbeatServiceBTKit.swift */,
+			);
+			path = BTKit;
+			sourceTree = "<group>";
+		};
 		0E9D5F512356EB780076FFD8 /* Unknown */ = {
 			isa = PBXGroup;
 			children = (
@@ -391,6 +444,8 @@
 			isa = PBXGroup;
 			children = (
 				0EA31058232A6D6E00BC8CF5 /* Application */,
+				0E7E7B622358587F009F24EE /* Business */,
+				0EA3409E235856C500C42D0E /* Persistence */,
 				0EA31059232A6D7900BC8CF5 /* Presentation */,
 			);
 			path = Classes;
@@ -484,6 +539,14 @@
 				0EA31070232BBAAC00BC8CF5 /* RuuviNUSService.swift */,
 			);
 			path = Service;
+			sourceTree = "<group>";
+		};
+		0EA3409E235856C500C42D0E /* Persistence */ = {
+			isa = PBXGroup;
+			children = (
+				0E7E7B5C235856F6009F24EE /* Heartbeat */,
+			);
+			path = Persistence;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -636,6 +699,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0E375F0A22ACFE760092D269 /* RuuviData4.swift in Sources */,
+				0EB18A4B23585163001589B1 /* BTKitBackground.swift in Sources */,
 				0E70A45822AF821D006CB87C /* CallbackQueue.swift in Sources */,
 				0E375F2522AD650F0092D269 /* BTDevice.swift in Sources */,
 				0E9D5F4C2355F4890076FFD8 /* BTBackgroundScanneriOS.swift in Sources */,
@@ -678,10 +742,14 @@
 				0E9D5F502356E9940076FFD8 /* MainUnknownTableViewCell.swift in Sources */,
 				0E375F4222AD6CDB0092D269 /* MainViewController.swift in Sources */,
 				0E9D5F552356F9760076FFD8 /* UnknownViewController.swift in Sources */,
+				0E7E7B6823585907009F24EE /* HeartbeatServiceBTKit.swift in Sources */,
 				0E53A3EC232CE65100ACED49 /* Data+Hex.swift in Sources */,
 				0EA31060232A82C600BC8CF5 /* MainRuuviTableViewCell.swift in Sources */,
+				0E7E7B652358589F009F24EE /* HeartbeatService.swift in Sources */,
+				0E7E7B61235857A7009F24EE /* HeartbeatPersistenceUserDefaults.swift in Sources */,
 				0E375F4022AD6CDB0092D269 /* AppDelegate.swift in Sources */,
 				0E53A3FD2330CB5500ACED49 /* ConnectableValuesTableViewCell.swift in Sources */,
+				0E7E7B5E2358572D009F24EE /* HeartbeatPersistence.swift in Sources */,
 				0EA31066232A88DC00BC8CF5 /* ConnectableViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

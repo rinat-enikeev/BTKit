@@ -23,20 +23,20 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Iuj-Nl-DDn">
-                                <rect key="frame" x="134.5" y="73" width="145" height="30"/>
+                                <rect key="frame" x="125" y="73" width="164" height="30"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="a3d-2A-4FV">
-                                        <rect key="frame" x="0.0" y="0.0" width="59" height="30"/>
-                                        <state key="normal" title="Connect"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="69" height="30"/>
+                                        <state key="normal" title="Subscribe"/>
                                         <connections>
-                                            <action selector="connectButtonTouchUpInside:" destination="Nfq-3i-Eqb" eventType="touchUpInside" id="BKQ-i5-Rha"/>
+                                            <action selector="subscribeButtonTouchUpInside:" destination="Nfq-3i-Eqb" eventType="touchUpInside" id="BKQ-i5-Rha"/>
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="IVh-in-caA">
-                                        <rect key="frame" x="67" y="0.0" width="78" height="30"/>
-                                        <state key="normal" title="Disconnect"/>
+                                        <rect key="frame" x="77" y="0.0" width="87" height="30"/>
+                                        <state key="normal" title="Unsubscribe"/>
                                         <connections>
-                                            <action selector="disconnectButtonTouchUpInside:" destination="Nfq-3i-Eqb" eventType="touchUpInside" id="BZ3-iL-IEg"/>
+                                            <action selector="unsubscribeButtonTouchUpInside:" destination="Nfq-3i-Eqb" eventType="touchUpInside" id="BZ3-iL-IEg"/>
                                         </connections>
                                     </button>
                                 </subviews>
@@ -51,20 +51,29 @@
                                     <constraint firstAttribute="bottom" secondItem="a3d-2A-4FV" secondAttribute="bottom" id="up2-x0-twQ"/>
                                 </constraints>
                             </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4dW-rS-L49">
+                                <rect key="frame" x="172.5" y="111" width="69" height="30"/>
+                                <state key="normal" title="Terminate"/>
+                                <connections>
+                                    <action selector="terminateButtonTouchUpInside:" destination="Nfq-3i-Eqb" eventType="touchUpInside" id="9Lx-Jd-wWo"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
                             <constraint firstItem="5sR-Xd-EZk" firstAttribute="centerX" secondItem="v9M-Dc-VlY" secondAttribute="centerX" id="FNl-IU-uxW"/>
+                            <constraint firstItem="4dW-rS-L49" firstAttribute="centerX" secondItem="Iuj-Nl-DDn" secondAttribute="centerX" id="QWV-Ao-kim"/>
                             <constraint firstItem="5sR-Xd-EZk" firstAttribute="top" secondItem="v9M-Dc-VlY" secondAttribute="top" id="W9c-nj-TYD"/>
+                            <constraint firstItem="4dW-rS-L49" firstAttribute="top" secondItem="Iuj-Nl-DDn" secondAttribute="bottom" constant="8" id="Z5d-0A-9wy"/>
                             <constraint firstItem="Iuj-Nl-DDn" firstAttribute="top" secondItem="5sR-Xd-EZk" secondAttribute="bottom" constant="8" id="asw-cK-Xx5"/>
                             <constraint firstItem="Iuj-Nl-DDn" firstAttribute="centerX" secondItem="5sR-Xd-EZk" secondAttribute="centerX" id="sKP-hW-vD7"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="v9M-Dc-VlY"/>
                     </view>
                     <connections>
-                        <outlet property="connectButton" destination="a3d-2A-4FV" id="gCd-XM-eLc"/>
-                        <outlet property="disconnectButton" destination="IVh-in-caA" id="lIe-GF-vA8"/>
                         <outlet property="nameLabel" destination="5sR-Xd-EZk" id="8Dv-Xe-h36"/>
+                        <outlet property="subscribeButton" destination="a3d-2A-4FV" id="gCd-XM-eLc"/>
+                        <outlet property="unsubscribeButton" destination="IVh-in-caA" id="lIe-GF-vA8"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="NXO-x9-Nhr" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
