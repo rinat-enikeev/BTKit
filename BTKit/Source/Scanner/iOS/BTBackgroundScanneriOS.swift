@@ -333,6 +333,13 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
                 closure(state)
             }
         }
+        
+        connectedPeripherals.forEach { (peripheral) in
+            let hasService = peripheral.services?.contains(where: { $0.uuid == service.uuid }) ?? false
+            if hasService {
+                peripheral.discoverServices([service.uuid])
+            }    
+        }
     }
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
@@ -375,8 +382,13 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
     
     func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
         if let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] {
-            peripherals.forEach({ connectedPeripherals.update(with: $0) })
             peripherals.forEach({ $0.delegate = self })
+            peripherals.filter({ $0.state == .connected }).forEach { (connectedPeripheral) in
+                connectedPeripherals.update(with: connectedPeripheral)
+                observations.connect.values
+                    .filter({ $0.uuid == connectedPeripheral.identifier.uuidString })
+                    .forEach({ $0.block(nil) })
+            }
         }
     }
 }
@@ -415,12 +427,12 @@ extension BTBackgroundScanneriOS: CBPeripheralDelegate {
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         
-        observations.heartbeat.values.filter( {
-                $0.uuid == peripheral.identifier.uuidString
-            } )
-            .forEach( {
-                $0.block(characteristic.value, nil)
-            } )
+//        observations.heartbeat.values.filter( {
+//                $0.uuid == peripheral.identifier.uuidString
+//            } )
+//            .forEach( {
+//                $0.block(characteristic.value, nil)
+//            } )
         
         observations.service.values
             .filter( {
