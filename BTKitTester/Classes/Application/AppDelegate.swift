@@ -25,7 +25,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         content.title = (launchOptions?[.bluetoothCentrals] as? [String])?.description ?? "Nothing"
         content.body = " Notification triggered"
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.5, repeats: false)
-        let request = UNNotificationRequest(identifier: "notification.id.03", content: content, trigger: trigger)
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
         UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
         
         

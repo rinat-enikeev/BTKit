@@ -427,21 +427,23 @@ extension BTBackgroundScanneriOS: CBPeripheralDelegate {
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         
-//        observations.heartbeat.values.filter( {
-//                $0.uuid == peripheral.identifier.uuidString
-//            } )
-//            .forEach( {
-//                $0.block(characteristic.value, nil)
-//            } )
-        
-        observations.service.values
-            .filter( {
-                $0.uuid == peripheral.identifier.uuidString &&
-                $0.type.uuid == service.uuid
+        if peripheral.name == "iPad" {
+            observations.heartbeat.values.filter( {
+                $0.uuid == peripheral.identifier.uuidString
             } )
             .forEach( {
-                $0.response?(characteristic.value)
+                $0.block(characteristic.value, nil)
             } )
+        } else {
+            observations.service.values
+                .filter( {
+                    $0.uuid == peripheral.identifier.uuidString &&
+                    $0.type.uuid == service.uuid
+                } )
+                .forEach( {
+                    $0.response?(characteristic.value)
+                } )
+        }
         
     }
     
