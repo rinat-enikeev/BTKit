@@ -49,12 +49,7 @@ class HeartbeatServiceBTKit: HeartbeatService {
         tokens[uuid] = BTKit.background.ruuvi.heartbeat.subscribe(for: self, uuid: uuid, heartbeat: { (observer, readLogs, result) in
             switch result {
             case .success(let ruuviTag):
-                let content = UNMutableNotificationContent()
-                content.title = "Did recevied heartbeat"
-                content.body = "Yahoo!"
-                let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
-                let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
-                UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
+                LocalNotification.shared.show(title: "Heartbeat", body: "Service")
             case .failure(let error):
                 print(error.localizedDescription)
             }
@@ -65,12 +60,7 @@ class HeartbeatServiceBTKit: HeartbeatService {
             switch result {
             case .success(let logs):
                 print(logs)
-                let content = UNMutableNotificationContent()
-                content.title = "Did recevied Logs"
-                content.body = "YEAP"
-                let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
-                let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
-                UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
+                LocalNotification.shared.show(title: "Logs", body: "Service")
             case .failure(let error):
                 print(error.localizedDescription)
             }

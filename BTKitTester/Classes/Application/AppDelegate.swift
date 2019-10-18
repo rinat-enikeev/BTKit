@@ -18,19 +18,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-        
         UNUserNotificationCenter.current().delegate = self
-        
-        let content = UNMutableNotificationContent()
-        content.title = (launchOptions?[.bluetoothCentrals] as? [String])?.description ?? "Nothing"
-        content.body = " Notification triggered"
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.5, repeats: false)
-        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
-        UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
-        
-        
+        let title = (launchOptions?[.bluetoothCentrals] as? [String])?.description ?? "Nothing"
+        LocalNotification.shared.show(title: title, body: "AppDelegate")
         heartbeatService.restore()
-        
+        RuuviTaskDaemoniOS13.shared.register()
         return true
     }
 
@@ -42,6 +34,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationDidEnterBackground(_ application: UIApplication) {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+        RuuviTaskDaemoniOS13.shared.schedule()
     }
 
     func applicationWillEnterForeground(_ application: UIApplication) {

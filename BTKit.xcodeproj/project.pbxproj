@@ -37,6 +37,8 @@
 		0E53A3F9232E2FA100ACED49 /* BTConnectResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53A3F8232E2FA100ACED49 /* BTConnectResult.swift */; };
 		0E53A3FD2330CB5500ACED49 /* ConnectableValuesTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53A3FC2330CB5500ACED49 /* ConnectableValuesTableViewCell.swift */; };
 		0E53A3FF2330F24100ACED49 /* BTConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E53A3FE2330F24100ACED49 /* BTConnection.swift */; };
+		0E670C5A2359CFC30039A67E /* RuuviTaskDaemon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E670C592359CFC30039A67E /* RuuviTaskDaemon.swift */; };
+		0E670C5D2359CFDE0039A67E /* RuuviTaskDaemoniOS13.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E670C5C2359CFDE0039A67E /* RuuviTaskDaemoniOS13.swift */; };
 		0E70A45822AF821D006CB87C /* CallbackQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45722AF821D006CB87C /* CallbackQueue.swift */; };
 		0E70A45A22AF8313006CB87C /* BTScannerOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45922AF8313006CB87C /* BTScannerOptions.swift */; };
 		0E70A45C22AF8C58006CB87C /* BTScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E70A45B22AF8C58006CB87C /* BTScanner.swift */; };
@@ -55,6 +57,7 @@
 		0EA3106D232BBA3900BC8CF5 /* BTService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA3106C232BBA3900BC8CF5 /* BTService.swift */; };
 		0EA31071232BBAAC00BC8CF5 /* RuuviNUSService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EA31070232BBAAC00BC8CF5 /* RuuviNUSService.swift */; };
 		0EB18A4B23585163001589B1 /* BTKitBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB18A4A23585163001589B1 /* BTKitBackground.swift */; };
+		0EBA0D482359D20600E6C43B /* LocalNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBA0D472359D20600E6C43B /* LocalNotification.swift */; };
 		0EED91D9233A4FD2006802CE /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0EED91DB233A4FD2006802CE /* Localizable.strings */; };
 /* End PBXBuildFile section */
 
@@ -130,6 +133,8 @@
 		0E53A3F8232E2FA100ACED49 /* BTConnectResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTConnectResult.swift; sourceTree = "<group>"; };
 		0E53A3FC2330CB5500ACED49 /* ConnectableValuesTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectableValuesTableViewCell.swift; sourceTree = "<group>"; };
 		0E53A3FE2330F24100ACED49 /* BTConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTConnection.swift; sourceTree = "<group>"; };
+		0E670C592359CFC30039A67E /* RuuviTaskDaemon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuuviTaskDaemon.swift; sourceTree = "<group>"; };
+		0E670C5C2359CFDE0039A67E /* RuuviTaskDaemoniOS13.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuuviTaskDaemoniOS13.swift; sourceTree = "<group>"; };
 		0E70A45722AF821D006CB87C /* CallbackQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallbackQueue.swift; sourceTree = "<group>"; };
 		0E70A45922AF8313006CB87C /* BTScannerOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTScannerOptions.swift; sourceTree = "<group>"; };
 		0E70A45B22AF8C58006CB87C /* BTScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTScanner.swift; sourceTree = "<group>"; };
@@ -148,6 +153,7 @@
 		0EA3106C232BBA3900BC8CF5 /* BTService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTService.swift; sourceTree = "<group>"; };
 		0EA31070232BBAAC00BC8CF5 /* RuuviNUSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuuviNUSService.swift; sourceTree = "<group>"; };
 		0EB18A4A23585163001589B1 /* BTKitBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BTKitBackground.swift; sourceTree = "<group>"; };
+		0EBA0D472359D20600E6C43B /* LocalNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNotification.swift; sourceTree = "<group>"; };
 		0EED91DA233A4FD2006802CE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		0EED91DC233A4FE8006802CE /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -389,6 +395,47 @@
 			path = Extensions;
 			sourceTree = "<group>";
 		};
+		0E670C562359CF870039A67E /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				0E7E7B6323585891009F24EE /* Heartbeat */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		0E670C572359CF920039A67E /* Daemons */ = {
+			isa = PBXGroup;
+			children = (
+				0E670C582359CFB50039A67E /* Ruuvi */,
+			);
+			path = Daemons;
+			sourceTree = "<group>";
+		};
+		0E670C582359CFB50039A67E /* Ruuvi */ = {
+			isa = PBXGroup;
+			children = (
+				0E670C5E2359D00C0039A67E /* Task */,
+			);
+			path = Ruuvi;
+			sourceTree = "<group>";
+		};
+		0E670C5B2359CFD00039A67E /* iOS13 */ = {
+			isa = PBXGroup;
+			children = (
+				0E670C5C2359CFDE0039A67E /* RuuviTaskDaemoniOS13.swift */,
+			);
+			path = iOS13;
+			sourceTree = "<group>";
+		};
+		0E670C5E2359D00C0039A67E /* Task */ = {
+			isa = PBXGroup;
+			children = (
+				0E670C5B2359CFD00039A67E /* iOS13 */,
+				0E670C592359CFC30039A67E /* RuuviTaskDaemon.swift */,
+			);
+			path = Task;
+			sourceTree = "<group>";
+		};
 		0E7E7B5C235856F6009F24EE /* Heartbeat */ = {
 			isa = PBXGroup;
 			children = (
@@ -409,7 +456,9 @@
 		0E7E7B622358587F009F24EE /* Business */ = {
 			isa = PBXGroup;
 			children = (
-				0E7E7B6323585891009F24EE /* Heartbeat */,
+				0EBA0D462359D1F600E6C43B /* LocalNotification */,
+				0E670C572359CF920039A67E /* Daemons */,
+				0E670C562359CF870039A67E /* Services */,
 			);
 			path = Business;
 			sourceTree = "<group>";
@@ -547,6 +596,14 @@
 				0E7E7B5C235856F6009F24EE /* Heartbeat */,
 			);
 			path = Persistence;
+			sourceTree = "<group>";
+		};
+		0EBA0D462359D1F600E6C43B /* LocalNotification */ = {
+			isa = PBXGroup;
+			children = (
+				0EBA0D472359D20600E6C43B /* LocalNotification.swift */,
+			);
+			path = LocalNotification;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -738,6 +795,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0EBA0D482359D20600E6C43B /* LocalNotification.swift in Sources */,
 				0E53A3EE232D1A8400ACED49 /* ConnectableValueTableViewCell.swift in Sources */,
 				0E9D5F502356E9940076FFD8 /* MainUnknownTableViewCell.swift in Sources */,
 				0E375F4222AD6CDB0092D269 /* MainViewController.swift in Sources */,
@@ -745,7 +803,9 @@
 				0E7E7B6823585907009F24EE /* HeartbeatServiceBTKit.swift in Sources */,
 				0E53A3EC232CE65100ACED49 /* Data+Hex.swift in Sources */,
 				0EA31060232A82C600BC8CF5 /* MainRuuviTableViewCell.swift in Sources */,
+				0E670C5A2359CFC30039A67E /* RuuviTaskDaemon.swift in Sources */,
 				0E7E7B652358589F009F24EE /* HeartbeatService.swift in Sources */,
+				0E670C5D2359CFDE0039A67E /* RuuviTaskDaemoniOS13.swift in Sources */,
 				0E7E7B61235857A7009F24EE /* HeartbeatPersistenceUserDefaults.swift in Sources */,
 				0E375F4022AD6CDB0092D269 /* AppDelegate.swift in Sources */,
 				0E53A3FD2330CB5500ACED49 /* ConnectableValuesTableViewCell.swift in Sources */,
@@ -1030,6 +1090,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5V5EUT3ZXJ;
 				INFOPLIST_FILE = "$(SRCROOT)/BTKitTester/Resources/Plists/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1050,6 +1111,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 5V5EUT3ZXJ;
 				INFOPLIST_FILE = "$(SRCROOT)/BTKitTester/Resources/Plists/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
