@@ -107,6 +107,49 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
 }
 
 extension BTBackgroundScanneriOS {
+    
+    @discardableResult
+    func state<T: AnyObject>(
+        _ observer: T,
+        options: BTScannerOptionsInfo? = nil,
+        closure: @escaping (T, BTScannerState) -> Void
+        ) -> ObservationToken {
+        
+        let options = currentDefaultOptions + (options ?? .empty)
+        let info = BTKitParsedOptionsInfo(options)
+        
+        let id = UUID()
+        
+        queue.async { [weak self] in
+            self?.observations.state[id] = { [weak self, weak observer] state in
+                guard let observer = observer else {
+                    self?.observations.state.removeValue(forKey: id)
+                    self?.stopIfNeeded()
+                    return
+                }
+                info.callbackQueue.execute { [weak self, weak observer] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.state.removeValue(forKey: id)
+                            self?.stopIfNeeded()
+                        }
+                        return
+                    }
+                    closure(observer, state)
+                }
+            }
+            
+            self?.startIfNeeded()
+        }
+        
+        return ObservationToken { [weak self] in
+            self?.queue.async { [weak self] in
+                self?.observations.state.removeValue(forKey: id)
+                self?.stopIfNeeded()
+            }
+        }
+    }
+    
     @discardableResult
     func connect<T: AnyObject>(_ observer: T, uuid: String,
                                options: BTScannerOptionsInfo?,

@@ -5,6 +5,9 @@ public protocol BTBackgroundScanner {
     func isConnected(uuid: String) -> Bool
     
     @discardableResult
+    func state<T: AnyObject>(_ observer: T, options: BTScannerOptionsInfo?, closure: @escaping (T, BTScannerState) -> Void) -> ObservationToken
+    
+    @discardableResult
     func connect<T: AnyObject>(_ observer: T, uuid: String,
                                options: BTScannerOptionsInfo?,
                                connected: @escaping (T, BTError?) -> Void,
@@ -19,6 +22,12 @@ public protocol BTBackgroundScanner {
 }
 
 public extension BTBackgroundScanner {
+    
+    @discardableResult
+    func state<T: AnyObject>(_ observer: T, closure: @escaping (T, BTScannerState) -> Void) -> ObservationToken {
+        return state(observer, options: nil, closure: closure)
+    }
+    
     @discardableResult
     func connect<T: AnyObject>(_ observer: T, uuid: String,
                                connected: @escaping (T, BTError?) -> Void,
