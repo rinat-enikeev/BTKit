@@ -13,8 +13,9 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
     }()
     private var service: BTService
     private var connectedPeripherals = Set<CBPeripheral>()
-    private lazy var restoreId = {
-        return "BTBackgroundScanneriOS." + service.uuid.uuidString
+    private lazy var restoreId: String = {
+        let bundleId = Bundle.main.bundleIdentifier ?? "io.btkit.BTKit"
+        return bundleId + "." + "BTBackgroundScanneriOS." + service.uuid.uuidString
     }()
     private var defaultOptions = BTScannerOptionsInfo.empty
     private var currentDefaultOptions: BTScannerOptionsInfo {
@@ -386,13 +387,34 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
     }
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
+        
+        let content = UNMutableNotificationContent()
+        content.title = "Did Discover"
+        content.body = peripheral.description
+        let state = peripheral.state
+        switch state {
+        case .connected:
+            content.subtitle = "Connected"
+        case .connecting:
+            content.subtitle = "Connecting"
+        case .disconnected:
+            content.subtitle = "Disconnected"
+        case .disconnecting:
+            content.subtitle = "Disconnecting"
+        }
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+        UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
+        
         guard RSSI.intValue != 127 else { return }
         let uuid = peripheral.identifier.uuidString
         let isConnectable = (advertisementData[CBAdvertisementDataIsConnectable] as? NSNumber)?.boolValue ?? false
         observations.connect.values
             .filter({ $0.uuid == uuid })
             .forEach( { connect in
-                if isConnectable && peripheral.state == .disconnected {
+                if isConnectable
+                    && !connectedPeripherals.contains(peripheral)
+                    && peripheral.state != .connected {
                     connectedPeripherals.update(with: peripheral)
                     peripheral.delegate = self
                     manager.connect(peripheral)
@@ -408,13 +430,49 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
         observations.connect.values
             .filter({ $0.uuid == peripheral.identifier.uuidString })
             .forEach({ $0.block(nil) })
+        
+        let content = UNMutableNotificationContent()
+        content.title = "Connected"
+        content.body = peripheral.identifier.uuidString
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+        UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
     }
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         observations.disconnect.values
             .filter({ $0.uuid == peripheral.identifier.uuidString })
             .forEach({ $0.block(nil) })
-        connectedPeripherals.remove(peripheral)
+        observations.connect.values
+            .filter({ $0.uuid == peripheral.identifier.uuidString })
+            .forEach( { connect in
+                if connectedPeripherals.contains(peripheral)
+                    && peripheral.state != .connected {
+                    peripheral.delegate = self
+                    manager.connect(peripheral)
+                    print("RECONNECT" + peripheral.identifier.uuidString)
+                }
+            } )
+        
+        
+        let content = UNMutableNotificationContent()
+        content.title = "Did Disconnect"
+        content.body = peripheral.description
+        let state = peripheral.state
+        switch state {
+        case .connected:
+            content.subtitle = "Connected"
+        case .connecting:
+            content.subtitle = "Connecting"
+        case .disconnected:
+            content.subtitle = "Disconnected"
+        case .disconnecting:
+            content.subtitle = "Disconnecting"
+        }
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+        UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
+        
     }
       
     func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
@@ -424,14 +482,51 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
     }
     
     func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
+        _ = manager
+        
         if let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] {
             peripherals.forEach({ $0.delegate = self })
+            peripherals
+                .filter({ $0.state == .disconnected || $0.state == .disconnecting })
+                .forEach({
+                    connectedPeripherals.update(with: $0)
+                    manager.connect($0)
+                })
+            peripherals.filter({ $0.state == .connecting }).forEach( {
+                connectedPeripherals.update(with: $0)
+                manager.connect($0)
+            })
             peripherals.filter({ $0.state == .connected }).forEach { (connectedPeripheral) in
                 connectedPeripherals.update(with: connectedPeripheral)
                 observations.connect.values
                     .filter({ $0.uuid == connectedPeripheral.identifier.uuidString })
-                    .forEach({ $0.block(nil) })
+                    .forEach({
+                        $0.block(nil)
+                    })
+                connectedPeripheral.discoverServices([service.uuid])
             }
+            let content = UNMutableNotificationContent()
+            content.title = "WillRestoreState"
+            content.body = peripherals.description
+            
+            if peripherals.count > 0 {
+                let state = peripherals[0].state
+                switch state {
+                case .connected:
+                    content.subtitle = "Connected"
+                case .connecting:
+                    content.subtitle = "Connecting"
+                case .disconnected:
+                    content.subtitle = "Disconnected"
+                case .disconnecting:
+                    content.subtitle = "Disconnecting"
+                }
+            }
+            
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
+            let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+            UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
+            
         }
     }
 }

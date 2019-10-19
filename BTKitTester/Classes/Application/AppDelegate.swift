@@ -8,6 +8,7 @@
 
 import UIKit
 import UserNotifications
+import BTKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -22,7 +23,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let title = (launchOptions?[.bluetoothCentrals] as? [String])?.description ?? "Nothing"
         LocalNotification.shared.show(title: title, body: "AppDelegate")
         heartbeatService.restore()
-        RuuviTaskDaemoniOS13.shared.register()
         return true
     }
 
@@ -34,7 +34,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationDidEnterBackground(_ application: UIApplication) {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-        RuuviTaskDaemoniOS13.shared.schedule()
     }
 
     func applicationWillEnterForeground(_ application: UIApplication) {
