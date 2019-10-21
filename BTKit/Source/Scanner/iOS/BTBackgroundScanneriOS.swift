@@ -386,26 +386,7 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
         }
     }
     
-    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        
-        let content = UNMutableNotificationContent()
-        content.title = "Did Discover"
-        content.body = peripheral.description
-        let state = peripheral.state
-        switch state {
-        case .connected:
-            content.subtitle = "Connected"
-        case .connecting:
-            content.subtitle = "Connecting"
-        case .disconnected:
-            content.subtitle = "Disconnected"
-        case .disconnecting:
-            content.subtitle = "Disconnecting"
-        }
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
-        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
-        UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
-        
+    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {    
         guard RSSI.intValue != 127 else { return }
         let uuid = peripheral.identifier.uuidString
         let isConnectable = (advertisementData[CBAdvertisementDataIsConnectable] as? NSNumber)?.boolValue ?? false
