@@ -13,27 +13,27 @@ public struct BTKitRuuviHeartbeatBackground {
     private let nus = BTKit.backgroundScanner(for: RuuviNUSService())
     
     @discardableResult
-    public func subscribe<T: AnyObject>(for observer: T, uuid: String, heartbeat: @escaping (T, (Date) -> ObservationToken?, Result<RuuviTag, BTError>) -> Void) -> ObservationToken? {
+    public func subscribe<T: AnyObject>(for observer: T, uuid: String, heartbeat: @escaping (T, (Date) -> ObservationToken?, Result<BTDevice, BTError>) -> Void) -> ObservationToken? {
         return subscribe(for: observer, uuid: uuid, options: nil, heartbeat: heartbeat, connected: nil, disconnected: nil, receiveLogs: nil)
     }
     
     @discardableResult
-    public func subscribe<T: AnyObject>(for observer: T, uuid: String, heartbeat: @escaping (T, (Date) -> ObservationToken?, Result<RuuviTag, BTError>) -> Void, connected: @escaping (T, (Date) -> ObservationToken?, BTError?) -> Void) -> ObservationToken? {
+    public func subscribe<T: AnyObject>(for observer: T, uuid: String, heartbeat: @escaping (T, (Date) -> ObservationToken?, Result<BTDevice, BTError>) -> Void, connected: @escaping (T, (Date) -> ObservationToken?, BTError?) -> Void) -> ObservationToken? {
         return subscribe(for: observer, uuid: uuid, options: nil, heartbeat: heartbeat, connected: connected, disconnected: nil, receiveLogs: nil)
     }
     
     @discardableResult
-    public func subscribe<T: AnyObject>(for observer: T, uuid: String, heartbeat: @escaping (T, (Date) -> ObservationToken?, Result<RuuviTag, BTError>) -> Void, connected: @escaping (T, (Date) -> ObservationToken?, BTError?) -> Void, disconnected: ((T, BTError?) -> Void)?) -> ObservationToken? {
+    public func subscribe<T: AnyObject>(for observer: T, uuid: String, heartbeat: @escaping (T, (Date) -> ObservationToken?, Result<BTDevice, BTError>) -> Void, connected: @escaping (T, (Date) -> ObservationToken?, BTError?) -> Void, disconnected: ((T, BTError?) -> Void)?) -> ObservationToken? {
         return subscribe(for: observer, uuid: uuid, options: nil, heartbeat: heartbeat, connected: connected, disconnected: disconnected, receiveLogs: nil)
     }
     
     @discardableResult
-    public func subscribe<T: AnyObject>(for observer: T, uuid: String, heartbeat: @escaping (T, (Date) -> ObservationToken?, Result<RuuviTag, BTError>) -> Void, connected: @escaping (T, (Date) -> ObservationToken?, BTError?) -> Void, receiveLogs: ((T, Result<[RuuviTagEnvLogFull], BTError>) -> Void)?) -> ObservationToken?  {
+    public func subscribe<T: AnyObject>(for observer: T, uuid: String, heartbeat: @escaping (T, (Date) -> ObservationToken?, Result<BTDevice, BTError>) -> Void, connected: @escaping (T, (Date) -> ObservationToken?, BTError?) -> Void, receiveLogs: ((T, Result<[RuuviTagEnvLogFull], BTError>) -> Void)?) -> ObservationToken?  {
         return subscribe(for: observer, uuid: uuid, options: nil, heartbeat: heartbeat, connected: connected, disconnected: nil, receiveLogs: receiveLogs)
     }
     
     @discardableResult
-    public func subscribe<T: AnyObject>(for observer: T, uuid: String, options: BTScannerOptionsInfo?, heartbeat: @escaping (T, (Date) -> ObservationToken?, Result<RuuviTag, BTError>) -> Void, connected: ((T, (Date) -> ObservationToken?, BTError?) -> Void)?, disconnected: ((T, BTError?) -> Void)?, receiveLogs: ((T, Result<[RuuviTagEnvLogFull], BTError>) -> Void)?) -> ObservationToken? {
+    public func subscribe<T: AnyObject>(for observer: T, uuid: String, options: BTScannerOptionsInfo?, heartbeat: @escaping (T, (Date) -> ObservationToken?, Result<BTDevice, BTError>) -> Void, connected: ((T, (Date) -> ObservationToken?, BTError?) -> Void)?, disconnected: ((T, BTError?) -> Void)?, receiveLogs: ((T, Result<[RuuviTagEnvLogFull], BTError>) -> Void)?) -> ObservationToken? {
         
         let info = BTKitParsedOptionsInfo(options)
         let readLogs: (Date) -> ObservationToken? = { [weak observer] date in
@@ -88,14 +88,8 @@ public struct BTKitRuuviHeartbeatBackground {
         }
         let token = nus.connect(observer, uuid: uuid, options: options, connected: { (observer, error) in
             connected?(observer, readLogs, error)
-        }, heartbeat: { (observer, data, error) in
-            if let error = error {
-                heartbeat(observer, readLogs, .failure(error))
-            } else {
-                if let ruuviTag = DemoFactory.shared.build(for: uuid).ruuvi?.tag {
-                    heartbeat(observer, readLogs, .success(ruuviTag))
-                }
-            }
+        }, heartbeat: { (observer, device) in
+            heartbeat(observer, readLogs, .success(device))
         }, disconnected: { (observer, error) in
             disconnected?(observer, error)
         })

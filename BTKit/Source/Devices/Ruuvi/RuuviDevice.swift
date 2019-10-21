@@ -17,6 +17,7 @@ public enum RuuviTag {
     case v3(RuuviData3)
     case v4(RuuviData4)
     case v5(RuuviData5)
+    case h1(RuuviHeartbeat1)
 }
 
 public extension RuuviTag {
@@ -63,6 +64,8 @@ public extension RuuviTag {
             return nil
         case .v5(let data):
             return data.voltage
+        case .h1(let heartbeat):
+            return heartbeat.voltage
         }
     }
     
@@ -76,6 +79,8 @@ public extension RuuviTag {
             return nil
         case .v5(let data):
             return data.accelerationX
+        case .h1(let heartbeat):
+            return heartbeat.accelerationX
         }
     }
     
@@ -89,6 +94,8 @@ public extension RuuviTag {
             return nil
         case .v5(let data):
             return data.accelerationY
+        case .h1(let heartbeat):
+            return heartbeat.accelerationY
         }
     }
     
@@ -102,19 +109,54 @@ public extension RuuviTag {
             return nil
         case .v5(let data):
             return data.accelerationZ
+        case .h1(let heartbeat):
+            return heartbeat.accelerationZ
         }
     }
     
     var movementCounter: Int? {
-        return v5?.movementCounter
+        switch self {
+        case .v2:
+            return nil
+        case .v3:
+            return nil
+        case .v4:
+            return nil
+        case .v5(let data):
+            return data.movementCounter
+        case .h1(let heartbeat):
+            return heartbeat.movementCounter
+        }
     }
     
     var measurementSequenceNumber: Int? {
-        return v5?.measurementSequenceNumber
+        switch self {
+        case .v2:
+            return nil
+        case .v3:
+            return nil
+        case .v4:
+            return nil
+        case .v5(let data):
+            return data.measurementSequenceNumber
+        case .h1(let heartbeat):
+            return heartbeat.measurementSequenceNumber
+        }
     }
     
     var txPower: Int? {
-        return v5?.txPower
+        switch self {
+        case .v2:
+            return nil
+        case .v3:
+            return nil
+        case .v4:
+            return nil
+        case .v5(let data):
+            return data.txPower
+        case .h1(let heartbeat):
+            return heartbeat.txPower
+        }
     }
     
     var uuid: String {
@@ -127,10 +169,12 @@ public extension RuuviTag {
             return data.uuid
         case .v5(let data):
             return data.uuid
+        case .h1(let heartbeat):
+            return heartbeat.uuid
         }
     }
     
-    var rssi: Int {
+    var rssi: Int? {
         switch self {
         case .v2(let data):
             return data.rssi
@@ -140,6 +184,8 @@ public extension RuuviTag {
             return data.rssi
         case .v5(let data):
             return data.rssi
+        case .h1:
+            return nil
         }
     }
     
@@ -153,6 +199,8 @@ public extension RuuviTag {
             return data.isConnectable
         case .v5(let data):
             return data.isConnectable
+        case .h1(let heartbeat):
+            return heartbeat.isConnectable
         }
     }
     
@@ -166,6 +214,8 @@ public extension RuuviTag {
             return data.version
         case .v5(let data):
             return data.version
+        case .h1(let heartbeat):
+            return heartbeat.version
         }
     }
     
@@ -179,6 +229,8 @@ public extension RuuviTag {
             return data.humidity
         case .v5(let data):
             return data.humidity
+        case .h1(let heartbeat):
+            return heartbeat.humidity
         }
     }
     
@@ -192,6 +244,8 @@ public extension RuuviTag {
             return data.pressure
         case .v5(let data):
             return data.pressure
+        case .h1(let heartbeat):
+            return heartbeat.pressure
         }
     }
     
@@ -205,6 +259,8 @@ public extension RuuviTag {
             return data.temperature
         case .v5(let data):
             return data.temperature
+        case .h1(let heartbeat):
+            return heartbeat.temperature
         }
     }
     
@@ -244,6 +300,9 @@ extension RuuviTag: Hashable {
         case .v5(let data):
             hasher.combine(data.uuid)
             hasher.combine("v5")
+        case .h1(let heartbeat):
+            hasher.combine(heartbeat.uuid)
+            hasher.combine("h1")
         }
     }
 }

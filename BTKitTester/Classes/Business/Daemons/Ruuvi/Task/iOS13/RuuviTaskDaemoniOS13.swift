@@ -47,7 +47,7 @@ class RuuviTaskDaemoniOS13: RuuviTaskDaemon {
             tokens.append(scanner.connect(self, uuid: uuid, connected: { (observer, error) in
                 LocalNotification.shared.show(title: "Connected", body: "Daemon")
                 task.setTaskCompleted(success: true)
-            }, heartbeat: { (observer, data, error) in
+            }, heartbeat: { (observer, device) in
                 LocalNotification.shared.show(title: "Heartbeat", body: "Daemon")
                 task.setTaskCompleted(success: true)
             }, disconnected: { (observer, error) in

@@ -12,6 +12,7 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
         return CBCentralManager(delegate: self, queue: queue, options: [CBCentralManagerOptionRestoreIdentifierKey: restoreId])
     }()
     private var service: BTService
+    private var decoders: [BTDecoder]
     private var connectedPeripherals = Set<CBPeripheral>()
     private lazy var restoreId: String = {
         let bundleId = Bundle.main.bundleIdentifier ?? "io.btkit.BTKit"
@@ -41,10 +42,10 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
     }
     
     private class HeartbeatObservation {
-        var block: (Data?, BTError?) -> Void
+        var block: (BTDevice) -> Void
         var uuid: String = ""
         
-        init(block: @escaping ((Data?, BTError?) -> Void), uuid: String) {
+        init(block: @escaping ((BTDevice) -> Void), uuid: String) {
             self.block = block
             self.uuid = uuid
         }
@@ -76,8 +77,9 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
         }
     }
     
-    required init(service: BTService) {
+    required init(service: BTService, decoders: [BTDecoder] = [RuuviDecoderiOS()]) {
         self.service = service
+        self.decoders = decoders
         super.init()
     }
     
@@ -155,7 +157,7 @@ extension BTBackgroundScanneriOS {
     func connect<T: AnyObject>(_ observer: T, uuid: String,
                                options: BTScannerOptionsInfo?,
                                connected: @escaping (T, BTError?) -> Void,
-                               heartbeat: @escaping (T, Data?, BTError?) -> Void,
+                               heartbeat: @escaping (T, BTDevice) -> Void,
                                disconnected: @escaping (T, BTError?) -> Void) -> ObservationToken {
         let options = currentDefaultOptions + (options ?? .empty)
         let info = BTKitParsedOptionsInfo(options)
@@ -199,7 +201,7 @@ extension BTBackgroundScanneriOS {
                 }
             }, uuid: uuid)
             
-            self?.observations.heartbeat[id] = HeartbeatObservation(block: { [weak self, weak observer] (data, error) in
+            self?.observations.heartbeat[id] = HeartbeatObservation(block: { [weak self, weak observer] (device) in
                 guard let observer = observer else {
                     self?.observations.heartbeat.removeValue(forKey: id)
                     self?.stopIfNeeded()
@@ -213,7 +215,7 @@ extension BTBackgroundScanneriOS {
                         }
                         return
                     }
-                    heartbeat(observer, data, error)
+                    heartbeat(observer, device)
                 }
             }, uuid: uuid)
             
@@ -386,7 +388,7 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
         }
     }
     
-    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {    
+    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
         guard RSSI.intValue != 127 else { return }
         let uuid = peripheral.identifier.uuidString
         let isConnectable = (advertisementData[CBAdvertisementDataIsConnectable] as? NSNumber)?.boolValue ?? false
@@ -546,12 +548,20 @@ extension BTBackgroundScanneriOS: CBPeripheralDelegate {
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         
-        if peripheral.name == "iPad" {
+        var heartbeatDevice: BTDevice?
+        for decoder in decoders {
+            if let device = decoder.decodeHeartbeat(uuid: peripheral.identifier.uuidString, data: characteristic.value) {
+                heartbeatDevice = device
+                break
+            }
+        }
+        
+        if let heartbeatDevice = heartbeatDevice {
             observations.heartbeat.values.filter( {
                 $0.uuid == peripheral.identifier.uuidString
             } )
             .forEach( {
-                $0.block(characteristic.value, nil)
+                $0.block(heartbeatDevice)
             } )
         } else {
             observations.service.values

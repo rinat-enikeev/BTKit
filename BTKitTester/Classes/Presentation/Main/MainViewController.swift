@@ -195,7 +195,13 @@ extension MainViewController {
     }
     
     private func updateRuuviTags() {
-        ruuviTags = ruuviTagsSet.sorted(by: { $0.rssi > $1.rssi })
+        ruuviTags = ruuviTagsSet.sorted(by: {
+            if let rssi0 = $0.rssi, let rssi1 = $1.rssi {
+                return rssi0 > rssi1
+            } else {
+                return true
+            }
+        })
     }
     
     private func updateUnknowns() {

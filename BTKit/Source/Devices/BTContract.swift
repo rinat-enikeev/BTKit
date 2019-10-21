@@ -4,7 +4,8 @@ public protocol BTData {
 }
 
 public protocol BTDecoder {
-    func decode(uuid: String, rssi: NSNumber, advertisementData: [String : Any]) -> BTDevice?
+    func decodeHeartbeat(uuid: String, data: Data?) -> BTDevice?
+    func decodeAdvertisement(uuid: String, rssi: NSNumber, advertisementData: [String : Any]) -> BTDevice?
 }
 
 public protocol BTVendor {

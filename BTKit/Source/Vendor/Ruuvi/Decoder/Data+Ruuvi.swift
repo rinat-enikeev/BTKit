@@ -38,6 +38,19 @@ public extension Ruuvi {
         var txPower: Int?
         var mac: String
     }
+    
+    struct Heartbeat1 {
+        var humidity: Double?
+        var temperature: Double?
+        var pressure: Double?
+        var accelerationX: Double?
+        var accelerationY: Double?
+        var accelerationZ: Double?
+        var movementCounter: Int?
+        var measurementSequenceNumber: Int?
+        var voltage: Double?
+        var txPower: Int?
+    }
 }
 
 public extension Data {
@@ -207,6 +220,125 @@ public extension Data {
         let start = asStr.index(asStr.endIndex, offsetBy: -12)
         let mac = addColons(mac: String(asStr[start...]))
         return Ruuvi.Data5(humidity: humidity, temperature: temperature, pressure: pressure, accelerationX: accelerationX, accelerationY: accelerationY, accelerationZ: accelerationZ, movementCounter: movementCounter, measurementSequenceNumber: measurementSequenceNumber, voltage: voltage, txPower: txPower, mac: mac)
+    }
+    
+    func ruuviHeartbeat1() -> Ruuvi.Heartbeat1 {
+        // temperature
+        var temperature: Double?
+        if let t = self[1...2].withUnsafeBytes({ $0.bindMemory(to: Int16.self) }).map(Int16.init(bigEndian:)).first {
+            if t == Int16.min {
+                temperature = nil
+            } else {
+                temperature = Double(t) / 200.0
+            }
+        } else {
+            temperature = nil
+        }
+        
+        // humidity
+        var humidity: Double?
+        if let h = self[3...4].withUnsafeBytes({ $0.bindMemory(to: UInt16.self) }).map(UInt16.init(bigEndian:)).first {
+            if h == UInt16.max {
+                humidity = nil
+            } else {
+                humidity = Double(h) / 400.0
+            }
+        } else {
+            humidity = nil
+        }
+        
+        // pressure
+        var pressure: Double?
+        if let p = self[5...7].withUnsafeBytes({ $0.bindMemory(to: UInt16.self) }).map(UInt16.init(bigEndian:)).first {
+            if p == UInt16.max {
+                pressure = nil
+            } else {
+                pressure = (Double(p) + 50000.0) / 100.0
+            }
+        } else {
+            pressure = nil
+        }
+        
+        // accelerationX
+        var accelerationX: Double?
+        if let aX = self[7...8].withUnsafeBytes({ $0.bindMemory(to: Int16.self) }).map(Int16.init(bigEndian:)).first {
+            if aX == Int16.min {
+                accelerationX = nil
+            } else {
+                accelerationX = Double(aX) / 1000.0
+            }
+        } else {
+            accelerationX = nil
+        }
+        
+        // accelerationY
+        var accelerationY: Double?
+        if let aY = self[9...10].withUnsafeBytes({ $0.bindMemory(to: Int16.self) }).map(Int16.init(bigEndian:)).first {
+            if aY == Int16.min {
+                accelerationY = nil
+            } else {
+                accelerationY = Double(aY) / 1000.0
+            }
+        } else {
+            accelerationY = nil
+        }
+        
+        // accelerationZ
+        var accelerationZ: Double?
+        if let aZ = self[11...12].withUnsafeBytes({ $0.bindMemory(to: Int16.self) }).map(Int16.init(bigEndian:)).first {
+            if aZ == Int16.min {
+                accelerationZ = nil
+            } else {
+                accelerationZ = Double(aZ) / 1000.0
+            }
+        } else {
+            accelerationZ = nil
+        }
+        
+        // powerInfo
+        var voltage: Double?
+        var txPower: Int?
+        if let powerInfo = self[13...14].withUnsafeBytes({ $0.bindMemory(to: UInt16.self) }).map(UInt16.init(bigEndian:)).first {
+            let v = powerInfo >> 5
+            if v == 0b11111111111 {
+                voltage = nil
+            } else {
+                voltage = Double(v) / 1000.0 + 1.6
+            }
+            let tx = powerInfo & 0b11111
+            if tx == 0b11111 {
+                txPower = nil
+            } else {
+                txPower = Int(tx) * 2 - 40
+            }
+        } else {
+            voltage = nil
+            txPower = nil
+        }
+        
+        // movementCounter
+        var movementCounter: Int?
+        let mc = self[15]
+        if mc == UInt8.max {
+            movementCounter = nil
+        } else {
+            movementCounter = Int(mc)
+        }
+        
+        // measurementSequenceNumber
+        var measurementSequenceNumber: Int?
+        if let msn = self[16...17].withUnsafeBytes({ $0.bindMemory(to: UInt16.self) }).map(UInt16.init(bigEndian:)).first {
+            if msn == UInt16.max {
+                measurementSequenceNumber = nil
+            } else {
+                measurementSequenceNumber = Int(msn)
+            }
+        } else {
+            measurementSequenceNumber = nil
+        }
+        
+        
+        return Ruuvi.Heartbeat1(humidity: humidity, temperature: temperature, pressure: pressure, accelerationX: accelerationX, accelerationY: accelerationY, accelerationZ: accelerationZ, movementCounter: movementCounter, measurementSequenceNumber: measurementSequenceNumber, voltage: voltage, txPower: txPower)
     }
     
     private struct HexEncodingOptions: OptionSet {

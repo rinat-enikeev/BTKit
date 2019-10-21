@@ -275,7 +275,7 @@ extension BTScanneriOS: CBCentralManagerDelegate {
         let uuid = peripheral.identifier.uuidString
         let isConnectable = (advertisementData[CBAdvertisementDataIsConnectable] as? NSNumber)?.boolValue ?? false
         for decoder in decoders {
-            if let device = decoder.decode(uuid: uuid, rssi: RSSI, advertisementData: advertisementData) {
+            if let device = decoder.decodeAdvertisement(uuid: uuid, rssi: RSSI, advertisementData: advertisementData) {
                 observations.device.values.forEach { (closure) in
                     closure(device)
                 }

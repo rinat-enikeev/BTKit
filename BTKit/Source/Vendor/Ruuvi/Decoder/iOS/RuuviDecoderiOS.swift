@@ -1,7 +1,23 @@
 import CoreBluetooth
 
 public struct RuuviDecoderiOS: BTDecoder {
-    public func decode(uuid: String, rssi: NSNumber, advertisementData: [String : Any]) -> BTDevice? {
+    
+    public func decodeHeartbeat(uuid: String, data: Data?) -> BTDevice? {
+        guard let data = data else { return nil }
+        guard data.count > 16 else { return nil }
+        let isConnectable = true
+        let version = Int(data[0])
+        switch version {
+        case 5:
+            let ruuvi = data.ruuviHeartbeat1()
+            let tag = RuuviHeartbeat1(uuid: uuid, isConnectable: isConnectable, version: Int(version), humidity: ruuvi.humidity, temperature: ruuvi.temperature, pressure: ruuvi.pressure, accelerationX: ruuvi.accelerationX, accelerationY: ruuvi.accelerationY, accelerationZ: ruuvi.accelerationZ, voltage: ruuvi.voltage, movementCounter: ruuvi.movementCounter, measurementSequenceNumber: ruuvi.measurementSequenceNumber, txPower: ruuvi.txPower)
+            return .ruuvi(.tag(.h1(tag)))
+        default:
+            return nil
+        }
+    }
+    
+    public func decodeAdvertisement(uuid: String, rssi: NSNumber, advertisementData: [String : Any]) -> BTDevice? {
         if let manufacturerDictionary = advertisementData[CBAdvertisementDataServiceDataKey] as? [NSObject:AnyObject],
             let manufacturerData = manufacturerDictionary.first?.value as? Data {
             guard manufacturerData.count > 18 else { return nil }

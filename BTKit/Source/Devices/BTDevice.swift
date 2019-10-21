@@ -37,7 +37,7 @@ public extension BTDevice {
         }
     }
     
-    var rssi: Int {
+    var rssi: Int? {
         switch self {
         case .ruuvi(let ruuviDevice):
             switch ruuviDevice {

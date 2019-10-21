@@ -59,6 +59,7 @@
 		0EB18A4B23585163001589B1 /* BTKitBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EB18A4A23585163001589B1 /* BTKitBackground.swift */; };
 		0EBA0D482359D20600E6C43B /* LocalNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EBA0D472359D20600E6C43B /* LocalNotification.swift */; };
 		0EED91D9233A4FD2006802CE /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0EED91DB233A4FD2006802CE /* Localizable.strings */; };
+		0EF6F5BA235DB8B40052BA25 /* RuuviHeartbeat1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0EF6F5B9235DB8B40052BA25 /* RuuviHeartbeat1.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -156,6 +157,7 @@
 		0EBA0D472359D20600E6C43B /* LocalNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNotification.swift; sourceTree = "<group>"; };
 		0EED91DA233A4FD2006802CE /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		0EED91DC233A4FE8006802CE /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
+		0EF6F5B9235DB8B40052BA25 /* RuuviHeartbeat1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuuviHeartbeat1.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -243,7 +245,7 @@
 			path = Decoder;
 			sourceTree = "<group>";
 		};
-		0E375F0422ACFE4F0092D269 /* Versions */ = {
+		0E375F0422ACFE4F0092D269 /* Data */ = {
 			isa = PBXGroup;
 			children = (
 				0E375F0822ACFE760092D269 /* RuuviData2.swift */,
@@ -251,7 +253,7 @@
 				0E375F0622ACFE750092D269 /* RuuviData4.swift */,
 				0E375F0722ACFE750092D269 /* RuuviData5.swift */,
 			);
-			path = Versions;
+			path = Data;
 			sourceTree = "<group>";
 		};
 		0E375F1422ACFFD20092D269 /* Scanner */ = {
@@ -374,7 +376,8 @@
 		0E375F9F22AE45650092D269 /* Firmware */ = {
 			isa = PBXGroup;
 			children = (
-				0E375F0422ACFE4F0092D269 /* Versions */,
+				0E375F0422ACFE4F0092D269 /* Data */,
+				0EF6F5B8235DB8990052BA25 /* Heartbeat */,
 			);
 			path = Firmware;
 			sourceTree = "<group>";
@@ -606,6 +609,14 @@
 			path = LocalNotification;
 			sourceTree = "<group>";
 		};
+		0EF6F5B8235DB8990052BA25 /* Heartbeat */ = {
+			isa = PBXGroup;
+			children = (
+				0EF6F5B9235DB8B40052BA25 /* RuuviHeartbeat1.swift */,
+			);
+			path = Heartbeat;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -777,6 +788,7 @@
 				0E375F1922AD00600092D269 /* BTScanneriOS.swift in Sources */,
 				0E375F1C22AD01000092D269 /* RuuviDevice.swift in Sources */,
 				0E375F0922ACFE760092D269 /* RuuviData3.swift in Sources */,
+				0EF6F5BA235DB8B40052BA25 /* RuuviHeartbeat1.swift in Sources */,
 				0E3BCBF4231110BF0076E11D /* DemoFactory.swift in Sources */,
 				0E70A45A22AF8313006CB87C /* BTScannerOptions.swift in Sources */,
 				0E375F1F22AD046A0092D269 /* ObservationToken.swift in Sources */,
