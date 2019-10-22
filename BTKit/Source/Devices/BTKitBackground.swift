@@ -10,7 +10,7 @@ public struct BTKitRuuviBackground {
 
 public struct BTKitRuuviHeartbeatBackground {
     
-    private let nus = BTKit.backgroundScanner(for: RuuviNUSService())
+    private let nus = BTBackgroundScanneriOS(service: RuuviNUSService())
     
     @discardableResult
     public func subscribe<T: AnyObject>(for observer: T, uuid: String, heartbeat: @escaping (T, (Date) -> ObservationToken?, Result<BTDevice, BTError>) -> Void) -> ObservationToken? {
