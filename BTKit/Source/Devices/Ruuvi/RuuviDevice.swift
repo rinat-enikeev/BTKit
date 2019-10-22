@@ -321,7 +321,8 @@ extension RuuviTag: Equatable {
 
 public extension RuuviTag {
     var isConnected: Bool {
-        return BTKit.connection.isConnected(uuid: uuid)
+        return BTKit.foreground.scanner.isConnected(uuid: uuid)
+            || BTKit.background.scanner.isConnected(uuid: uuid)
     }
     
     
@@ -339,7 +340,7 @@ public extension RuuviTag {
             }
             return nil
         } else {
-            return BTKit.connection.establish(for: observer, uuid: uuid, options: options, result: result)
+            return BTKit.foreground.connect(for: observer, uuid: uuid, options: options, result: result)
         }
     }
     
@@ -357,7 +358,7 @@ public extension RuuviTag {
             }
             return nil
         } else {
-            return BTKit.connection.drop(for: observer, uuid: uuid, result: result)
+            return BTKit.foreground.disconnect(for: observer, uuid: uuid, options: options, result: result)
         }
     }
     
@@ -375,7 +376,7 @@ public extension RuuviTag {
             }
             return nil
         } else {
-            return BTKit.service.ruuvi.uart.nus.celisus(for: observer, uuid: uuid, from: date, result: result)
+            return BTKit.foreground.services.ruuvi.nus.celisus(for: observer, uuid: uuid, from: date, result: result)
         }
     }
     
@@ -393,7 +394,7 @@ public extension RuuviTag {
             }
             return nil
         } else {
-            return BTKit.service.ruuvi.uart.nus.humidity(for: observer, uuid: uuid, from: date, options: options, result: result)
+            return BTKit.foreground.services.ruuvi.nus.humidity(for: observer, uuid: uuid, from: date, options: options, result: result)
         }
     }
     
@@ -411,7 +412,7 @@ public extension RuuviTag {
             }
             return nil
         } else {
-            return BTKit.service.ruuvi.uart.nus.pressure(for: observer, uuid: uuid, from: date, options: options, result: result)
+            return BTKit.foreground.services.ruuvi.nus.pressure(for: observer, uuid: uuid, from: date, options: options, result: result)
         }
     }
     
@@ -429,7 +430,7 @@ public extension RuuviTag {
             }
             return nil
         } else {
-            return BTKit.service.ruuvi.uart.nus.log(for: observer, uuid: uuid, from: date, options: options, result: result)
+            return BTKit.foreground.services.ruuvi.nus.log(for: observer, uuid: uuid, from: date, options: options, result: result)
         }
     }
 }

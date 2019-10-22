@@ -75,7 +75,7 @@ extension ConnectableViewController {
     
     @IBAction func connectButtonTouchUpInside(_ sender: Any) {
         connectToken?.invalidate()
-        connectToken = BTKit.connection.establish(for: self, uuid: ruuviTag.uuid) { (observer, result) in
+        connectToken = BTKit.foreground.connect(for: self, uuid: ruuviTag.uuid) { (observer, result) in
             switch result {
             case .already:
                 observer.isConnected = true
@@ -93,7 +93,7 @@ extension ConnectableViewController {
     @IBAction func disconnectButtonTouchUpInside(_ sender: Any) {
         connectToken?.invalidate()
         disconnectToken?.invalidate()
-        disconnectToken = BTKit.connection.drop(for: self, uuid: ruuviTag.uuid) { (observer, result) in
+        disconnectToken = BTKit.foreground.disconnect(for: self, uuid: ruuviTag.uuid) { (observer, result) in
             observer.disconnectToken?.invalidate()
             switch result {
             case .just:
@@ -111,7 +111,7 @@ extension ConnectableViewController {
         if let from = Calendar.current.date(byAdding: .minute, value: -5, to: Date()) {
             temperatureToken?.invalidate()
             isReading = true
-            temperatureToken = BTKit.service.ruuvi.uart.nus.celisus(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
+            temperatureToken = BTKit.foreground.services.ruuvi.nus.celisus(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
                 observer.isReading = false
                 observer.temperatureToken?.invalidate()
                 switch result {
@@ -130,7 +130,7 @@ extension ConnectableViewController {
         if let from = Calendar.current.date(byAdding: .minute, value: -5, to: Date()) {
             humidityToken?.invalidate()
             isReading = true
-            humidityToken = BTKit.service.ruuvi.uart.nus.humidity(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
+            humidityToken = BTKit.foreground.services.ruuvi.nus.humidity(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
                 observer.isReading = false
                 observer.humidityToken?.invalidate()
                 switch result {
@@ -149,7 +149,7 @@ extension ConnectableViewController {
         if let from = Calendar.current.date(byAdding: .minute, value: -5, to: Date()) {
             pressureToken?.invalidate()
             isReading = true
-            pressureToken = BTKit.service.ruuvi.uart.nus.pressure(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
+            pressureToken = BTKit.foreground.services.ruuvi.nus.pressure(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
                 observer.isReading = false
                 observer.pressureToken?.invalidate()
                 switch result {
@@ -168,7 +168,7 @@ extension ConnectableViewController {
         if let from = Calendar.current.date(byAdding: .minute, value: -5, to: Date()) {
             allToken?.invalidate()
             isReading = true
-            allToken = BTKit.service.ruuvi.uart.nus.log(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
+            allToken = BTKit.foreground.services.ruuvi.nus.log(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
                 observer.isReading = false
                 observer.allToken?.invalidate()
                 switch result {

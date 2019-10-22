@@ -46,31 +46,19 @@ class HeartbeatServiceBTKit: HeartbeatService {
     
     private func startListening(to uuid: String) {
         var readLogsToken: ObservationToken?
-        tokens[uuid] = BTKit.background.ruuvi.heartbeat.subscribe(for: self, uuid: uuid, heartbeat: { (observer, readLogs, result) in
-            switch result {
-            case .success(let ruuviTag):
-                LocalNotification.shared.show(title: "Heartbeat", body: "Service")
-            case .failure(let error):
-                print(error.localizedDescription)
-            }
-        }, connected: { (observer, readLogs, error) in
-            readLogsToken = readLogs(Date.distantPast)
-        }, receiveLogs: { observer, result in
-            readLogsToken?.invalidate()
-            switch result {
-            case .success(let logs):
-                print(logs)
-                LocalNotification.shared.show(title: "Logs", body: "Service")
-            case .failure(let error):
-                print(error.localizedDescription)
-            }
+        tokens[uuid] = BTKit.background.connect(for: self, uuid: uuid, connected: { (observer, result) in
+            print("connected")
+        }, heartbeat: { (observer, device) in
+            print("heartbeat")
+        }, disconnected: { (observer, result) in
+            print("disconnected")
         })
     }
     
     private func stopListening(to uuid: String) {
         tokens[uuid]?.invalidate()
         tokens.removeValue(forKey: uuid)
-        disconnectToken = BTKit.background.ruuvi.heartbeat.unsubscribe(for: self, uuid: uuid) { (observer, result) in
+        disconnectToken = BTKit.background.disconnect(for: self, uuid: uuid, result: { (observer, result) in
             observer.disconnectToken?.invalidate()
             switch result {
             case .already:
@@ -80,6 +68,6 @@ class HeartbeatServiceBTKit: HeartbeatService {
             case .failure(let error):
                 print(error.localizedDescription)
             }
-        }
+        })
     }
 }

@@ -136,15 +136,11 @@ public protocol BTUARTService: BTService {
     var isReady: Bool { get set }
 }
 
-public struct BTKitService {
-    public let ruuvi = BTKitRuuviService()
+public struct BTServices {
+    public let ruuvi = BTRuuviServices()
 }
 
-public struct BTKitRuuviService {
-    public let uart = BTKitRuuviUARTService()
-}
-
-public struct BTKitRuuviUARTService {
+public struct BTRuuviServices {
     public let nus = BTKitRuuviNUSService()
 }
 
@@ -188,7 +184,7 @@ public struct BTKitRuuviNUSService {
     @discardableResult
     public func log<T: AnyObject>(for observer: T, uuid: String, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) -> ObservationToken? {
         let info = BTKitParsedOptionsInfo(options)
-        if !BTKit.scanner.isConnected(uuid: uuid) {
+        if !BTKit.foreground.scanner.isConnected(uuid: uuid) {
             info.callbackQueue.execute {
                 result(observer, .failure(.logic(.notConnected)))
             }
@@ -197,7 +193,7 @@ public struct BTKitRuuviNUSService {
             var values = [RuuviTagEnvLogFull]()
             var lastValue = RuuviTagEnvLogFullClass()
             let service: BTRuuviNUSService = .all
-            let serveToken = BTKit.scanner.serve(observer, for: uuid, .ruuvi(.uart(service)), options: options, request: { (observer, peripheral, rx, tx) in
+            let serveToken = BTKit.foreground.scanner.serve(observer, for: uuid, .ruuvi(.uart(service)), options: options, request: { (observer, peripheral, rx, tx) in
                 if let rx = rx {
                     peripheral?.writeValue(service.request(from: date), for: rx, type: .withResponse)
                 } else {
@@ -246,14 +242,14 @@ public struct BTKitRuuviNUSService {
     
     private func serve<T: AnyObject>(_ service: BTRuuviNUSService, for observer: T, uuid: String, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
         let info = BTKitParsedOptionsInfo(options)
-        if !BTKit.scanner.isConnected(uuid: uuid) {
+        if !BTKit.foreground.scanner.isConnected(uuid: uuid) {
             info.callbackQueue.execute {
                 result(observer, .failure(.logic(.notConnected)))
             }
             return nil
         } else {
             var values = [RuuviTagEnvLog]()
-            let serveToken = BTKit.scanner.serve(observer, for: uuid, .ruuvi(.uart(service)), options: options, request: { (observer, peripheral, rx, tx) in
+            let serveToken = BTKit.foreground.scanner.serve(observer, for: uuid, .ruuvi(.uart(service)), options: options, request: { (observer, peripheral, rx, tx) in
                 if let rx = rx {
                     peripheral?.writeValue(service.request(from: date), for: rx, type: .withResponse)
                 } else {

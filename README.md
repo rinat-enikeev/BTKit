@@ -42,7 +42,7 @@ import BTKit
 ```swift
 view.isBluetoothEnabled = scanner.bluetoothState == .poweredOn
 
-BTKit.scanner.state(self, closure: { (observer, state) in
+BTKit.foreground.scanner.state(self, closure: { (observer, state) in
     observer.view.isBluetoothEnabled = state == .poweredOn
 })
 ```
@@ -50,7 +50,7 @@ BTKit.scanner.state(self, closure: { (observer, state) in
 ### Listen to broadcasts
 
 ```swift
-BTKit.scanner.scan(self) { (observer, device) in
+BTKit.foreground.scanner.scan(self) { (observer, device) in
                              if let ruuviTag = device.ruuvi?.tag {
                                  print(ruuviTag)
                              }
@@ -60,7 +60,7 @@ BTKit.scanner.scan(self) { (observer, device) in
 ### Determine if device is out of range or went offline
 
 ```swift
-BTKit.scanner.lost(self, options: [.lostDeviceDelay(10)], closure: { (observer, device) in
+BTKit.foreground.scanner.lost(self, options: [.lostDeviceDelay(10)], closure: { (observer, device) in
     if let ruuviTag = device.ruuvi?.tag {
         print("Ruuvi Tag " + ruuviTag + " didn't broadcast for 10 seconds")
     }
@@ -70,7 +70,7 @@ BTKit.scanner.lost(self, options: [.lostDeviceDelay(10)], closure: { (observer, 
 ### Observe specific device
 
 ```swift
-BTKit.scanner.observe(self, uuid: ruuviTag.uuid, options: [.callbackQueue(.untouch)]) { (observer, device) in
+BTKit.foreground.scanner.observe(self, uuid: ruuviTag.uuid, options: [.callbackQueue(.untouch)]) { (observer, device) in
     print("New device broadcast" + device)
 }
 ```
