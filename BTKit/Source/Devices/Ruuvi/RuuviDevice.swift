@@ -321,7 +321,7 @@ extension RuuviTag: Equatable {
 
 public extension RuuviTag {
     var isConnected: Bool {
-        return BTKit.scanner.isConnected(uuid: uuid)
+        return BTKit.connection.isConnected(uuid: uuid)
     }
     
     
