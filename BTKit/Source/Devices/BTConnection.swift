@@ -10,7 +10,26 @@ public struct BTConnection {
     }
     
     @discardableResult
-    public func keep<T: AnyObject>(for observer: T, uuid: String, options: BTScannerOptionsInfo?, connected: @escaping (T, BTConnectResult) -> Void, heartbeat: @escaping (T, BTDevice) -> Void, disconnected: @escaping (T, BTDisconnectResult) -> Void) -> ObservationToken? {
+    public func stop<T:AnyObject>(for observer: T, uuid: String, options: BTScannerOptionsInfo?, result: @escaping (T, BTDisconnectResult) -> Void) -> ObservationToken? {
+        if !isConnected(uuid: uuid) {
+            let info = BTKitParsedOptionsInfo(options)
+            info.callbackQueue.execute {
+                result(observer, .already)
+            }
+            return nil
+        } else {
+            return backgroundScanner.disconnect(observer, uuid: uuid, options: options, disconnected: { (observer, error) in
+                if let error = error {
+                    result(observer, .failure(error))
+                } else {
+                    result(observer, .just)
+                }
+            })
+        }
+    }
+    
+    @discardableResult
+    public func start<T: AnyObject>(for observer: T, uuid: String, options: BTScannerOptionsInfo?, connected: @escaping (T, BTConnectResult) -> Void, heartbeat: @escaping (T, BTDevice) -> Void, disconnected: @escaping (T, BTDisconnectResult) -> Void) -> ObservationToken? {
         if isConnected(uuid: uuid) {
             let info = BTKitParsedOptionsInfo(options)
             info.callbackQueue.execute {
@@ -95,7 +114,12 @@ public extension BTConnection {
     }
     
     @discardableResult
-    public func keep<T: AnyObject>(for observer: T, uuid: String, connected: @escaping (T, BTConnectResult) -> Void, heartbeat: @escaping (T, BTDevice) -> Void, disconnected: @escaping (T, BTDisconnectResult) -> Void) -> ObservationToken? {
-        return keep(for: observer, uuid: uuid, options: nil, connected: connected, heartbeat: heartbeat, disconnected: disconnected)
+    public func start<T: AnyObject>(for observer: T, uuid: String, connected: @escaping (T, BTConnectResult) -> Void, heartbeat: @escaping (T, BTDevice) -> Void, disconnected: @escaping (T, BTDisconnectResult) -> Void) -> ObservationToken? {
+        return start(for: observer, uuid: uuid, options: nil, connected: connected, heartbeat: heartbeat, disconnected: disconnected)
+    }
+    
+    @discardableResult
+    public func stop<T:AnyObject>(for observer: T, uuid: String, result: @escaping (T, BTDisconnectResult) -> Void) -> ObservationToken? {
+        return stop(for: observer, uuid: uuid, options: nil, result: result)
     }
 }

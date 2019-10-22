@@ -401,7 +401,6 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
                     connectedPeripherals.update(with: peripheral)
                     peripheral.delegate = self
                     manager.connect(peripheral)
-                    print(peripheral.identifier.uuidString)
                 } else if !isConnectable {
                     connect.block(.logic(.notConnectable))
                 }
@@ -423,20 +422,22 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
     }
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+        connectedPeripherals.remove(peripheral)
+        // but still notify
         observations.disconnect.values
             .filter({ $0.uuid == peripheral.identifier.uuidString })
-            .forEach({ $0.block(nil) })
+            .forEach({
+                $0.block(nil)
+            })
+        // keep connection if still needs to
         observations.connect.values
-            .filter({ $0.uuid == peripheral.identifier.uuidString })
-            .forEach( { connect in
-                if connectedPeripherals.contains(peripheral)
-                    && peripheral.state != .connected {
-                    peripheral.delegate = self
-                    manager.connect(peripheral)
-                    print("RECONNECT" + peripheral.identifier.uuidString)
-                }
-            } )
-        
+        .filter({ $0.uuid == peripheral.identifier.uuidString })
+        .forEach( { connect in
+            connectedPeripherals.update(with: peripheral)
+            peripheral.delegate = self
+            manager.connect(peripheral)
+        } )
+
         
         let content = UNMutableNotificationContent()
         content.title = "Did Disconnect"
