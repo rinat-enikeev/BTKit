@@ -12,7 +12,7 @@ public struct BTUnknownDevice {
 
 public extension BTUnknownDevice {
     var isConnected: Bool {
-        return BTKit.foreground.scanner.isConnected(uuid: uuid)
+        return BTKit.background.scanner.isConnected(uuid: uuid)
     }
 }
 

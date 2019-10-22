@@ -2,8 +2,6 @@ public struct BTForeground {
     public let scanner: BTScanner = BTScanneriOS(decoders: [RuuviDecoderiOS()],
                                                  services: [RuuviNUSService()])
     
-    public let services: BTServices = BTServices()
-    
     @discardableResult
     public func connect<T: AnyObject>(for observer: T, uuid: String, options: BTScannerOptionsInfo?, result: @escaping (T, BTConnectResult) -> Void) -> ObservationToken? {
         if scanner.isConnected(uuid: uuid) {

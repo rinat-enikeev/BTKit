@@ -222,6 +222,18 @@ extension BTBackgroundScanneriOS {
             self?.startIfNeeded()
         }
         
+        if bluetoothState == .poweredOn,
+            let uuidObject = UUID(uuidString: uuid) {
+            let peripherals = manager.retrievePeripherals(withIdentifiers: [uuidObject])
+            peripherals.filter( { $0.identifier.uuidString == uuid } ).forEach { (peripheral) in
+                if peripheral.state != .connected {
+                    connectedPeripherals.update(with: peripheral)
+                    peripheral.delegate = self
+                    manager.connect(peripheral)
+                }
+            }
+        }
+        
         return ObservationToken { [weak self] in
             self?.queue.async { [weak self] in
                 self?.observations.connect.removeValue(forKey: id)
@@ -263,14 +275,27 @@ extension BTBackgroundScanneriOS {
         }
         
         queue.async { [weak self] in
-            if let connectedClients = self?.observations.connect.values.filter({ $0.uuid == uuid }).count, connectedClients == 0 {
-                self?.connectedPeripherals
-                    .filter( { $0.identifier.uuidString == uuid } )
-                    .forEach({ (peripheral) in
-                        if peripheral.state != .disconnected {
-                            self?.manager.cancelPeripheralConnection(peripheral)
+            if let connectedClients = self?.observations.connect.values.filter({ $0.uuid == uuid }).count {
+                if connectedClients == 0 {
+                    self?.connectedPeripherals
+                        .filter( { $0.identifier.uuidString == uuid } )
+                        .forEach({ (peripheral) in
+                            if peripheral.state != .disconnected {
+                                self?.manager.cancelPeripheralConnection(peripheral)
+                            }
+                        })
+                } else {
+                    info.callbackQueue.execute { [weak observer, weak self] in
+                        guard let observer = observer else {
+                            self?.queue.async { [weak self] in
+                                self?.observations.disconnect.removeValue(forKey: id)
+                                self?.stopIfNeeded()
+                            }
+                            return
                         }
-                    })
+                        disconnected(observer, .logic(.connectedByOthers))
+                    }
+                }
             }
         }
         

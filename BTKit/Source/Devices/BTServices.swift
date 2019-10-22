@@ -8,7 +8,7 @@ public enum BTServiceType {
         switch self {
         case .ruuvi(let type):
             switch type {
-            case .uart(let service):
+            case .nus(let service):
                 return service.uuid
             }
         }
@@ -121,7 +121,7 @@ public enum BTRuuviNUSService {
 }
 
 public enum BTRuuviServiceType {
-    case uart(BTRuuviNUSService)
+    case nus(BTRuuviNUSService)
 }
 
 public protocol BTService: class {
@@ -177,79 +177,123 @@ public struct BTKitRuuviNUSService {
     }
     
     @discardableResult
-    public func log<T: AnyObject>(for observer: T, uuid: String, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) -> ObservationToken? {
+    public func log<T: AnyObject>(for observer: T, uuid: String, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) {
         return log(for: observer, uuid: uuid, from: date, options: nil, result: result)
     }
     
     @discardableResult
-    public func log<T: AnyObject>(for observer: T, uuid: String, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) -> ObservationToken? {
+    public func log<T: AnyObject>(for observer: T, uuid: String, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) {
+        var connectToken: ObservationToken?
+        connectToken = BTKit.background.connect(for: observer, uuid: uuid, options: options, connected: { (observer, connectResult) in
+            connectToken?.invalidate()
+            switch connectResult {
+            case .already:
+                var serveToken: ObservationToken?
+                serveToken = self.serveLogs(observer, uuid, options, date) { observer, serveResult in
+                    serveToken?.invalidate()
+                    var disconnectToken: ObservationToken?
+                    disconnectToken = BTKit.background.disconnect(for: observer, uuid: uuid, options: options) { (observer, disconnectResult) in
+                        disconnectToken?.invalidate()
+                        switch disconnectResult {
+                        case .already:
+                            result(observer, serveResult)
+                        case .just:
+                            result(observer, serveResult)
+                        case .connected:
+                            result(observer, serveResult)
+                        case .failure(let error):
+                            result(observer, .failure(error))
+                        }
+                    }
+                }
+            case .just:
+                var serveToken: ObservationToken?
+                serveToken = self.serveLogs(observer, uuid, options, date) { observer, serveResult in
+                    serveToken?.invalidate()
+                    var disconnectToken: ObservationToken?
+                    disconnectToken = BTKit.background.disconnect(for: observer, uuid: uuid, options: options) { (observer, disconnectResult) in
+                        disconnectToken?.invalidate()
+                        switch disconnectResult {
+                        case .already:
+                            result(observer, serveResult)
+                        case .just:
+                            result(observer, serveResult)
+                        case .connected:
+                            result(observer, serveResult)
+                        case .failure(let error):
+                            result(observer, .failure(error))
+                        }
+                    }
+                }
+            case .failure(let error):
+                result(observer, .failure(error))
+            case .disconnected:
+                break // do nothing, it will reconnect
+            }
+        })
+    }
+    
+    private func serveLogs<T: AnyObject>(_ observer: T, _ uuid: String, _ options: BTScannerOptionsInfo?, _ date: Date, _ result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) -> ObservationToken? {
         let info = BTKitParsedOptionsInfo(options)
-        if !BTKit.foreground.scanner.isConnected(uuid: uuid) {
-            info.callbackQueue.execute {
-                result(observer, .failure(.logic(.notConnected)))
-            }
-            return nil
-        } else {
-            var values = [RuuviTagEnvLogFull]()
-            var lastValue = RuuviTagEnvLogFullClass()
-            let service: BTRuuviNUSService = .all
-            let serveToken = BTKit.foreground.scanner.serve(observer, for: uuid, .ruuvi(.uart(service)), options: options, request: { (observer, peripheral, rx, tx) in
-                if let rx = rx {
-                    peripheral?.writeValue(service.request(from: date), for: rx, type: .withResponse)
-                } else {
-                    info.callbackQueue.execute {
-                        result(observer, .failure(.unexpected(.characteristicIsNil)))
-                    }
-                }
-            }, response: { (observer, data) in
-                if let data = data {
-                    if service.isEndOfTransmissionFlag(data: data) {
-                        info.callbackQueue.execute {
-                            result(observer, .success(values))
-                        }
-                    } else if let row = service.responseRow(from: data) {
-                        switch row.1 {
-                        case .temperature:
-                            lastValue.temperature = row.2
-                        case .humidity:
-                            lastValue.humidity = row.2
-                        case .pressure:
-                            lastValue.pressure = row.2
-                        case .all:
-                            break
-                        }
-                        if let t = lastValue.temperature,
-                            let h = lastValue.humidity,
-                            let p = lastValue.pressure {
-                            let log = RuuviTagEnvLogFull(date: row.0, temperature: t, humidity: h, pressure: p)
-                            values.append(log)
-                            lastValue = RuuviTagEnvLogFullClass()
-                        }
-                    }
-                } else {
-                    info.callbackQueue.execute {
-                        result(observer, .failure(.unexpected(.dataIsNil)))
-                    }
-                }
-            }) { (observer, error) in
+        var values = [RuuviTagEnvLogFull]()
+        var lastValue = RuuviTagEnvLogFullClass()
+        let service: BTRuuviNUSService = .all
+        let serveToken = BTKit.background.scanner.serve(observer, for: uuid, .ruuvi(.nus(service)), options: options, request: { (observer, peripheral, rx, tx) in
+            if let rx = rx {
+                peripheral?.writeValue(service.request(from: date), for: rx, type: .withResponse)
+            } else {
                 info.callbackQueue.execute {
-                    result(observer, .failure(error))
+                    result(observer, .failure(.unexpected(.characteristicIsNil)))
                 }
             }
-            return serveToken
+        }, response: { (observer, data) in
+            if let data = data {
+                if service.isEndOfTransmissionFlag(data: data) {
+                    info.callbackQueue.execute {
+                        result(observer, .success(values))
+                    }
+                } else if let row = service.responseRow(from: data) {
+                    switch row.1 {
+                    case .temperature:
+                        lastValue.temperature = row.2
+                    case .humidity:
+                        lastValue.humidity = row.2
+                    case .pressure:
+                        lastValue.pressure = row.2
+                    case .all:
+                        break
+                    }
+                    if let t = lastValue.temperature,
+                        let h = lastValue.humidity,
+                        let p = lastValue.pressure {
+                        let log = RuuviTagEnvLogFull(date: row.0, temperature: t, humidity: h, pressure: p)
+                        values.append(log)
+                        lastValue = RuuviTagEnvLogFullClass()
+                    }
+                }
+            } else {
+                info.callbackQueue.execute {
+                    result(observer, .failure(.unexpected(.dataIsNil)))
+                }
+            }
+        }) { (observer, error) in
+            info.callbackQueue.execute {
+                result(observer, .failure(error))
+            }
         }
+        return serveToken
     }
     
     private func serve<T: AnyObject>(_ service: BTRuuviNUSService, for observer: T, uuid: String, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
         let info = BTKitParsedOptionsInfo(options)
-        if !BTKit.foreground.scanner.isConnected(uuid: uuid) {
+        if !BTKit.background.scanner.isConnected(uuid: uuid) {
             info.callbackQueue.execute {
                 result(observer, .failure(.logic(.notConnected)))
             }
             return nil
         } else {
             var values = [RuuviTagEnvLog]()
-            let serveToken = BTKit.foreground.scanner.serve(observer, for: uuid, .ruuvi(.uart(service)), options: options, request: { (observer, peripheral, rx, tx) in
+            let serveToken = BTKit.background.scanner.serve(observer, for: uuid, .ruuvi(.nus(service)), options: options, request: { (observer, peripheral, rx, tx) in
                 if let rx = rx {
                     peripheral?.writeValue(service.request(from: date), for: rx, type: .withResponse)
                 } else {

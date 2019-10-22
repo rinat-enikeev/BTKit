@@ -321,26 +321,25 @@ extension RuuviTag: Equatable {
 
 public extension RuuviTag {
     var isConnected: Bool {
-        return BTKit.foreground.scanner.isConnected(uuid: uuid)
-            || BTKit.background.scanner.isConnected(uuid: uuid)
+        return BTKit.background.scanner.isConnected(uuid: uuid)
     }
     
     
     @discardableResult
-    func connect<T: AnyObject>(for observer: T, result: @escaping (T, BTConnectResult) -> Void) -> ObservationToken? {
-        return connect(for: observer, options: nil, result: result)
+    func connect<T: AnyObject>(for observer: T, connected: @escaping (T, BTConnectResult) -> Void, heartbeat: @escaping (T, BTDevice) -> Void, disconnected: @escaping (T, BTDisconnectResult) -> Void) -> ObservationToken? {
+        return connect(for: observer, options: nil, connected: connected, heartbeat: heartbeat, disconnected: disconnected)
     }
     
     @discardableResult
-    func connect<T: AnyObject>(for observer: T, options: BTScannerOptionsInfo?, result: @escaping (T, BTConnectResult) -> Void) -> ObservationToken? {
+    func connect<T: AnyObject>(for observer: T, options: BTScannerOptionsInfo?, connected: @escaping (T, BTConnectResult) -> Void, heartbeat: @escaping (T, BTDevice) -> Void, disconnected: @escaping (T, BTDisconnectResult) -> Void) -> ObservationToken? {
         if !isConnectable {
             let info = BTKitParsedOptionsInfo(options)
             info.callbackQueue.execute {
-                result(observer, .failure(.logic(.notConnectable)))
+                connected(observer, .failure(.logic(.notConnectable)))
             }
             return nil
         } else {
-            return BTKit.foreground.connect(for: observer, uuid: uuid, options: options, result: result)
+            return BTKit.background.connect(for: observer, uuid: uuid, options: options, connected: connected, heartbeat: heartbeat, disconnected: disconnected)
         }
     }
     
@@ -358,7 +357,7 @@ public extension RuuviTag {
             }
             return nil
         } else {
-            return BTKit.foreground.disconnect(for: observer, uuid: uuid, options: options, result: result)
+            return BTKit.background.disconnect(for: observer, uuid: uuid, options: options, result: result)
         }
     }
     
@@ -376,7 +375,7 @@ public extension RuuviTag {
             }
             return nil
         } else {
-            return BTKit.foreground.services.ruuvi.nus.celisus(for: observer, uuid: uuid, from: date, result: result)
+            return BTKit.background.services.ruuvi.nus.celisus(for: observer, uuid: uuid, from: date, result: result)
         }
     }
     
@@ -394,7 +393,7 @@ public extension RuuviTag {
             }
             return nil
         } else {
-            return BTKit.foreground.services.ruuvi.nus.humidity(for: observer, uuid: uuid, from: date, options: options, result: result)
+            return BTKit.background.services.ruuvi.nus.humidity(for: observer, uuid: uuid, from: date, options: options, result: result)
         }
     }
     
@@ -412,25 +411,24 @@ public extension RuuviTag {
             }
             return nil
         } else {
-            return BTKit.foreground.services.ruuvi.nus.pressure(for: observer, uuid: uuid, from: date, options: options, result: result)
+            return BTKit.background.services.ruuvi.nus.pressure(for: observer, uuid: uuid, from: date, options: options, result: result)
         }
     }
     
     @discardableResult
-    func log<T: AnyObject>(for observer: T, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) -> ObservationToken? {
-        return log(for: observer, from: date, options: nil, result: result)
+    func log<T: AnyObject>(for observer: T, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) {
+        log(for: observer, from: date, options: nil, result: result)
     }
     
     @discardableResult
-    func log<T: AnyObject>(for observer: T, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) -> ObservationToken? {
+    func log<T: AnyObject>(for observer: T, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) {
         if !isConnectable {
             let info = BTKitParsedOptionsInfo(options)
             info.callbackQueue.execute {
                 result(observer, .failure(.logic(.notConnectable)))
             }
-            return nil
         } else {
-            return BTKit.foreground.services.ruuvi.nus.log(for: observer, uuid: uuid, from: date, options: options, result: result)
+            BTKit.background.services.ruuvi.nus.log(for: observer, uuid: uuid, from: date, options: options, result: result)
         }
     }
 }
