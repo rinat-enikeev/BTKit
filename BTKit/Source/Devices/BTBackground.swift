@@ -60,4 +60,9 @@ public struct BTBackground {
             })
         }
     }
+    
+    @discardableResult
+    func observe<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo? = nil, closure: @escaping (T, BTDevice) -> Void) -> ObservationToken {
+        return scanner.observe(observer, uuid: uuid, options: options, closure: closure)
+    }
 }

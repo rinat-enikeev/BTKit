@@ -27,7 +27,8 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
         connect: [UUID: ConnectObservation](),
         heartbeat: [UUID: HeartbeatObservation](),
         disconnect: [UUID: DisconnectObservation](),
-        service: [UUID: ServiceObservation]()
+        service: [UUID: ServiceObservation](),
+        observe: [UUID: ObserveObservation]()
     )
     private var isReady = false { didSet { startIfNeeded() } }
     
@@ -77,6 +78,16 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
         }
     }
     
+    private class ObserveObservation {
+        var block: (BTDevice) -> Void
+        var uuid: String = ""
+        
+        init(block: @escaping ((BTDevice) -> Void), uuid: String) {
+            self.block = block
+            self.uuid = uuid
+        }
+    }
+    
     required init(services: [BTService], decoders: [BTDecoder]) {
         self.services = services
         self.decoders = decoders
@@ -105,6 +116,7 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
         || observations.heartbeat.count > 0
         || observations.state.count > 0
         || observations.service.count > 0
+        || observations.observe.count > 0
     }
     
 }
@@ -394,6 +406,42 @@ extension BTBackgroundScanneriOS {
             }
         }
     }
+    
+    @discardableResult
+    func observe<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, closure: @escaping (T, BTDevice) -> Void) -> ObservationToken {
+        let options = currentDefaultOptions + (options ?? .empty)
+        let info = BTKitParsedOptionsInfo(options)
+        
+        let id = UUID()
+        
+        queue.async { [weak self] in
+            self?.observations.observe[id] = ObserveObservation(block: { [weak self, weak observer] device in
+                guard let observer = observer else {
+                    self?.observations.observe.removeValue(forKey: id)
+                    self?.stopIfNeeded()
+                    return
+                }
+                info.callbackQueue.execute { [weak observer, weak self] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.observe.removeValue(forKey: id)
+                            self?.stopIfNeeded()
+                        }
+                        return
+                    }
+                    closure(observer, device)
+                }
+            }, uuid: uuid)
+            self?.startIfNeeded()
+        }
+        
+        return ObservationToken { [weak self] in
+            self?.queue.async { [weak self] in
+                self?.observations.observe.removeValue(forKey: id)
+                self?.stopIfNeeded()
+            }
+        }
+    }
 }
 
 extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
@@ -588,6 +636,13 @@ extension BTBackgroundScanneriOS: CBPeripheralDelegate {
             observations.heartbeat.values.filter( {
                 $0.uuid == peripheral.identifier.uuidString
             } )
+            .forEach( {
+                $0.block(heartbeatDevice)
+            } )
+            observations.observe.values
+            .filter({
+                $0.uuid == peripheral.identifier.uuidString
+            })
             .forEach( {
                 $0.block(heartbeatDevice)
             } )
