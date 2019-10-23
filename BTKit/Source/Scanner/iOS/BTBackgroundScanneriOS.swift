@@ -30,6 +30,7 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
         observe: [UUID: ObserveObservation]()
     )
     private var isReady = false { didSet { startIfNeeded() } }
+    private var restorePeripherals = Set<CBPeripheral>()
     
     private class ConnectObservation {
         var block: (BTError?) -> Void
@@ -67,6 +68,7 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
         var failure: ((BTError) -> Void)?
         var uuid: String = ""
         var type: BTServiceType
+        var madeRequest: Bool = false
         
         init(uuid: String, type: BTServiceType, request: ((CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((Data?) -> Void)?, failure: ((BTError) -> Void)?) {
             self.uuid = uuid
@@ -394,6 +396,9 @@ extension BTBackgroundScanneriOS {
                     return
                 }
                 let peripheral = self?.connectedPeripherals.first(where: { $0.identifier.uuidString == uuid })
+                self?.queue.async { [weak self] in
+                    self?.observations.service.values.filter({ $0.uuid == uuid }).forEach({ $0.madeRequest = true })
+                }
                 request?(observer, peripheral, service.rx, service.tx)
             }
         }
@@ -452,9 +457,36 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
                 closure(state)
             }
         }
-        
-        connectedPeripherals.forEach { (peripheral) in
-            peripheral.discoverServices(services.map({ $0.uuid }))
+        if isReady {
+            restorePeripherals.forEach { (peripheral) in
+                peripheral.delegate = self
+                switch peripheral.state {
+                case .connected:
+                    connectedPeripherals.update(with: peripheral)
+                    observations.connect.values
+                        .filter({ $0.uuid == peripheral.identifier.uuidString })
+                        .forEach({
+                            $0.block(nil)
+                        })
+                case .connecting:
+                    connectedPeripherals.update(with: peripheral)
+                    manager.connect(peripheral)
+                default:
+                    observations.connect.values
+                        .filter({ $0.uuid == peripheral.identifier.uuidString })
+                        .forEach( { connect in
+                            if !connectedPeripherals.contains(peripheral) {
+                                connectedPeripherals.update(with: peripheral)
+                                manager.connect(peripheral)
+                            }
+                        } )   
+                }
+            }
+            restorePeripherals.removeAll()
+            
+            connectedPeripherals.forEach { (peripheral) in
+                peripheral.discoverServices(services.map({ $0.uuid }))
+            }
         }
     }
     
@@ -513,30 +545,11 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
     }
     
     func centralManager(_ central: CBCentralManager, willRestoreState dict: [String : Any]) {
-        _ = manager
-        
         if let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] {
             peripherals.forEach({ $0.delegate = self })
-            peripherals
-                .filter({ $0.state == .disconnected || $0.state == .disconnecting })
-                .forEach({
-                    connectedPeripherals.update(with: $0)
-                    manager.connect($0)
-                })
-            peripherals.filter({ $0.state == .connecting }).forEach( {
-                connectedPeripherals.update(with: $0)
-                manager.connect($0)
-            })
-            peripherals.filter({ $0.state == .connected }).forEach { (connectedPeripheral) in
-                connectedPeripherals.update(with: connectedPeripheral)
-                observations.connect.values
-                    .filter({ $0.uuid == connectedPeripheral.identifier.uuidString })
-                    .forEach({
-                        $0.block(nil)
-                    })
-                connectedPeripheral.discoverServices(services.map({ $0.uuid }))
-            }
+            restorePeripherals.formUnion(peripherals)
         }
+        _ = manager
     }
 }
 
@@ -630,7 +643,10 @@ extension BTBackgroundScanneriOS: CBPeripheralDelegate {
                     $0.type.uuid == service.uuid
                 } )
                 .forEach( {
-                    $0.request?(peripheral, service.rx, service.tx)
+                    if !$0.madeRequest {
+                        $0.request?(peripheral, service.rx, service.tx)
+                        $0.madeRequest = true
+                    }
                 } )
         }
     }
