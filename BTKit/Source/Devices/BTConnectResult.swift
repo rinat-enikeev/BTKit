@@ -10,6 +10,6 @@ public enum BTConnectResult {
 public enum BTDisconnectResult {
     case already
     case just
-    case connected // by other objects
+    case stillConnected // by other objects
     case failure(BTError)
 }

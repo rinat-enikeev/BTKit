@@ -199,7 +199,7 @@ public struct BTKitRuuviNUSService {
                             result(observer, serveResult)
                         case .just:
                             result(observer, serveResult)
-                        case .connected:
+                        case .stillConnected:
                             result(observer, serveResult)
                         case .failure(let error):
                             result(observer, .failure(error))
@@ -218,7 +218,7 @@ public struct BTKitRuuviNUSService {
                             result(observer, serveResult)
                         case .just:
                             result(observer, serveResult)
-                        case .connected:
+                        case .stillConnected:
                             result(observer, serveResult)
                         case .failure(let error):
                             result(observer, .failure(error))
@@ -335,7 +335,7 @@ public struct BTKitRuuviNUSService {
                             result(observer, serveResult)
                         case .just:
                             result(observer, serveResult)
-                        case .connected:
+                        case .stillConnected:
                             result(observer, serveResult)
                         case .failure(let error):
                             result(observer, .failure(error))
@@ -354,7 +354,7 @@ public struct BTKitRuuviNUSService {
                             result(observer, serveResult)
                         case .just:
                             result(observer, serveResult)
-                        case .connected:
+                        case .stillConnected:
                             result(observer, serveResult)
                         case .failure(let error):
                             result(observer, .failure(error))

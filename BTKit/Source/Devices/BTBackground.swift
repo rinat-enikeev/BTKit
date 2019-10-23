@@ -47,7 +47,7 @@ public struct BTBackground {
                     case .logic(let logicError):
                         switch logicError {
                         case .connectedByOthers:
-                            result?(observer, .connected)
+                            result?(observer, .stillConnected)
                         default:
                             result?(observer, .failure(error))
                         }
