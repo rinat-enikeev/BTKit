@@ -1,7 +1,6 @@
 import Foundation
 import CoreBluetooth
 import AVFoundation
-import UserNotifications
 
 class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
     
@@ -483,13 +482,6 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
         observations.connect.values
             .filter({ $0.uuid == peripheral.identifier.uuidString })
             .forEach({ $0.block(nil) })
-        
-        let content = UNMutableNotificationContent()
-        content.title = "Connected"
-        content.body = peripheral.identifier.uuidString
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
-        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
-        UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
     }
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
@@ -508,26 +500,6 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
             peripheral.delegate = self
             manager.connect(peripheral)
         } )
-
-        
-        let content = UNMutableNotificationContent()
-        content.title = "Did Disconnect"
-        content.body = peripheral.description
-        let state = peripheral.state
-        switch state {
-        case .connected:
-            content.subtitle = "Connected"
-        case .connecting:
-            content.subtitle = "Connecting"
-        case .disconnected:
-            content.subtitle = "Disconnected"
-        case .disconnecting:
-            content.subtitle = "Disconnecting"
-        }
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
-        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
-        UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
-        
     }
       
     func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
@@ -564,28 +536,6 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
                     })
                 connectedPeripheral.discoverServices(services.map({ $0.uuid }))
             }
-            let content = UNMutableNotificationContent()
-            content.title = "WillRestoreState"
-            content.body = peripherals.description
-            
-            if peripherals.count > 0 {
-                let state = peripherals[0].state
-                switch state {
-                case .connected:
-                    content.subtitle = "Connected"
-                case .connecting:
-                    content.subtitle = "Connecting"
-                case .disconnected:
-                    content.subtitle = "Disconnected"
-                case .disconnecting:
-                    content.subtitle = "Disconnecting"
-                }
-            }
-            
-            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
-            let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
-            UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
-            
         }
     }
 }
