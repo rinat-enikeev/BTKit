@@ -13,6 +13,7 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
     private var services: [BTService]
     private var decoders: [BTDecoder]
     private var connectedPeripherals = Set<CBPeripheral>()
+    private var connectingPeripherals = Set<CBPeripheral>()
     private lazy var restoreId: String = {
         let bundleId = Bundle.main.bundleIdentifier ?? "io.btkit.BTKit"
         return bundleId + "." + "BTBackgroundScanneriOS." + services.reduce("", { $0 + $1.uuid.uuidString })
@@ -240,7 +241,7 @@ extension BTBackgroundScanneriOS {
             let peripherals = manager.retrievePeripherals(withIdentifiers: [uuidObject])
             peripherals.filter( { $0.identifier.uuidString == uuid } ).forEach { (peripheral) in
                 if peripheral.state != .connected {
-                    connectedPeripherals.update(with: peripheral)
+                    connectingPeripherals.update(with: peripheral)
                     peripheral.delegate = self
                     manager.connect(peripheral)
                 }
@@ -290,13 +291,19 @@ extension BTBackgroundScanneriOS {
         queue.async { [weak self] in
             if let connectedClients = self?.observations.connect.values.filter({ $0.uuid == uuid }).count {
                 if connectedClients == 0 {
-                    self?.connectedPeripherals
+                    self?.connectingPeripherals
                         .filter( { $0.identifier.uuidString == uuid } )
                         .forEach({ (peripheral) in
                             if peripheral.state != .disconnected {
                                 self?.manager.cancelPeripheralConnection(peripheral)
                             }
                         })
+                    self?.connectedPeripherals.filter( { $0.identifier.uuidString == uuid } )
+                    .forEach({ (peripheral) in
+                        if peripheral.state != .disconnected {
+                            self?.manager.cancelPeripheralConnection(peripheral)
+                        }
+                    })
                 } else {
                     info.callbackQueue.execute { [weak observer, weak self] in
                         guard let observer = observer else {
@@ -469,14 +476,14 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
                             $0.block(nil)
                         })
                 case .connecting:
-                    connectedPeripherals.update(with: peripheral)
+                    connectingPeripherals.update(with: peripheral)
                     manager.connect(peripheral)
                 default:
                     observations.connect.values
                         .filter({ $0.uuid == peripheral.identifier.uuidString })
                         .forEach( { connect in
-                            if !connectedPeripherals.contains(peripheral) {
-                                connectedPeripherals.update(with: peripheral)
+                            if !connectingPeripherals.contains(peripheral) {
+                                connectingPeripherals.update(with: peripheral)
                                 manager.connect(peripheral)
                             }
                         } )   
@@ -498,9 +505,10 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
             .filter({ $0.uuid == uuid })
             .forEach( { connect in
                 if isConnectable
+                    && !connectingPeripherals.contains(peripheral)
                     && !connectedPeripherals.contains(peripheral)
                     && peripheral.state != .connected {
-                    connectedPeripherals.update(with: peripheral)
+                    connectingPeripherals.update(with: peripheral)
                     peripheral.delegate = self
                     manager.connect(peripheral)
                 } else if !isConnectable {
@@ -510,6 +518,8 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
     }
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+        connectingPeripherals.remove(peripheral)
+        connectedPeripherals.update(with: peripheral)
         peripheral.discoverServices(services.map({ $0.uuid }))
         observations.connect.values
             .filter({ $0.uuid == peripheral.identifier.uuidString })
@@ -517,6 +527,7 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
     }
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+        connectingPeripherals.remove(peripheral)
         connectedPeripherals.remove(peripheral)
         // but still notify
         observations.disconnect.values
@@ -528,10 +539,25 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
         observations.connect.values
         .filter({ $0.uuid == peripheral.identifier.uuidString })
         .forEach( { connect in
-            connectedPeripherals.update(with: peripheral)
+            connectingPeripherals.update(with: peripheral)
             peripheral.delegate = self
             manager.connect(peripheral)
         } )
+    }
+    
+    func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
+        connectingPeripherals.remove(peripheral)
+        if let error = error {
+            observations.connect.values
+                .filter({ $0.uuid == peripheral.identifier.uuidString })
+                .forEach({
+                    $0.block(.connect(error))
+                })
+        }
+    }
+    
+    func centralManager(_ central: CBCentralManager, connectionEventDidOccur event: CBConnectionEvent, for peripheral: CBPeripheral) {
+        print(event)
     }
       
     func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {

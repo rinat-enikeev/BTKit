@@ -2,6 +2,7 @@ import Foundation
 
 public enum BTError: Error {
     case logic(BTLogicError)
+    case connect(Error)
     case unexpected(BTUnexpectedError)
 }
 
@@ -14,6 +15,8 @@ extension BTError: LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .logic(let error):
+            return error.localizedDescription
+        case .connect(let error):
             return error.localizedDescription
         case .unexpected(let error):
             return error.localizedDescription
