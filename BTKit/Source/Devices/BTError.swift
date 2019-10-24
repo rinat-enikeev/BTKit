@@ -28,6 +28,7 @@ public enum BTLogicError: Error {
     case notConnected
     case notConnectable
     case connectedByOthers
+    case notConnectedInDesiredInterval
 }
 
 extension BTLogicError: LocalizedError {
@@ -43,6 +44,8 @@ extension BTLogicError: LocalizedError {
             return NSLocalizedString("BTLogicError.notConnectable", bundle: bundle, comment: "")
         case .connectedByOthers:
             return NSLocalizedString("BTLogicError.connectedByOthers", bundle: bundle, comment: "")
+        case .notConnectedInDesiredInterval:
+            return NSLocalizedString("BTLogicError.notConnectedInDesiredInterval", bundle: bundle, comment: "")
         }
     }
 }

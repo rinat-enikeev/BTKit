@@ -10,12 +10,14 @@ public enum BTScannerOptionsInfoItem {
     case callbackQueue(CallbackQueue)
     case lostDeviceDelay(TimeInterval)
     case demo(Int)
+    case desiredConnectInterval(TimeInterval)
 }
 
 public struct BTKitParsedOptionsInfo {
     public var callbackQueue: CallbackQueue = .mainCurrentOrAsync
     public var lostDeviceDelay: TimeInterval = 5
     public var demoCount: Int = 0
+    public var desiredConnectInterval: TimeInterval = 5
     
     public init(_ info: BTScannerOptionsInfo?) {
         guard let info = info else { return }
@@ -24,6 +26,7 @@ public struct BTKitParsedOptionsInfo {
             case .callbackQueue(let value): callbackQueue = value
             case .lostDeviceDelay(let value): lostDeviceDelay = value
             case .demo(let value): demoCount = value
+            case .desiredConnectInterval(let value): desiredConnectInterval = value
             }
         }
     }

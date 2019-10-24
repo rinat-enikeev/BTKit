@@ -2,3 +2,4 @@
 "BTLogicError.notConnected" = "BTKit: не подключен к устройству.";
 "BTLogicError.notConnectable" = "BTKit: устройство не поддерживает соединение.";
 "BTLogicError.connectedByOthers" = "BTKit: к устройству подключены другие клиенты";
+"BTLogicError.notConnectedInDesiredInterval" = "BTKit: не удалось подключиться к устройству в течение желаемого интервала";
