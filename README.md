@@ -9,9 +9,10 @@ Scan for Ruuvi BLE devices and access them with dot syntax. See [tutorial](https
 
 ## Features
 
-- [x] Listen to [RuuviTag](https://ruuvi.com/index.php?id=2) data
+- [x] Listen to [RuuviTag](https://ruuvi.com/index.php?id=2) advertisements
 - [x] Connect/disconnect [RuuviTag](https://ruuvi.com/index.php?id=2) 
 - [x] Read [RuuviTag](https://ruuvi.com/index.php?id=2) logs 
+- [x] [RuuviTag](https://ruuvi.com/index.php?id=2) logging in background (firmware 3.27.2+) 
 
 ## Requirements
 
@@ -37,20 +38,20 @@ To make it work import `BTKit`
 import BTKit
 ```
 
-### Check for Bluetooth state
+### Check for iPhone/iPad Bluetooth state
 
 ```swift
 view.isBluetoothEnabled = scanner.bluetoothState == .poweredOn
 
-BTKit.foreground.state(self, closure: { (observer, state) in
+BTForeground.shared.state(self, closure: { (observer, state) in
     observer.view.isBluetoothEnabled = state == .poweredOn
 })
 ```
 
-### Listen to broadcasts
+### Listen to advertisements in foreground
 
 ```swift
-BTKit.foreground.scan(self) { (observer, device) in
+BTForeground.scan(self) { (observer, device) in
                              if let ruuviTag = device.ruuvi?.tag {
                                  print(ruuviTag)
                              }
@@ -60,18 +61,18 @@ BTKit.foreground.scan(self) { (observer, device) in
 ### Determine if device is out of range or went offline
 
 ```swift
-BTKit.foreground.lost(self, options: [.lostDeviceDelay(10)], closure: { (observer, device) in
+BTForeground.lost(self, options: [.lostDeviceDelay(10)], closure: { (observer, device) in
     if let ruuviTag = device.ruuvi?.tag {
-        print("Ruuvi Tag " + ruuviTag + " didn't broadcast for 10 seconds")
+        print("Ruuvi Tag is offline or went out of range")
     }
 })
 ```
 
-### Observe specific device
+### Observe specific device advertisements
 
 ```swift
-BTKit.foreground.observe(self, uuid: ruuviTag.uuid, options: [.callbackQueue(.untouch)]) { (observer, device) in
-    print("New device broadcast" + device)
+BTForeground.observe(self, uuid: ruuviTag.uuid, options: [.callbackQueue(.untouch)]) { (observer, device) in
+    print("Specific RuuviTag is advertising")
 }
 ```
 
@@ -79,35 +80,65 @@ BTKit.foreground.observe(self, uuid: ruuviTag.uuid, options: [.callbackQueue(.un
 
 ```swift
 if ruuviTag.isConnectable {
-    ruuviTag.connect(for: self) { (observer, result) in
+    ruuviTag.connect(for: self, options: [.desiredConnectInterval(10)],  connected: { observer, result in
         switch result {
-        case .already:
-            print("already connected")
         case .just:
             print("just connected")
+        case .already:
+            print("was already connected")
         case .disconnected:
             print("just disconnected")
         case .failure(let error):
             print(error.localizedDescription)
         }
-    }
+    }, heartbeat: { observer, device in
+        if let ruuviTag = device.ruuvi?.tag {
+            print(ruuviTag)
+        }
+    }, disconnected: { observer, result in
+        switch result {
+        case .just:
+            print("just disconnected")
+        case .already:
+            print("was already disconnected")
+        case .stillConnected:
+            print("still connected because of other callers")
+        case .failure(let error):
+            print(error.localizedDescription)
+        }
+    })
 }
 ```
 or use `uuid` 
 
 ```swift
-BTKit.background.connect(for: self, uuid: ruuviTag.uuid) { (observer, result) in
+BTBackground.shared.connect(for: self, options: [.desiredConnectInterval(10)],  connected: { observer, result in
     switch result {
-    case .already:
-        observer.isConnected = true
     case .just:
-        observer.isConnected = true
+        print("just connected")
+    case .already:
+        print("was already connected")
     case .disconnected:
-        observer.isConnected = false
+        print("just disconnected")
     case .failure(let error):
         print(error.localizedDescription)
-        observer.isConnected = false
     }
+}, heartbeat: { observer, device in
+    if let ruuviTag = device.ruuvi?.tag {
+        print(ruuviTag)
+    }
+}, disconnected: { observer, result in
+    switch result {
+    case .just:
+        print("just disconnected")
+    case .already:
+        print("was already disconnected")
+    case .stillConnected:
+        print("still connected because of other callers")
+    case .failure(let error):
+        print(error.localizedDescription)
+    }
+})
 }
 ```
 
@@ -145,7 +176,7 @@ if let from = Calendar.current.date(byAdding: .minute, value: -5, to: Date()) {
 or use `BTKit` if you know only the `uuid`:
 
 ```swift
-BTKit.background.services.ruuvi.nus.celisus(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
+BTBackground.shared.services.ruuvi.nus.celisus(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
     switch result {
     case .success(let values):
         print(values)
@@ -154,7 +185,7 @@ BTKit.background.services.ruuvi.nus.celisus(for: self, uuid: ruuviTag.uuid, from
     }
 })
 
-BTKit.background.services.ruuvi.nus.humidity(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
+BTBackground.shared.services.ruuvi.nus.humidity(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
     switch result {
     case .success(let values):
         print(values)
@@ -163,7 +194,7 @@ BTKit.background.services.ruuvi.nus.humidity(for: self, uuid: ruuviTag.uuid, fro
     }
 })
 
-BTKit.background.services.ruuvi.nus.pressure(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
+BTBackground.shared.services.ruuvi.nus.pressure(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
     switch result {
     case .success(let values):
         print(values)
@@ -191,7 +222,7 @@ if let from = Calendar.current.date(byAdding: .minute, value: -5, to: Date()) {
 Or use `BTKit` if you know only the `uuid`
 
 ```swift
-BTKit.background.services.ruuvi.nus.log(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
+BTBackground.shared.services.ruuvi.nus.log(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
     switch result {
     case .success(let logs):
         print(logs)
@@ -222,7 +253,7 @@ ruuviTag.disconnect(for: self) { (observer, result) in
 or use `BTKit` if you know only `uuid`
 
 ```swift
-BTKit.background.disconnect(for: self, uuid: ruuviTag.uuid) { (observer, result) in
+BTBackground.shared.disconnect(for: self, uuid: ruuviTag.uuid) { (observer, result) in
     switch result {
     case .just:
         observer.isConnected = false
