@@ -17,7 +17,7 @@ public struct BTKitParsedOptionsInfo {
     public var callbackQueue: CallbackQueue = .mainCurrentOrAsync
     public var lostDeviceDelay: TimeInterval = 5
     public var demoCount: Int = 0
-    public var desiredConnectInterval: TimeInterval = 5
+    public var desiredConnectInterval: TimeInterval = 0
     
     public init(_ info: BTScannerOptionsInfo?) {
         guard let info = info else { return }

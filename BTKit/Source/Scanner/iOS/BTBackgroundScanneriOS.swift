@@ -129,44 +129,50 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
     
     private func addConnecting(peripheral: CBPeripheral) {
         connectingPeripherals.update(with: peripheral)
-        let connectRequestDate = Date()
         let uuid = peripheral.identifier.uuidString
-        connectingTimers[uuid]?.cancel()
-        let timer = DispatchSource.makeTimerSource(queue: queue)
-        connectingTimers[uuid] = timer
-        timer.schedule(deadline: .now() + 1, repeating: .seconds(1))
-        timer.setEventHandler { [weak self] in
-            guard let sSelf = self else { timer.cancel(); return }
-            let connected = sSelf.connectedPeripherals.contains(peripheral)
-            if connected {
-                timer.cancel()
-                sSelf.connectingTimers.removeValue(forKey: uuid)
-            } else {
-                sSelf.observations.connect.values
-                    .filter({ $0.uuid == peripheral.identifier.uuidString })
-                    .forEach({
-                        let now = Date()
-                        let elapsed = now.timeIntervalSince(connectRequestDate)
-                        if elapsed > $0.desiredConnectInterval {
-                            $0.block(.logic(.notConnectedInDesiredInterval))
-                            
-                            // cancel timer if no more observers
-                            sSelf.queue.async { [weak sSelf] in
-                                guard let ssSelf = sSelf else { return }
-                                if !ssSelf.observations.connect.values.contains(where: { $0.uuid == uuid }) {
-                                    timer.cancel()
-                                    ssSelf.connectingTimers.removeValue(forKey: uuid)
+        
+        if observations.connect.values.contains(where: { $0.uuid == peripheral.identifier.uuidString && $0.desiredConnectInterval > 0 }) {
+                let connectRequestDate = Date()
+                connectingTimers[uuid]?.cancel()
+                let timer = DispatchSource.makeTimerSource(queue: queue)
+                connectingTimers[uuid] = timer
+                timer.schedule(deadline: .now() + 1, repeating: .seconds(1))
+                timer.setEventHandler { [weak self] in
+                    guard let sSelf = self else { timer.cancel(); return }
+                    let connected = sSelf.connectedPeripherals.contains(peripheral)
+                    if connected {
+                        timer.cancel()
+                        sSelf.connectingTimers.removeValue(forKey: uuid)
+                    } else {
+                        sSelf.observations.connect.values
+                            .filter({ $0.uuid == peripheral.identifier.uuidString && $0.desiredConnectInterval > 0 })
+                            .forEach({
+                                let now = Date()
+                                let elapsed = now.timeIntervalSince(connectRequestDate)
+                                if elapsed > $0.desiredConnectInterval {
+                                    $0.block(.logic(.notConnectedInDesiredInterval))
+                                    
+                                    // cancel timer if no more observers
+                                    sSelf.queue.async { [weak sSelf] in
+                                        guard let ssSelf = sSelf else { return }
+                                        if !ssSelf.observations.connect.values.contains(where: { $0.uuid == uuid }) {
+                                            timer.cancel()
+                                            ssSelf.connectingTimers.removeValue(forKey: uuid)
+                                        }
+                                    }
                                 }
-                            }
-                        }
-                    })
-            }
+                            })
+                    }
+                }
+                timer.activate()
         }
-        timer.activate()
     }
     
     private func removeConnecting(peripheral: CBPeripheral) {
         connectingPeripherals.remove(peripheral)
+        let uuid = peripheral.identifier.uuidString
+        connectingTimers[uuid]?.cancel()
+        connectingTimers.removeValue(forKey: uuid)
     }
 }
 
