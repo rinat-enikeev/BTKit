@@ -210,6 +210,8 @@ ruuviTag.disconnect(for: self) { (observer, result) in
         observer.isConnected = false
     case .already:
         observer.isConnected = false
+    case .stillConnected:
+        observer.isConnected = true
     case .failure(let error):
         observer.isConnected = false
         print(error.localizedDescription)
