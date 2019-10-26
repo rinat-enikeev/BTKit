@@ -1,6 +1,9 @@
 import Foundation
 
 public struct BTBackground {
+    
+    public static let shared = BTBackground()
+    
     let scanner: BTBackgroundScanner = BTBackgroundScanneriOS(services: [RuuviNUSService()], decoders: [RuuviDecoderiOS()])
     
     public let services: BTServices = BTServices()

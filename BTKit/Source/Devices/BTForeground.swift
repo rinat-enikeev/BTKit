@@ -1,4 +1,6 @@
 public struct BTForeground {
+    public static let shared = BTForeground()
+    
     let scanner: BTScanner = BTScanneriOS(decoders: [RuuviDecoderiOS()],
                                           services: [RuuviNUSService()])
     
