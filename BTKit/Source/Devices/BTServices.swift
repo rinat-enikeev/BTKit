@@ -146,42 +146,34 @@ public struct BTRuuviServices {
 
 public struct BTKitRuuviNUSService {
     
-    @discardableResult
     public func celisus<T: AnyObject>(for observer: T, uuid: String, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) {
         celisus(for: observer, uuid: uuid, from: date, options: nil, result: result)
     }
     
-    @discardableResult
     public func celisus<T: AnyObject>(for observer: T, uuid: String, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) {
         serve(.temperature, for: observer, uuid: uuid, from: date, options: options, result: result)
     }
     
-    @discardableResult
     public func humidity<T: AnyObject>(for observer: T, uuid: String, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) {
         humidity(for: observer, uuid: uuid, from: date, options: nil, result: result)
     }
     
-    @discardableResult
     public func humidity<T: AnyObject>(for observer: T, uuid: String, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) {
         serve(.humidity, for: observer, uuid: uuid, from: date, options: options, result: result)
     }
     
-    @discardableResult
     public func pressure<T: AnyObject>(for observer: T, uuid: String, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) {
             pressure(for: observer, uuid: uuid, from: date, options: nil, result: result)
     }
     
-    @discardableResult
     public func pressure<T: AnyObject>(for observer: T, uuid: String, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) {
         serve(.pressure, for: observer, uuid: uuid, from: date, options: options, result: result)
     }
     
-    @discardableResult
     public func log<T: AnyObject>(for observer: T, uuid: String, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) {
         return log(for: observer, uuid: uuid, from: date, options: nil, result: result)
     }
     
-    @discardableResult
     public func log<T: AnyObject>(for observer: T, uuid: String, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) {
         var connectToken: ObservationToken?
         connectToken = BTKit.background.connect(for: observer, uuid: uuid, options: options, connected: { (observer, connectResult) in

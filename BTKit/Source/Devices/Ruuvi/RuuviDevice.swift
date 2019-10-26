@@ -361,12 +361,10 @@ public extension RuuviTag {
         }
     }
     
-    @discardableResult
     func celisus<T: AnyObject>(for observer: T, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) {
         celisus(for: observer, from: date, options: nil, result: result)
     }
     
-    @discardableResult
     func celisus<T: AnyObject>(for observer: T, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) {
         if !isConnectable {
             let info = BTKitParsedOptionsInfo(options)
@@ -378,12 +376,10 @@ public extension RuuviTag {
         }
     }
     
-    @discardableResult
     func humidity<T: AnyObject>(for observer: T, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) {
         humidity(for: observer, from: date, options: nil, result: result)
     }
     
-    @discardableResult
     func humidity<T: AnyObject>(for observer: T, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) {
         if !isConnectable {
             let info = BTKitParsedOptionsInfo(options)
@@ -395,12 +391,10 @@ public extension RuuviTag {
         }
     }
     
-    @discardableResult
     func pressure<T: AnyObject>(for observer: T, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) {
         pressure(for: observer, from: date, options: nil, result: result)
     }
     
-    @discardableResult
     func pressure<T: AnyObject>(for observer: T, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) {
         if !isConnectable {
             let info = BTKitParsedOptionsInfo(options)
@@ -412,12 +406,10 @@ public extension RuuviTag {
         }
     }
     
-    @discardableResult
     func log<T: AnyObject>(for observer: T, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) {
         log(for: observer, from: date, options: nil, result: result)
     }
     
-    @discardableResult
     func log<T: AnyObject>(for observer: T, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) {
         if !isConnectable {
             let info = BTKitParsedOptionsInfo(options)

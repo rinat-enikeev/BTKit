@@ -45,7 +45,6 @@ class HeartbeatServiceBTKit: HeartbeatService {
     }
     
     private func startListening(to uuid: String) {
-        var readLogsToken: ObservationToken?
         tokens[uuid] = BTKit.background.connect(for: self, uuid: uuid, connected: { (observer, result) in
             print("connected")
         }, heartbeat: { (observer, device) in
