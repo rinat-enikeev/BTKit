@@ -42,7 +42,7 @@ import BTKit
 ```swift
 view.isBluetoothEnabled = scanner.bluetoothState == .poweredOn
 
-BTKit.foreground.scanner.state(self, closure: { (observer, state) in
+BTKit.foreground.state(self, closure: { (observer, state) in
     observer.view.isBluetoothEnabled = state == .poweredOn
 })
 ```
@@ -50,7 +50,7 @@ BTKit.foreground.scanner.state(self, closure: { (observer, state) in
 ### Listen to broadcasts
 
 ```swift
-BTKit.foreground.scanner.scan(self) { (observer, device) in
+BTKit.foreground.scan(self) { (observer, device) in
                              if let ruuviTag = device.ruuvi?.tag {
                                  print(ruuviTag)
                              }
@@ -60,7 +60,7 @@ BTKit.foreground.scanner.scan(self) { (observer, device) in
 ### Determine if device is out of range or went offline
 
 ```swift
-BTKit.foreground.scanner.lost(self, options: [.lostDeviceDelay(10)], closure: { (observer, device) in
+BTKit.foreground.lost(self, options: [.lostDeviceDelay(10)], closure: { (observer, device) in
     if let ruuviTag = device.ruuvi?.tag {
         print("Ruuvi Tag " + ruuviTag + " didn't broadcast for 10 seconds")
     }
@@ -70,7 +70,7 @@ BTKit.foreground.scanner.lost(self, options: [.lostDeviceDelay(10)], closure: { 
 ### Observe specific device
 
 ```swift
-BTKit.foreground.scanner.observe(self, uuid: ruuviTag.uuid, options: [.callbackQueue(.untouch)]) { (observer, device) in
+BTKit.foreground.observe(self, uuid: ruuviTag.uuid, options: [.callbackQueue(.untouch)]) { (observer, device) in
     print("New device broadcast" + device)
 }
 ```
@@ -96,7 +96,7 @@ if ruuviTag.isConnectable {
 or use `uuid` 
 
 ```swift
-BTKit.connection.establish(for: self, uuid: ruuviTag.uuid) { (observer, result) in
+BTKit.background.connect(for: self, uuid: ruuviTag.uuid) { (observer, result) in
     switch result {
     case .already:
         observer.isConnected = true
@@ -145,7 +145,7 @@ if let from = Calendar.current.date(byAdding: .minute, value: -5, to: Date()) {
 or use `BTKit` if you know only the `uuid`:
 
 ```swift
-BTKit.service.ruuvi.uart.nus.celisus(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
+BTKit.background.services.ruuvi.nus.celisus(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
     switch result {
     case .success(let values):
         print(values)
@@ -154,7 +154,7 @@ BTKit.service.ruuvi.uart.nus.celisus(for: self, uuid: ruuviTag.uuid, from: from,
     }
 })
 
-BTKit.service.ruuvi.uart.nus.humidity(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
+BTKit.background.services.ruuvi.nus.humidity(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
     switch result {
     case .success(let values):
         print(values)
@@ -163,7 +163,7 @@ BTKit.service.ruuvi.uart.nus.humidity(for: self, uuid: ruuviTag.uuid, from: from
     }
 })
 
-BTKit.service.ruuvi.uart.nus.pressure(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
+BTKit.background.services.ruuvi.nus.pressure(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
     switch result {
     case .success(let values):
         print(values)
@@ -191,7 +191,7 @@ if let from = Calendar.current.date(byAdding: .minute, value: -5, to: Date()) {
 Or use `BTKit` if you know only the `uuid`
 
 ```swift
-BTKit.service.ruuvi.uart.nus.log(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
+BTKit.background.services.ruuvi.nus.log(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
     switch result {
     case .success(let logs):
         print(logs)
@@ -220,12 +220,14 @@ ruuviTag.disconnect(for: self) { (observer, result) in
 or use `BTKit` if you know only `uuid`
 
 ```swift
-BTKit.connection.drop(for: self, uuid: ruuviTag.uuid) { (observer, result) in
+BTKit.background.disconnect(for: self, uuid: ruuviTag.uuid) { (observer, result) in
     switch result {
     case .just:
         observer.isConnected = false
     case .already:
         observer.isConnected = false
+    case .stillConnected:
+        observer.isConnected = true
     case .failure(let error):
         observer.isConnected = false
         print(error.localizedDescription)
