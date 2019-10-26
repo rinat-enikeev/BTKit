@@ -71,7 +71,7 @@ BTForeground.lost(self, options: [.lostDeviceDelay(10)], closure: { (observer, d
 ### Observe specific device advertisements
 
 ```swift
-BTForeground.observe(self, uuid: ruuviTag.uuid, options: [.callbackQueue(.untouch)]) { (observer, device) in
+BTForeground.shared.observe(self, uuid: ruuviTag.uuid, options: [.callbackQueue(.untouch)]) { (observer, device) in
     print("Specific RuuviTag is advertising")
 }
 ```
