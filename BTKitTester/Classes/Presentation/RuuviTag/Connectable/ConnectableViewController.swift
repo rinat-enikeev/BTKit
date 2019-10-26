@@ -38,10 +38,6 @@ class ConnectableViewController: UITableViewController {
     private var logs = [RuuviTagEnvLogFull]()
     private var connectToken: ObservationToken?
     private var disconnectToken: ObservationToken?
-    private var temperatureToken: ObservationToken?
-    private var humidityToken: ObservationToken?
-    private var pressureToken: ObservationToken?
-    private var allToken: ObservationToken?
     private let valueCellReuseIdentifier = "ConnectableValueTableViewCellCellReuseIdentifier"
     private let valuesCellReuseIdentifier = "ConnectableValuesTableViewCellReuseIdentifier"
     private lazy var timeFormatter: DateFormatter = {
@@ -53,10 +49,6 @@ class ConnectableViewController: UITableViewController {
     deinit {
         connectToken?.invalidate()
         disconnectToken?.invalidate()
-        temperatureToken?.invalidate()
-        humidityToken?.invalidate()
-        pressureToken?.invalidate()
-        allToken?.invalidate()
     }
     
 }
@@ -75,7 +67,7 @@ extension ConnectableViewController {
     
     @IBAction func connectButtonTouchUpInside(_ sender: Any) {
         connectToken?.invalidate()
-        connectToken = BTKit.foreground.connect(for: self, uuid: ruuviTag.uuid) { (observer, result) in
+        connectToken = BTKit.background.connect(for: self, uuid: ruuviTag.uuid, connected: { (observer, result) in
             switch result {
             case .already:
                 observer.isConnected = true
@@ -87,19 +79,21 @@ extension ConnectableViewController {
                 print(error.localizedDescription)
                 observer.isConnected = false
             }
-        }
+        })
     }
     
     @IBAction func disconnectButtonTouchUpInside(_ sender: Any) {
         connectToken?.invalidate()
         disconnectToken?.invalidate()
-        disconnectToken = BTKit.foreground.disconnect(for: self, uuid: ruuviTag.uuid) { (observer, result) in
+        disconnectToken = BTKit.background.disconnect(for: self, uuid: ruuviTag.uuid) { (observer, result) in
             observer.disconnectToken?.invalidate()
             switch result {
             case .just:
                 observer.isConnected = false
             case .already:
                 observer.isConnected = false
+            case .stillConnected:
+                observer.isConnected = true
             case .failure(let error):
                 observer.isConnected = false
                 print(error.localizedDescription)
@@ -109,11 +103,9 @@ extension ConnectableViewController {
     
     @IBAction func temperatureButtonTouchUpInside(_ sender: Any) {
         if let from = Calendar.current.date(byAdding: .minute, value: -5, to: Date()) {
-            temperatureToken?.invalidate()
             isReading = true
-            temperatureToken = BTKit.foreground.services.ruuvi.nus.celisus(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
+            BTKit.background.services.ruuvi.nus.celisus(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
                 observer.isReading = false
-                observer.temperatureToken?.invalidate()
                 switch result {
                 case .success(let values):
                     observer.values = values
@@ -128,11 +120,9 @@ extension ConnectableViewController {
     
     @IBAction func humidityButtonTouchUpInside(_ sender: Any) {
         if let from = Calendar.current.date(byAdding: .minute, value: -5, to: Date()) {
-            humidityToken?.invalidate()
             isReading = true
-            humidityToken = BTKit.foreground.services.ruuvi.nus.humidity(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
+            BTKit.background.services.ruuvi.nus.humidity(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
                 observer.isReading = false
-                observer.humidityToken?.invalidate()
                 switch result {
                 case .success(let values):
                     observer.values = values
@@ -147,11 +137,9 @@ extension ConnectableViewController {
     
     @IBAction func pressureButtonTouchUpInside(_ sender: Any) {
         if let from = Calendar.current.date(byAdding: .minute, value: -5, to: Date()) {
-            pressureToken?.invalidate()
             isReading = true
-            pressureToken = BTKit.foreground.services.ruuvi.nus.pressure(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
+            BTKit.background.services.ruuvi.nus.pressure(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
                 observer.isReading = false
-                observer.pressureToken?.invalidate()
                 switch result {
                 case .success(let values):
                     observer.values = values
@@ -166,11 +154,9 @@ extension ConnectableViewController {
     
     @IBAction func allButtonTouchUpInside(_ sender: Any) {
         if let from = Calendar.current.date(byAdding: .minute, value: -5, to: Date()) {
-            allToken?.invalidate()
             isReading = true
-            allToken = BTKit.foreground.services.ruuvi.nus.log(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
+            BTKit.background.services.ruuvi.nus.log(for: self, uuid: ruuviTag.uuid, from: from, result: { (observer, result) in
                 observer.isReading = false
-                observer.allToken?.invalidate()
                 switch result {
                 case .success(let logs):
                     observer.logs = logs

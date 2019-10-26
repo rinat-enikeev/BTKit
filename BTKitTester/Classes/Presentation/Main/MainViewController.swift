@@ -161,12 +161,12 @@ extension MainViewController {
 // MARK: - Observing & Reloading
 extension MainViewController {
     private func startObserving() {
-        scanToken = BTKit.foreground.scanner.scan(self) { (observer, device) in
+        scanToken = BTKit.foreground.scan(self) { (observer, device) in
             if let tag = device.ruuvi?.tag {
                 observer.ruuviTagsSet.update(with: tag)
             }
         }
-        unknownToken = BTKit.foreground.scanner.unknown(self, closure: { (observer, device) in
+        unknownToken = BTKit.foreground.unknown(self, closure: { (observer, device) in
             observer.unknownSet.update(with: device)
         })
     }

@@ -20,8 +20,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         UNUserNotificationCenter.current().delegate = self
-        let title = (launchOptions?[.bluetoothCentrals] as? [String])?.description ?? "Nothing"
-        LocalNotification.shared.show(title: title, body: "AppDelegate")
         heartbeatService.restore()
         return true
     }

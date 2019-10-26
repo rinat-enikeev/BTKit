@@ -64,6 +64,8 @@ class HeartbeatServiceBTKit: HeartbeatService {
                 print("already disconnected")
             case .just:
                 print("just disconnected")
+            case .stillConnected:
+                print("still connected")
             case .failure(let error):
                 print(error.localizedDescription)
             }
