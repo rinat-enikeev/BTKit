@@ -100,7 +100,7 @@ if ruuviTag.isConnectable {
         case .just:
             print("just disconnected")
         case .already:
-            print("was already disconnected")
+            print("disconnected")
         case .stillConnected:
             print("still connected because of other callers")
         case .failure(let error):
@@ -132,7 +132,7 @@ BTBackground.shared.connect(for: self, options: [.desiredConnectInterval(10)],  
     case .just:
         print("just disconnected")
     case .already:
-        print("was already disconnected")
+        print("disconnected")
     case .stillConnected:
         print("still connected because of other callers")
     case .failure(let error):
