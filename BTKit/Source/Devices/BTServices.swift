@@ -193,6 +193,8 @@ public struct BTKitRuuviNUSService {
                             result(observer, serveResult)
                         case .stillConnected:
                             result(observer, serveResult)
+                        case .bluetoothWasPoweredOff:
+                            result(observer, serveResult)
                         case .failure(let error):
                             result(observer, .failure(error))
                         }
@@ -211,6 +213,8 @@ public struct BTKitRuuviNUSService {
                         case .just:
                             result(observer, serveResult)
                         case .stillConnected:
+                            result(observer, serveResult)
+                        case .bluetoothWasPoweredOff:
                             result(observer, serveResult)
                         case .failure(let error):
                             result(observer, .failure(error))
@@ -329,6 +333,8 @@ public struct BTKitRuuviNUSService {
                             result(observer, serveResult)
                         case .stillConnected:
                             result(observer, serveResult)
+                        case .bluetoothWasPoweredOff:
+                            result(observer, serveResult)
                         case .failure(let error):
                             result(observer, .failure(error))
                         }
@@ -347,6 +353,8 @@ public struct BTKitRuuviNUSService {
                         case .just:
                             result(observer, serveResult)
                         case .stillConnected:
+                            result(observer, serveResult)
+                        case .bluetoothWasPoweredOff:
                             result(observer, serveResult)
                         case .failure(let error):
                             result(observer, .failure(error))

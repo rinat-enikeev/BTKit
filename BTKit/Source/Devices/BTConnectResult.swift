@@ -11,5 +11,6 @@ public enum BTDisconnectResult {
     case already
     case just
     case stillConnected // by other objects
+    case bluetoothWasPoweredOff // by user
     case failure(BTError)
 }

@@ -29,6 +29,7 @@ public enum BTLogicError: Error {
     case notConnectable
     case connectedByOthers
     case notConnectedInDesiredInterval
+    case bluetoothWasPoweredOff
 }
 
 extension BTLogicError: LocalizedError {
@@ -46,6 +47,8 @@ extension BTLogicError: LocalizedError {
             return NSLocalizedString("BTLogicError.connectedByOthers", bundle: bundle, comment: "")
         case .notConnectedInDesiredInterval:
             return NSLocalizedString("BTLogicError.notConnectedInDesiredInterval", bundle: bundle, comment: "")
+        case .bluetoothWasPoweredOff:
+            return NSLocalizedString("BTLogicError.bluetoothWasPoweredOff", bundle: bundle, comment: "")
         }
     }
 }

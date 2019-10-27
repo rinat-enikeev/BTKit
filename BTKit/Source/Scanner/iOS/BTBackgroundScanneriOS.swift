@@ -517,6 +517,26 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
                 closure(state)
             }
         }
+        
+        if central.state == .poweredOff {
+            connectedPeripherals.forEach({ peripheral in
+                manager.cancelPeripheralConnection(peripheral)
+                observations.disconnect.values
+                .filter({ $0.uuid == peripheral.identifier.uuidString })
+                .forEach({
+                    $0.block(.logic(.bluetoothWasPoweredOff))
+                })
+            })
+            connectingPeripherals.formUnion(connectedPeripherals)
+            connectedPeripherals.removeAll()
+            
+        } else if central.state == .poweredOn {
+            connectingPeripherals.forEach { (peripheral) in
+                addConnecting(peripheral: peripheral)
+                manager.connect(peripheral)
+            }
+        }
+        
         if isReady {
             restorePeripherals.forEach { (peripheral) in
                 peripheral.delegate = self

@@ -27,7 +27,19 @@ public struct BTBackground {
                 heartbeat?(observer, device)
             }) { observer, error in
                 if let error = error {
-                    disconnected?(observer, .failure(error))
+                    switch error {
+                    case .logic(let logicError):
+                        switch logicError {
+                        case .connectedByOthers:
+                            disconnected?(observer, .stillConnected)
+                        case .bluetoothWasPoweredOff:
+                            disconnected?(observer, .bluetoothWasPoweredOff)
+                        default:
+                            disconnected?(observer, .failure(error))
+                        }
+                    default:
+                        disconnected?(observer, .failure(error))
+                    }
                 } else {
                     disconnected?(observer, .just)
                 }
@@ -51,6 +63,8 @@ public struct BTBackground {
                         switch logicError {
                         case .connectedByOthers:
                             result?(observer, .stillConnected)
+                        case .bluetoothWasPoweredOff:
+                            result?(observer, .bluetoothWasPoweredOff)
                         default:
                             result?(observer, .failure(error))
                         }
