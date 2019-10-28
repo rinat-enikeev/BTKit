@@ -3,12 +3,14 @@ import Foundation
 public enum BTError: Error {
     case logic(BTLogicError)
     case connect(Error)
+    case readRSSI(Error)
     case unexpected(BTUnexpectedError)
 }
 
 public enum BTUnexpectedError: Error {
     case characteristicIsNil
     case dataIsNil
+    case bothResultAndErrorAreNil
 }
 
 extension BTError: LocalizedError {
@@ -17,6 +19,8 @@ extension BTError: LocalizedError {
         case .logic(let error):
             return error.localizedDescription
         case .connect(let error):
+            return error.localizedDescription
+        case .readRSSI(let error):
             return error.localizedDescription
         case .unexpected(let error):
             return error.localizedDescription

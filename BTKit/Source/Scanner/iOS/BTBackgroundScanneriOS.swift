@@ -28,7 +28,8 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
         heartbeat: [UUID: HeartbeatObservation](),
         disconnect: [UUID: DisconnectObservation](),
         service: [UUID: ServiceObservation](),
-        observe: [UUID: ObserveObservation]()
+        observe: [UUID: ObserveObservation](),
+        readRSSI: [UUID: ReadRSSIObservation]()
     )
     private var isReady = false { didSet { startIfNeeded() } }
     private var restorePeripherals = Set<CBPeripheral>()
@@ -92,6 +93,16 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
         }
     }
     
+    private class ReadRSSIObservation {
+        var block: (NSNumber?, BTError?) -> Void
+        var uuid: String = ""
+        
+        init(block: @escaping ((NSNumber?, BTError?) -> Void), uuid: String) {
+            self.block = block
+            self.uuid = uuid
+        }
+    }
+    
     required init(services: [BTService], decoders: [BTDecoder]) {
         self.services = services
         self.decoders = decoders
@@ -129,8 +140,9 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
     
     private func addConnecting(peripheral: CBPeripheral) {
         connectingPeripherals.update(with: peripheral)
-        let uuid = peripheral.identifier.uuidString
         
+        // if desiredConnectInterval is set, notify listeners
+        let uuid = peripheral.identifier.uuidString
         if observations.connect.values.contains(where: { $0.uuid == peripheral.identifier.uuidString && $0.desiredConnectInterval > 0 }) {
                 let connectRequestDate = Date()
                 connectingTimers[uuid]?.cancel()
@@ -216,6 +228,54 @@ extension BTBackgroundScanneriOS {
             self?.queue.async { [weak self] in
                 self?.observations.state.removeValue(forKey: id)
                 self?.stopIfNeeded()
+            }
+        }
+    }
+    
+    @discardableResult
+    func readRSSI<T: AnyObject>(
+        _ observer: T,
+        uuid: String,
+        options: BTScannerOptionsInfo? = nil,
+        closure: @escaping (T, NSNumber?, BTError?) -> Void
+        ) -> ObservationToken {
+        
+        let options = currentDefaultOptions + (options ?? .empty)
+        let info = BTKitParsedOptionsInfo(options)
+        
+        let id = UUID()
+        
+        queue.async { [weak self] in
+            self?.observations.readRSSI[id] = ReadRSSIObservation(block: { [weak self, weak observer] (rssi, error) in
+                guard let observer = observer else {
+                    self?.observations.readRSSI.removeValue(forKey: id)
+                    return
+                }
+                info.callbackQueue.execute { [weak self, weak observer] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.readRSSI.removeValue(forKey: id)
+                        }
+                        return
+                    }
+                    closure(observer, rssi, error)
+                }
+            }, uuid: uuid)
+        }
+        
+        if connectingPeripherals.contains(where: { $0.identifier.uuidString == uuid}) {
+            connectedPeripherals
+                .filter({ $0.identifier.uuidString == uuid })
+                .forEach({ (peripheral) in
+                    peripheral.readRSSI()
+                })
+        } else {
+            closure(observer, nil, .logic(.notConnected))
+        }
+        
+        return ObservationToken { [weak self] in
+            self?.queue.async { [weak self] in
+                self?.observations.readRSSI.removeValue(forKey: id)
             }
         }
     }
@@ -653,6 +713,19 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
 }
 
 extension BTBackgroundScanneriOS: CBPeripheralDelegate {
+    
+    func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
+        observations.readRSSI.values
+            .filter({ $0.uuid == peripheral.identifier.uuidString })
+            .forEach({
+                if let error = error {
+                    $0.block(RSSI, .readRSSI(error))
+                } else {
+                    $0.block(RSSI, nil)
+                }
+            })
+    }
+    
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         guard let discovered = peripheral.services else { return }
         for d in discovered {

@@ -22,6 +22,10 @@ public protocol BTBackgroundScanner {
     
     @discardableResult
     func observe<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, closure: @escaping (T, BTDevice) -> Void) -> ObservationToken
+    
+    @discardableResult
+    func readRSSI<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, closure: @escaping (T, NSNumber?, BTError?) -> Void
+        ) -> ObservationToken
 }
 
 public extension BTBackgroundScanner {
@@ -52,5 +56,11 @@ public extension BTBackgroundScanner {
     @discardableResult
     func observe<T: AnyObject>(_ observer: T, uuid: String, closure: @escaping (T, BTDevice) -> Void) -> ObservationToken {
         return observe(observer, uuid: uuid, options: nil, closure: closure)
+    }
+    
+    @discardableResult
+    func readRSSI<T: AnyObject>(_ observer: T, uuid: String, closure: @escaping (T, NSNumber?, BTError?) -> Void
+    ) -> ObservationToken {
+        return readRSSI(observer, uuid: uuid, options: nil, closure: closure)
     }
 }

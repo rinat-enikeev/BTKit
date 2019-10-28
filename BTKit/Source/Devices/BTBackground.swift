@@ -9,6 +9,24 @@ public struct BTBackground {
     public let services: BTServices = BTServices()
     
     @discardableResult
+    public func readRSSI<T: AnyObject>(for observer: T, uuid: String, options: BTScannerOptionsInfo? = nil, result: @escaping (T, Result<Double,BTError>) -> Void) -> ObservationToken? {
+        if scanner.isConnected(uuid: uuid) {
+            return scanner.readRSSI(observer, uuid: uuid, options: options) { (observer, RSSI, error) in
+                if let error = error {
+                    result(observer, .failure(error))
+                } else if let RSSI = RSSI {
+                    result(observer, .success(RSSI.doubleValue))
+                } else {
+                    result(observer, .failure(.unexpected(.bothResultAndErrorAreNil)))
+                }
+            }
+        } else {
+            result(observer, .failure(.logic(.notConnected)))
+            return nil
+        }
+    }
+    
+    @discardableResult
     public func connect<T: AnyObject>(for observer: T, uuid: String, options: BTScannerOptionsInfo? = nil, connected: ((T, BTConnectResult) -> Void)? = nil, heartbeat: ((T, BTDevice) -> Void)? = nil, disconnected: ((T, BTDisconnectResult) -> Void)? = nil) -> ObservationToken? {
         if scanner.isConnected(uuid: uuid) {
             let info = BTKitParsedOptionsInfo(options)
