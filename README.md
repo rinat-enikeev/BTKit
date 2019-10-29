@@ -51,7 +51,7 @@ BTForeground.shared.state(self, closure: { (observer, state) in
 ### Listen to advertisements in foreground
 
 ```swift
-BTForeground.scan(self) { (observer, device) in
+BTForeground.shared.scan(self) { (observer, device) in
                              if let ruuviTag = device.ruuvi?.tag {
                                  print(ruuviTag)
                              }
@@ -61,7 +61,7 @@ BTForeground.scan(self) { (observer, device) in
 ### Determine if device is out of range or went offline
 
 ```swift
-BTForeground.lost(self, options: [.lostDeviceDelay(10)], closure: { (observer, device) in
+BTForeground.shared.lost(self, options: [.lostDeviceDelay(10)], closure: { (observer, device) in
     if let ruuviTag = device.ruuvi?.tag {
         print("Ruuvi Tag is offline or went out of range")
     }
