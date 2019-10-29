@@ -9,13 +9,13 @@ public struct BTBackground {
     public let services: BTServices = BTServices()
     
     @discardableResult
-    public func readRSSI<T: AnyObject>(for observer: T, uuid: String, options: BTScannerOptionsInfo? = nil, result: @escaping (T, Result<Double,BTError>) -> Void) -> ObservationToken? {
+    public func readRSSI<T: AnyObject>(for observer: T, uuid: String, options: BTScannerOptionsInfo? = nil, result: @escaping (T, Result<Int,BTError>) -> Void) -> ObservationToken? {
         if scanner.isConnected(uuid: uuid) {
             return scanner.readRSSI(observer, uuid: uuid, options: options) { (observer, RSSI, error) in
                 if let error = error {
                     result(observer, .failure(error))
                 } else if let RSSI = RSSI {
-                    result(observer, .success(RSSI.doubleValue))
+                    result(observer, .success(RSSI.intValue))
                 } else {
                     result(observer, .failure(.unexpected(.bothResultAndErrorAreNil)))
                 }

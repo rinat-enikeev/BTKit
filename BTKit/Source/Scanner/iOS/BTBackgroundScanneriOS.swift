@@ -263,7 +263,7 @@ extension BTBackgroundScanneriOS {
             }, uuid: uuid)
         }
         
-        if connectingPeripherals.contains(where: { $0.identifier.uuidString == uuid}) {
+        if connectedPeripherals.contains(where: { $0.identifier.uuidString == uuid}) {
             connectedPeripherals
                 .filter({ $0.identifier.uuidString == uuid })
                 .forEach({ (peripheral) in
