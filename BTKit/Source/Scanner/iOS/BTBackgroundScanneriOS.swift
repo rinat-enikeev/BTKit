@@ -72,7 +72,6 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
         var failure: ((BTError) -> Void)?
         var uuid: String = ""
         var type: BTServiceType
-        var madeRequest: Bool = false
         
         init(uuid: String, type: BTServiceType, request: ((CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((Data?) -> Void)?, failure: ((BTError) -> Void)?) {
             self.uuid = uuid
@@ -517,7 +516,7 @@ extension BTBackgroundScanneriOS {
                 }
                 let peripheral = self?.connectedPeripherals.first(where: { $0.identifier.uuidString == uuid })
                 self?.queue.async { [weak self] in
-                    self?.observations.service.values.filter({ $0.uuid == uuid }).forEach({ $0.madeRequest = true })
+                    self?.observations.service.values.filter({ $0.uuid == uuid }).forEach({ $0.request = nil })
                 }
                 request?(observer, peripheral, service.rx, service.tx)
             }
@@ -815,10 +814,7 @@ extension BTBackgroundScanneriOS: CBPeripheralDelegate {
                     $0.type.uuid == service.uuid
                 } )
                 .forEach( {
-                    if !$0.madeRequest {
-                        $0.request?(peripheral, service.rx, service.tx)
-                        $0.madeRequest = true
-                    }
+                    $0.request?(peripheral, service.rx, service.tx)
                 } )
         }
     }
