@@ -31,6 +31,7 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
         observe: [UUID: ObserveObservation](),
         readRSSI: [UUID: ReadRSSIObservation]()
     )
+    private var uartRegistrations = Set<UARTRegistration>()
     private var isReady = false { didSet { startIfNeeded() } }
     private var restorePeripherals = Set<CBPeripheral>()
     private var connectingTimers = [String: DispatchSourceTimer]()
@@ -99,6 +100,33 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
         init(block: @escaping ((NSNumber?, BTError?) -> Void), uuid: String) {
             self.block = block
             self.uuid = uuid
+        }
+    }
+    
+    private class UARTRegistration: Hashable {
+        var service: CBService
+        var peripheral: CBPeripheral
+        var tx: CBCharacteristic
+        var rx: CBCharacteristic
+        var isReady = false
+        
+        init(service: CBService,
+             peripheral: CBPeripheral,
+             tx: CBCharacteristic,
+             rx: CBCharacteristic) {
+            self.service = service
+            self.peripheral = peripheral
+            self.tx = tx
+            self.rx = rx
+        }
+        
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(peripheral)
+            hasher.combine(service)
+        }
+        
+        static func == (lhs: BTBackgroundScanneriOS.UARTRegistration, rhs: BTBackgroundScanneriOS.UARTRegistration) -> Bool {
+            return lhs.peripheral == rhs.peripheral && lhs.service == rhs.service
         }
     }
     
@@ -184,6 +212,31 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
         let uuid = peripheral.identifier.uuidString
         connectingTimers[uuid]?.cancel()
         connectingTimers.removeValue(forKey: uuid)
+    }
+    
+    private func addConnected(peripheral: CBPeripheral) {
+        connectedPeripherals.update(with: peripheral)
+        observations.connect.values
+            .filter({ $0.uuid == peripheral.identifier.uuidString })
+            .forEach({
+                $0.block(nil)
+            })
+    }
+    
+    private func removeConnected(peripheral: CBPeripheral) {
+        connectedPeripherals.remove(peripheral)
+        let registrations = uartRegistrations.filter({ $0.peripheral == peripheral })
+        registrations.forEach({ uartRegistrations.remove($0) })
+        observations.disconnect.values
+            .filter({ $0.uuid == peripheral.identifier.uuidString })
+            .forEach({
+                $0.block(nil)
+            })
+    }
+    
+    private func removeAllConnectedPeripherals() {
+        connectedPeripherals.removeAll()
+        uartRegistrations.removeAll()
     }
 }
 
@@ -499,27 +552,23 @@ extension BTBackgroundScanneriOS {
             })
             
             self?.startIfNeeded()
-        }
-        
-        // call if service is ready
-        services.compactMap { (service) -> BTUARTService? in
-            guard let uart = service as? BTUARTService else { return nil }
-            return uart.uuid == type.uuid && uart.isReady ? uart : nil
-        }.forEach { (service) in
-            info.callbackQueue.execute { [weak observer, weak self] in
-                guard let observer = observer else {
-                    self?.queue.async { [weak self] in
-                        self?.observations.service.removeValue(forKey: id)
-                        self?.stopIfNeeded()
+            
+            // call request for already registered services
+            self?.uartRegistrations.filter({ $0.peripheral.identifier.uuidString == uuid}).forEach({ (registration) in
+                // clear request to avoid double call
+                self?.observations.service.values.filter({ $0.uuid == uuid }).forEach({ $0.request = nil })
+                // call request immediately
+                info.callbackQueue.execute { [weak observer, weak self] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.service.removeValue(forKey: id)
+                            self?.stopIfNeeded()
+                        }
+                        return
                     }
-                    return
+                    request?(observer, registration.peripheral, registration.rx, registration.tx)
                 }
-                let peripheral = self?.connectedPeripherals.first(where: { $0.identifier.uuidString == uuid })
-                self?.queue.async { [weak self] in
-                    self?.observations.service.values.filter({ $0.uuid == uuid }).forEach({ $0.request = nil })
-                }
-                request?(observer, peripheral, service.rx, service.tx)
-            }
+            })
         }
         
         return ObservationToken { [weak self] in
@@ -578,6 +627,7 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
         }
         
         if central.state == .poweredOff {
+            connectingPeripherals.formUnion(connectedPeripherals)
             connectedPeripherals.forEach({ peripheral in
                 manager.cancelPeripheralConnection(peripheral)
                 observations.disconnect.values
@@ -586,9 +636,7 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
                     $0.block(.logic(.bluetoothWasPoweredOff))
                 })
             })
-            connectingPeripherals.formUnion(connectedPeripherals)
-            connectedPeripherals.removeAll()
-            
+            removeAllConnectedPeripherals()
         } else if central.state == .poweredOn {
             connectingPeripherals.forEach { (peripheral) in
                 addConnecting(peripheral: peripheral)
@@ -601,12 +649,7 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
                 peripheral.delegate = self
                 switch peripheral.state {
                 case .connected:
-                    connectedPeripherals.update(with: peripheral)
-                    observations.connect.values
-                        .filter({ $0.uuid == peripheral.identifier.uuidString })
-                        .forEach({
-                            $0.block(nil)
-                        })
+                    addConnected(peripheral: peripheral)
                 case .connecting:
                     addConnecting(peripheral: peripheral)
                     manager.connect(peripheral)
@@ -651,22 +694,13 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         removeConnecting(peripheral: peripheral)
-        connectedPeripherals.update(with: peripheral)
+        addConnected(peripheral: peripheral)
         peripheral.discoverServices(services.map({ $0.uuid }))
-        observations.connect.values
-            .filter({ $0.uuid == peripheral.identifier.uuidString })
-            .forEach({ $0.block(nil) })
     }
     
     func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         removeConnecting(peripheral: peripheral)
-        connectedPeripherals.remove(peripheral)
-        // but still notify
-        observations.disconnect.values
-            .filter({ $0.uuid == peripheral.identifier.uuidString })
-            .forEach({
-                $0.block(nil)
-            })
+        removeConnected(peripheral: peripheral)
         // keep connection if still needs to
         observations.connect.values
         .filter({ $0.uuid == peripheral.identifier.uuidString })
@@ -738,14 +772,19 @@ extension BTBackgroundScanneriOS: CBPeripheralDelegate {
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         guard let characteristics = service.characteristics else { return }
-        
-        if let handler = services.first(where: { $0.uuid == service.uuid }) as? BTUARTService {
-            handler.tx = characteristics.first(where: { $0.uuid == handler.txUUID })
-            handler.rx = characteristics.first(where: { $0.uuid == handler.rxUUID })
-            if let tx = handler.tx, tx.properties.contains(.notify) {
-                peripheral.setNotifyValue(true, for: tx)
+        services
+            .filter({ $0.uuid == service.uuid })
+            .compactMap({ (handler) -> BTUARTService? in
+                return handler as? BTUARTService
+            }).forEach { (handler) in
+                if let tx = characteristics.first(where: { $0.uuid == handler.txUUID }),
+                    let rx = characteristics.first(where: { $0.uuid == handler.rxUUID }) {
+                    uartRegistrations.update(with: UARTRegistration(service: service, peripheral: peripheral, tx: tx, rx: rx))
+                    if tx.properties.contains(.notify) {
+                        peripheral.setNotifyValue(true, for: tx)
+                    }
+                }
             }
-        }
     }
     
     func peripheral(_ peripheral: CBPeripheral, didWriteValueFor descriptor: CBDescriptor, error: Error?) {
@@ -781,41 +820,30 @@ extension BTBackgroundScanneriOS: CBPeripheralDelegate {
                 $0.block(heartbeatDevice)
             } )
         } else {
-            services.compactMap { (service) -> BTUARTService? in
-                let uart = service as? BTUARTService
-                let isService = characteristic.service.uuid == service.uuid
-                let isCharacteristic = uart?.tx?.uuid == characteristic.uuid
-                return isService && isCharacteristic ? uart : nil
-            }.forEach { (service) in
-                observations.service.values
-                    .filter( {
-                        $0.uuid == peripheral.identifier.uuidString &&
-                        $0.type.uuid == service.uuid
-                    } )
-                    .forEach( {
-                        $0.response?(characteristic.value)
-                    } )
-            }
-        }
-        
-    }
-    
-    func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
-        services.compactMap { (service) -> BTUARTService? in
-            let uart = service as? BTUARTService
-            let isService = characteristic.service.uuid == service.uuid
-            let isCharacteristic = uart?.tx?.uuid == characteristic.uuid
-            return isService && isCharacteristic ? uart : nil
-        }.forEach { (service) in
-            service.isReady = true
             observations.service.values
                 .filter( {
                     $0.uuid == peripheral.identifier.uuidString &&
-                    $0.type.uuid == service.uuid
+                    $0.type.uuid == characteristic.service.uuid
                 } )
                 .forEach( {
-                    $0.request?(peripheral, service.rx, service.tx)
+                    $0.response?(characteristic.value)
                 } )
         }
+    }
+    
+    func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+        uartRegistrations
+            .filter({ $0.peripheral == peripheral && $0.service == characteristic.service })
+            .forEach({ registration in
+                registration.isReady = true
+                observations.service.values
+                    .filter( {
+                        $0.uuid == peripheral.identifier.uuidString &&
+                        $0.type.uuid == registration.service.uuid
+                    } )
+                    .forEach( {
+                        $0.request?(peripheral, registration.rx, registration.tx)
+                    } )
+            })
     }
 }

@@ -1,8 +1,7 @@
 public struct BTForeground {
     public static let shared = BTForeground()
     
-    let scanner: BTScanner = BTScanneriOS(decoders: [RuuviDecoderiOS()],
-                                          services: [RuuviNUSService()])
+    let scanner: BTScanner = BTScanneriOS(decoders: [RuuviDecoderiOS()])
     
     public var bluetoothState: BTScannerState { return scanner.bluetoothState }
     

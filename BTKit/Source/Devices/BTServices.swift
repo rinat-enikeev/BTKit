@@ -131,9 +131,6 @@ public protocol BTService: class {
 public protocol BTUARTService: BTService {
     var txUUID: CBUUID { get }
     var rxUUID: CBUUID { get }
-    var tx: CBCharacteristic? { get set }
-    var rx: CBCharacteristic? { get set }
-    var isReady: Bool { get set }
 }
 
 public struct BTServices {

@@ -7,7 +7,6 @@ public class RuuviNUSService: BTUARTService {
     public var txUUID = CBUUID(string: "6E400003-B5A3-F393-E0A9-E50E24DCCA9E")
     public var tx: CBCharacteristic?
     public var rx: CBCharacteristic?
-    public var isReady = false
     
     public init() {
         

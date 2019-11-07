@@ -23,44 +23,7 @@ class BTScanneriOS: NSObject, BTScanner {
             self.uuid = uuid
         }
     }
-    
-    private class ConnectObservation {
-        var block: (BTError?) -> Void
-        var uuid: String = ""
-        
-        init(block: @escaping ((BTError?) -> Void), uuid: String) {
-            self.block = block
-            self.uuid = uuid
-        }
-    }
-    
-    private class DisconnectObservation {
-        var block: (BTError?) -> Void
-        var uuid: String = ""
-        
-        init(block: @escaping ((BTError?) -> Void), uuid: String) {
-            self.block = block
-            self.uuid = uuid
-        }
-    }
-    
-    private class ServiceObservation {
-        var request: ((CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?
-        var response: ((Data?) -> Void)?
-        var failure: ((BTError) -> Void)?
-        var uuid: String = ""
-        var type: BTServiceType
-        
-        init(uuid: String, type: BTServiceType, request: ((CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((Data?) -> Void)?, failure: ((BTError) -> Void)?) {
-            self.uuid = uuid
-            self.type = type
-            self.request = request
-            self.response = response
-            self.failure = failure
-        }
-    }
-    
-    private var connectedPeripherals = Set<CBPeripheral>()
+
     private let queue = DispatchQueue(label: "BTScanneriOS", qos: .userInteractive)
     private lazy var manager: CBCentralManager = {
         return CBCentralManager(delegate: self, queue: queue)
@@ -70,14 +33,10 @@ class BTScanneriOS: NSObject, BTScanner {
         device: [UUID: (BTDevice) -> Void](),
         lost: [UUID: LostObservation](),
         observe: [UUID: ObserveObservation](),
-        connect: [UUID: ConnectObservation](),
-        disconnect: [UUID: DisconnectObservation](),
-        service: [UUID: ServiceObservation](),
         unknown: [UUID: (BTUnknownDevice) -> Void]()
     )
     private var isReady = false { didSet { startIfNeeded() } }
     private var decoders: [BTDecoder]
-    private var services: [BTService]
     private var defaultOptions = BTScannerOptionsInfo.empty
     private var currentDefaultOptions: BTScannerOptionsInfo {
         return [] + defaultOptions
@@ -92,9 +51,8 @@ class BTScanneriOS: NSObject, BTScanner {
         restartTimer?.cancel()
     }
     
-    required init(decoders: [BTDecoder], services: [BTService]) {
+    required init(decoders: [BTDecoder]) {
         self.decoders = decoders
-        self.services = services
         super.init()
         NotificationCenter.default.addObserver(self, selector: #selector(self.willResignActiveNotification(_:)), name: UIApplication.willResignActiveNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.didBecomeActiveNotification(_:)), name: UIApplication.didBecomeActiveNotification, object: nil)
@@ -182,79 +140,6 @@ class BTScanneriOS: NSObject, BTScanner {
         || observations.device.count > 0
         || observations.lost.count > 0
         || observations.observe.count > 0
-        || observations.connect.count > 0
-        || observations.service.count > 0
-    }
-}
-
-// MARK: - CBPeripheralDelegate
-extension BTScanneriOS: CBPeripheralDelegate {
-    func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
-        guard let discovered = peripheral.services else { return }
-        for d in discovered {
-            if let service = services.first(where: { $0.uuid == d.uuid }) {
-                if let uart = service as? BTUARTService {
-                    peripheral.discoverCharacteristics([uart.txUUID, uart.rxUUID], for: d)
-                }
-            }
-        }
-    }
-    
-    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
-        guard let characteristics = service.characteristics else { return }
-        
-        if let handler = services.first(where: { $0.uuid == service.uuid }) as? BTUARTService {
-            handler.tx = characteristics.first(where: { $0.uuid == handler.txUUID })
-            handler.rx = characteristics.first(where: { $0.uuid == handler.rxUUID })
-            if let tx = handler.tx, tx.properties.contains(.notify) {
-                peripheral.setNotifyValue(true, for: tx)
-            }
-        }
-    }
-    
-    func peripheral(_ peripheral: CBPeripheral, didWriteValueFor descriptor: CBDescriptor, error: Error?) {
-        print(descriptor)
-    }
-    
-    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor descriptor: CBDescriptor, error: Error?) {
-        print(descriptor)
-    }
-    
-    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-        services.compactMap { (service) -> BTUARTService? in
-            let uart = service as? BTUARTService
-            let isService = characteristic.service.uuid == service.uuid
-            let isCharacteristic = uart?.tx?.uuid == characteristic.uuid
-            return isService && isCharacteristic ? uart : nil
-        }.forEach { (service) in
-            observations.service.values
-                .filter( {
-                    $0.uuid == peripheral.identifier.uuidString &&
-                    $0.type.uuid == service.uuid
-                } )
-                .forEach( {
-                    $0.response?(characteristic.value)
-                } )
-        }
-    }
-    
-    func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
-        services.compactMap { (service) -> BTUARTService? in
-            let uart = service as? BTUARTService
-            let isService = characteristic.service.uuid == service.uuid
-            let isCharacteristic = uart?.tx?.uuid == characteristic.uuid
-            return isService && isCharacteristic ? uart : nil
-        }.forEach { (service) in
-            service.isReady = true
-            observations.service.values
-                .filter( {
-                    $0.uuid == peripheral.identifier.uuidString &&
-                    $0.type.uuid == service.uuid
-                } )
-                .forEach( {
-                    $0.request?(peripheral, service.rx, service.tx)
-                } )
-        }
     }
 }
 
@@ -283,7 +168,6 @@ extension BTScanneriOS: CBCentralManagerDelegate {
                 observations.observe.values
                     .filter({ $0.uuid == device.uuid })
                     .forEach( { $0.block(device) } )
-                connectIfNeeded(peripheral: peripheral, device: device)
                 return
             }
         }
@@ -293,49 +177,10 @@ extension BTScanneriOS: CBCentralManagerDelegate {
         observations.unknown.values.forEach { (closure) in
             closure(unknownDevice)
         }
-        connectIfNeeded(peripheral: peripheral, device: .unknown(unknownDevice))
-    }
-    
-    private func connectIfNeeded(peripheral: CBPeripheral, device: BTDevice) {
-        observations.connect.values
-        .filter({ $0.uuid == device.uuid })
-        .forEach( { connect in
-            if device.isConnectable && !connectedPeripherals.contains(peripheral) {
-                connectedPeripherals.insert(peripheral)
-                peripheral.delegate = self
-                manager.connect(peripheral)
-            } else if !device.isConnectable {
-                connect.block(.logic(.notConnectable))
-            }
-        } )
-    }
-    
-    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        peripheral.discoverServices(nil)
-        observations.connect.values
-            .filter({ $0.uuid == peripheral.identifier.uuidString })
-            .forEach({ $0.block(nil) })
-    }
-    
-    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-        observations.disconnect.values
-            .filter({ $0.uuid == peripheral.identifier.uuidString })
-            .forEach({ $0.block(nil) })
-        connectedPeripherals.remove(peripheral)
-    }
-    
-    func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
-        if let error = error {
-            print(error.localizedDescription) // TODO: pass error to connect caller
-        }
     }
 }
 
 extension BTScanneriOS {
-    
-    func isConnected(uuid: String) -> Bool {
-        return connectedPeripherals.contains(where: { $0.identifier.uuidString == uuid })
-    }
     
     @discardableResult
     func lost<T: AnyObject>(_ observer: T, options: BTScannerOptionsInfo?, closure: @escaping (T, BTDevice) -> Void) -> ObservationToken {
@@ -518,199 +363,6 @@ extension BTScanneriOS {
         return ObservationToken { [weak self] in
             self?.queue.async { [weak self] in
                 self?.observations.observe.removeValue(forKey: id)
-                self?.stopIfNeeded()
-            }
-        }
-    }
-    
-    @discardableResult
-    func connect<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, connected: @escaping (T, BTError?) -> Void, disconnected: @escaping (T, BTError?) -> Void) -> ObservationToken {
-        let options = currentDefaultOptions + (options ?? .empty)
-        let info = BTKitParsedOptionsInfo(options)
-        
-        let id = UUID()
-        
-        queue.async { [weak self] in
-            self?.observations.connect[id] = ConnectObservation(block: { [weak self, weak observer] error in
-                guard let observer = observer else {
-                    self?.observations.connect.removeValue(forKey: id)
-                    self?.stopIfNeeded()
-                    return
-                }
-                info.callbackQueue.execute { [weak observer, weak self] in
-                    guard let observer = observer else {
-                        self?.queue.async { [weak self] in
-                            self?.observations.connect.removeValue(forKey: id)
-                            self?.stopIfNeeded()
-                        }
-                        return
-                    }
-                    connected(observer, error)
-                }
-            }, uuid: uuid)
-            
-            self?.observations.disconnect[id] = DisconnectObservation(block: { [weak self, weak observer] error in
-                guard let observer = observer else {
-                    self?.observations.disconnect.removeValue(forKey: id)
-                    self?.stopIfNeeded()
-                    return
-                }
-                info.callbackQueue.execute { [weak observer, weak self] in
-                    guard let observer = observer else {
-                        self?.queue.async { [weak self] in
-                            self?.observations.disconnect.removeValue(forKey: id)
-                            self?.stopIfNeeded()
-                        }
-                        return
-                    }
-                    disconnected(observer, error)
-                }
-            }, uuid: uuid)
-            self?.startIfNeeded()
-        }
-        
-        return ObservationToken { [weak self] in
-            self?.queue.async { [weak self] in
-                self?.observations.connect.removeValue(forKey: id)
-                self?.observations.disconnect.removeValue(forKey: id)
-                self?.stopIfNeeded()
-            }
-        }
-    }
-    
-    @discardableResult
-    func serve<T: AnyObject>(_ observer: T, for uuid: String, _ type: BTServiceType, options: BTScannerOptionsInfo?, request: ((T, CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((T, Data?) -> Void)?, failure: ((T, BTError) -> Void)?) -> ObservationToken {
-        
-        let options = currentDefaultOptions + (options ?? .empty)
-        let info = BTKitParsedOptionsInfo(options)
-        
-        let id = UUID()
-        
-        queue.async { [weak self] in
-            self?.observations.service[id] = ServiceObservation(uuid: uuid, type: type, request: { [weak self, weak observer] (peripheral, rx, tx) in
-                guard let observer = observer else {
-                    self?.observations.service.removeValue(forKey: id)
-                    self?.stopIfNeeded()
-                    return
-                }
-                info.callbackQueue.execute { [weak observer, weak self] in
-                    guard let observer = observer else {
-                        self?.queue.async { [weak self] in
-                            self?.observations.service.removeValue(forKey: id)
-                            self?.stopIfNeeded()
-                        }
-                        return
-                    }
-                    request?(observer, peripheral, rx, tx)
-                }
-            }, response: { [weak self, weak observer] (data) in
-                guard let observer = observer else {
-                    self?.observations.service.removeValue(forKey: id)
-                    self?.stopIfNeeded()
-                    return
-                }
-                info.callbackQueue.execute { [weak observer, weak self] in
-                    guard let observer = observer else {
-                        self?.queue.async { [weak self] in
-                            self?.observations.service.removeValue(forKey: id)
-                            self?.stopIfNeeded()
-                        }
-                        return
-                    }
-                    response?(observer, data)
-                }
-            }, failure: { [weak self, weak observer] (error) in
-                guard let observer = observer else {
-                    self?.observations.service.removeValue(forKey: id)
-                    self?.stopIfNeeded()
-                    return
-                }
-                info.callbackQueue.execute { [weak observer, weak self] in
-                    guard let observer = observer else {
-                        self?.queue.async { [weak self] in
-                            self?.observations.service.removeValue(forKey: id)
-                            self?.stopIfNeeded()
-                        }
-                        return
-                    }
-                    failure?(observer, error)
-                }
-            })
-            
-            self?.startIfNeeded()
-        }
-        
-        // call if service is ready
-        services.compactMap { (service) -> BTUARTService? in
-            guard let uart = service as? BTUARTService else { return nil }
-            return uart.uuid == type.uuid && uart.isReady ? uart : nil
-        }.forEach { (service) in
-            info.callbackQueue.execute { [weak observer, weak self] in
-                guard let observer = observer else {
-                    self?.queue.async { [weak self] in
-                        self?.observations.service.removeValue(forKey: id)
-                        self?.stopIfNeeded()
-                    }
-                    return
-                }
-                let peripheral = self?.connectedPeripherals.first(where: { $0.identifier.uuidString == uuid })
-                request?(observer, peripheral, service.rx, service.tx)
-            }
-        }
-        
-        return ObservationToken { [weak self] in
-            self?.queue.async { [weak self] in
-                self?.observations.service.removeValue(forKey: id)
-                self?.stopIfNeeded()
-            }
-        }
-    }
-    
-    @discardableResult
-    func disconnect<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, disconnected: @escaping (T, BTError?) -> Void) -> ObservationToken {
-        
-        let options = currentDefaultOptions + (options ?? .empty)
-        let info = BTKitParsedOptionsInfo(options)
-        
-        let id = UUID()
-        
-        queue.async { [weak self] in
-            self?.observations.disconnect[id] = DisconnectObservation(block: { [weak self, weak observer] error in
-                guard let observer = observer else {
-                    self?.observations.disconnect.removeValue(forKey: id)
-                    self?.stopIfNeeded()
-                    return
-                }
-                info.callbackQueue.execute { [weak observer, weak self] in
-                    guard let observer = observer else {
-                        self?.queue.async { [weak self] in
-                            self?.observations.disconnect.removeValue(forKey: id)
-                            self?.stopIfNeeded()
-                        }
-                        return
-                    }
-                    disconnected(observer, error)
-                }
-            }, uuid: uuid)
-            
-            self?.startIfNeeded()
-        }
-        
-        queue.async { [weak self] in
-            if let connectedClients = self?.observations.connect.values.filter({ $0.uuid == uuid }).count, connectedClients == 0 {
-                self?.connectedPeripherals
-                    .filter( { $0.identifier.uuidString == uuid } )
-                    .forEach({ (peripheral) in
-                        if peripheral.state != .disconnected {
-                            self?.manager.cancelPeripheralConnection(peripheral)
-                        }
-                    })
-            }
-        }
-        
-        return ObservationToken { [weak self] in
-            self?.queue.async { [weak self] in
-                self?.observations.disconnect.removeValue(forKey: id)
                 self?.stopIfNeeded()
             }
         }
