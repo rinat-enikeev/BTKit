@@ -1,6 +1,14 @@
 import Foundation
 import CoreBluetooth
 
+public enum BTServiceProgress {
+    case connecting
+    case serving
+    case disconnecting
+    case success
+    case failure(BTError)
+}
+
 public enum BTServiceType {
     case ruuvi(BTRuuviServiceType)
     
@@ -143,82 +151,83 @@ public struct BTRuuviServices {
 
 public struct BTKitRuuviNUSService {
     
-    public func celisus<T: AnyObject>(for observer: T, uuid: String, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) {
-        celisus(for: observer, uuid: uuid, from: date, options: nil, result: result)
-    }
-    
-    public func celisus<T: AnyObject>(for observer: T, uuid: String, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) {
+    public func celisus<T: AnyObject>(for observer: T, uuid: String, from date: Date, options: BTScannerOptionsInfo? = nil, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) {
         serve(.temperature, for: observer, uuid: uuid, from: date, options: options, result: result)
     }
     
-    public func humidity<T: AnyObject>(for observer: T, uuid: String, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) {
-        humidity(for: observer, uuid: uuid, from: date, options: nil, result: result)
-    }
     
-    public func humidity<T: AnyObject>(for observer: T, uuid: String, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) {
+    public func humidity<T: AnyObject>(for observer: T, uuid: String, from date: Date, options: BTScannerOptionsInfo? = nil, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) {
         serve(.humidity, for: observer, uuid: uuid, from: date, options: options, result: result)
     }
     
-    public func pressure<T: AnyObject>(for observer: T, uuid: String, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) {
-            pressure(for: observer, uuid: uuid, from: date, options: nil, result: result)
-    }
-    
-    public func pressure<T: AnyObject>(for observer: T, uuid: String, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) {
+    public func pressure<T: AnyObject>(for observer: T, uuid: String, from date: Date, options: BTScannerOptionsInfo? = nil, result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) {
         serve(.pressure, for: observer, uuid: uuid, from: date, options: options, result: result)
     }
     
-    public func log<T: AnyObject>(for observer: T, uuid: String, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) {
-        return log(for: observer, uuid: uuid, from: date, options: nil, result: result)
-    }
-    
-    public func log<T: AnyObject>(for observer: T, uuid: String, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) {
+    public func log<T: AnyObject>(for observer: T, uuid: String, from date: Date, options: BTScannerOptionsInfo? = nil, progress:((BTServiceProgress) -> Void)? = nil, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) {
         var connectToken: ObservationToken?
+        progress?(.connecting)
         connectToken = BTKit.background.connect(for: observer, uuid: uuid, options: options, connected: { (observer, connectResult) in
             connectToken?.invalidate()
             switch connectResult {
             case .already:
                 var serveToken: ObservationToken?
+                progress?(.serving)
                 serveToken = self.serveLogs(observer, uuid, options, date) { observer, serveResult in
                     serveToken?.invalidate()
                     var disconnectToken: ObservationToken?
+                    progress?(.disconnecting)
                     disconnectToken = BTKit.background.disconnect(for: observer, uuid: uuid, options: options) { (observer, disconnectResult) in
                         disconnectToken?.invalidate()
                         switch disconnectResult {
                         case .already:
+                            progress?(.success)
                             result(observer, serveResult)
                         case .just:
+                            progress?(.success)
                             result(observer, serveResult)
                         case .stillConnected:
                             result(observer, serveResult)
+                            progress?(.success)
                         case .bluetoothWasPoweredOff:
+                            progress?(.success)
                             result(observer, serveResult)
                         case .failure(let error):
+                            progress?(.failure(error))
                             result(observer, .failure(error))
                         }
                     }
                 }
             case .just:
                 var serveToken: ObservationToken?
+                progress?(.serving)
                 serveToken = self.serveLogs(observer, uuid, options, date) { observer, serveResult in
                     serveToken?.invalidate()
                     var disconnectToken: ObservationToken?
+                    progress?(.disconnecting)
                     disconnectToken = BTKit.background.disconnect(for: observer, uuid: uuid, options: options) { (observer, disconnectResult) in
                         disconnectToken?.invalidate()
                         switch disconnectResult {
                         case .already:
+                            progress?(.success)
                             result(observer, serveResult)
                         case .just:
+                            progress?(.success)
                             result(observer, serveResult)
                         case .stillConnected:
+                            progress?(.success)
                             result(observer, serveResult)
                         case .bluetoothWasPoweredOff:
+                            progress?(.success)
                             result(observer, serveResult)
                         case .failure(let error):
+                            progress?(.failure(error))
                             result(observer, .failure(error))
                         }
                     }
                 }
             case .failure(let error):
+                progress?(.failure(error))
                 result(observer, .failure(error))
             case .disconnected:
                 break // do nothing, it will reconnect
