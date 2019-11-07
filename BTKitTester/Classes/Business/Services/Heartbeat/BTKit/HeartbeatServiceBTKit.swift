@@ -66,6 +66,8 @@ class HeartbeatServiceBTKit: HeartbeatService {
                 print("just disconnected")
             case .stillConnected:
                 print("still connected")
+            case .bluetoothWasPoweredOff:
+                print("bluetooth was powered off")
             case .failure(let error):
                 print(error.localizedDescription)
             }

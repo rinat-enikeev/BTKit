@@ -94,6 +94,8 @@ extension ConnectableViewController {
                 observer.isConnected = false
             case .stillConnected:
                 observer.isConnected = true
+            case .bluetoothWasPoweredOff:
+                print("bluetooth was powered off")
             case .failure(let error):
                 observer.isConnected = false
                 print(error.localizedDescription)
