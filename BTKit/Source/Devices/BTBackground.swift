@@ -105,3 +105,16 @@ public struct BTBackground {
         return scanner.observe(observer, uuid: uuid, options: options, closure: closure)
     }
 }
+
+public extension Notification.Name {
+    static let BTBackgroundDidConnect = Notification.Name("BTBackgroundDidConnect")
+    static let BTBackgroundDidDisconnect = Notification.Name("BTBackgroundDidDisconnect")
+}
+
+public enum BTBackgroundDidConnectKey: String {
+    case uuid = "uuid"
+}
+
+public enum BTBackgroundDidDisconnectKey: String {
+    case uuid = "uuid"
+}

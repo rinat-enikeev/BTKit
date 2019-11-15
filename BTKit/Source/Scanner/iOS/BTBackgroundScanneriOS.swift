@@ -216,22 +216,30 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
     
     private func addConnected(peripheral: CBPeripheral) {
         connectedPeripherals.update(with: peripheral)
+        let uuid = peripheral.identifier.uuidString
         observations.connect.values
-            .filter({ $0.uuid == peripheral.identifier.uuidString })
+            .filter({ $0.uuid == uuid })
             .forEach({
                 $0.block(nil)
             })
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: .BTBackgroundDidConnect, object: nil, userInfo: [BTBackgroundDidConnectKey.uuid: uuid])
+        }
     }
     
     private func removeConnected(peripheral: CBPeripheral) {
         connectedPeripherals.remove(peripheral)
         let registrations = uartRegistrations.filter({ $0.peripheral == peripheral })
         registrations.forEach({ uartRegistrations.remove($0) })
+        let uuid = peripheral.identifier.uuidString
         observations.disconnect.values
-            .filter({ $0.uuid == peripheral.identifier.uuidString })
+            .filter({ $0.uuid == uuid })
             .forEach({
                 $0.block(nil)
             })
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: .BTBackgroundDidDisconnect, object: nil, userInfo: [BTBackgroundDidDisconnectKey.uuid: uuid])
+        }
     }
     
     private func removeAllConnectedPeripherals() {
