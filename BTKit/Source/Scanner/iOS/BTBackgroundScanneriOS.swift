@@ -248,6 +248,11 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
         connectedPeripherals.removeAll()
         uartRegistrations.removeAll()
     }
+    
+    private func requestService(observation: ServiceObservation, registration: UARTRegistration) {
+        observation.request?(registration.peripheral, registration.rx, registration.tx)
+        observation.request = nil // clear to avoid double call
+    }
 }
 
 extension BTBackgroundScanneriOS {
@@ -511,7 +516,7 @@ extension BTBackgroundScanneriOS {
         let id = UUID()
         
         queue.async { [weak self] in
-            self?.observations.service[id] = ServiceObservation(uuid: uuid, type: type, serviceTimeout: info.serviceTimeout, request: { [weak self, weak observer] (peripheral, rx, tx) in
+            let observation = ServiceObservation(uuid: uuid, type: type, serviceTimeout: info.serviceTimeout, request: { [weak self, weak observer] (peripheral, rx, tx) in
                 guard let observer = observer else {
                     self?.observations.service.removeValue(forKey: id)
                     self?.stopIfNeeded()
@@ -561,23 +566,13 @@ extension BTBackgroundScanneriOS {
                 }
             })
             
+            self?.observations.service[id] = observation
+                
             self?.startIfNeeded()
             
             // call request for already registered services
             self?.uartRegistrations.filter({ $0.peripheral.identifier.uuidString == uuid}).forEach({ (registration) in
-                // clear request to avoid double call
-                self?.observations.service.values.filter({ $0.uuid == uuid }).forEach({ $0.request = nil })
-                // call request immediately
-                info.callbackQueue.execute { [weak observer, weak self] in
-                    guard let observer = observer else {
-                        self?.queue.async { [weak self] in
-                            self?.observations.service.removeValue(forKey: id)
-                            self?.stopIfNeeded()
-                        }
-                        return
-                    }
-                    request?(observer, registration.peripheral, registration.rx, registration.tx)
-                }
+                self?.requestService(observation: observation, registration: registration)
             })
         }
         
@@ -852,7 +847,7 @@ extension BTBackgroundScanneriOS: CBPeripheralDelegate {
                         $0.type.uuid == registration.service.uuid
                     } )
                     .forEach( {
-                        $0.request?(peripheral, registration.rx, registration.tx)
+                        requestService(observation: $0, registration: registration)
                     } )
             })
     }
