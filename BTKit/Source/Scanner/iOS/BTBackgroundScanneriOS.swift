@@ -73,10 +73,12 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
         var failure: ((BTError) -> Void)?
         var uuid: String = ""
         var type: BTServiceType
+        var serviceTimeout: TimeInterval
         
-        init(uuid: String, type: BTServiceType, request: ((CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((Data?) -> Void)?, failure: ((BTError) -> Void)?) {
+        init(uuid: String, type: BTServiceType, serviceTimeout: TimeInterval, request: ((CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((Data?) -> Void)?, failure: ((BTError) -> Void)?) {
             self.uuid = uuid
             self.type = type
+            self.serviceTimeout = serviceTimeout
             self.request = request
             self.response = response
             self.failure = failure
@@ -509,7 +511,7 @@ extension BTBackgroundScanneriOS {
         let id = UUID()
         
         queue.async { [weak self] in
-            self?.observations.service[id] = ServiceObservation(uuid: uuid, type: type, request: { [weak self, weak observer] (peripheral, rx, tx) in
+            self?.observations.service[id] = ServiceObservation(uuid: uuid, type: type, serviceTimeout: info.serviceTimeout, request: { [weak self, weak observer] (peripheral, rx, tx) in
                 guard let observer = observer else {
                     self?.observations.service.removeValue(forKey: id)
                     self?.stopIfNeeded()
