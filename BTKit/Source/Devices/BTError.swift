@@ -32,7 +32,8 @@ public enum BTLogicError: Error {
     case notConnected
     case notConnectable
     case connectedByOthers
-    case notConnectedInDesiredInterval
+    case connectionTimedOut
+    case serviceTimedOut
     case bluetoothWasPoweredOff
 }
 
@@ -43,14 +44,16 @@ extension BTLogicError: LocalizedError {
             bundle = Bundle(path: path) ?? Bundle.main
         }
         switch self {
+        case .serviceTimedOut:
+            return NSLocalizedString("BTLogicError.serviceTimedOut", bundle: bundle, comment: "")
         case .notConnected:
             return NSLocalizedString("BTLogicError.notConnected", bundle: bundle, comment: "")
         case .notConnectable:
             return NSLocalizedString("BTLogicError.notConnectable", bundle: bundle, comment: "")
         case .connectedByOthers:
             return NSLocalizedString("BTLogicError.connectedByOthers", bundle: bundle, comment: "")
-        case .notConnectedInDesiredInterval:
-            return NSLocalizedString("BTLogicError.notConnectedInDesiredInterval", bundle: bundle, comment: "")
+        case .connectionTimedOut:
+            return NSLocalizedString("BTLogicError.connectionTimedOut", bundle: bundle, comment: "")
         case .bluetoothWasPoweredOff:
             return NSLocalizedString("BTLogicError.bluetoothWasPoweredOff", bundle: bundle, comment: "")
         }

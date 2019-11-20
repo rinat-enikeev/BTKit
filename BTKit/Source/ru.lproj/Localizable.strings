@@ -2,5 +2,6 @@
 "BTLogicError.notConnected" = "BTKit: не подключен к устройству.";
 "BTLogicError.notConnectable" = "BTKit: устройство не поддерживает соединение.";
 "BTLogicError.connectedByOthers" = "BTKit: к устройству подключены другие клиенты";
-"BTLogicError.notConnectedInDesiredInterval" = "BTKit: не удалось подключиться к устройству в течение желаемого интервала";
+"BTLogicError.connectionTimedOut" = "BTKit: не удалось подключиться к устройству в течение желаемого интервала";
 "BTLogicError.bluetoothWasPoweredOff" = "BTKit: Bluetooth был отключен";
+"BTLogicError.serviceTimedOut" = "BTKit: не удалось получить данные через сервис в течение желаемого интервала";

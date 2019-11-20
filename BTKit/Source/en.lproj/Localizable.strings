@@ -2,5 +2,6 @@
 "BTLogicError.notConnected" = "BTKit: not connected to the device.";
 "BTLogicError.notConnectable" = "BTKit: device is not connectable.";
 "BTLogicError.connectedByOthers" = "BTKit: device is connected by other clients";
-"BTLogicError.notConnectedInDesiredInterval" = "BTKit: failed to connect to peripheral in desired interval";
+"BTLogicError.connectionTimedOut" = "BTKit: failed to connect to peripheral in desired interval";
 "BTLogicError.bluetoothWasPoweredOff" = "BTKit: Bluetooth was powered off";
+"BTLogicError.serviceTimedOut" = "BTKit: failed to serve in desired interval";

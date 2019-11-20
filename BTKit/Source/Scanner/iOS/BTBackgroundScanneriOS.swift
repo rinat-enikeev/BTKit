@@ -69,13 +69,15 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
     
     private class ServiceObservation {
         var request: ((CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?
-        var response: ((Data?) -> Void)?
+        var response: ((Data?, ((Bool) -> Void)?) -> Void)?
         var failure: ((BTError) -> Void)?
         var uuid: String = ""
         var type: BTServiceType
         var serviceTimeout: TimeInterval
+        var timer: DispatchSourceTimer?
+        var finished: Bool = false
         
-        init(uuid: String, type: BTServiceType, serviceTimeout: TimeInterval, request: ((CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((Data?) -> Void)?, failure: ((BTError) -> Void)?) {
+        init(uuid: String, type: BTServiceType, serviceTimeout: TimeInterval, request: ((CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((Data?, ((Bool) -> Void)?) -> Void)?, failure: ((BTError) -> Void)?) {
             self.uuid = uuid
             self.type = type
             self.serviceTimeout = serviceTimeout
@@ -191,7 +193,7 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
                                 let now = Date()
                                 let elapsed = now.timeIntervalSince(connectRequestDate)
                                 if elapsed > $0.connectionTimeout {
-                                    $0.block(.logic(.notConnectedInDesiredInterval))
+                                    $0.block(.logic(.connectionTimedOut))
                                     
                                     // cancel timer if no more observers
                                     sSelf.queue.async { [weak sSelf] in
@@ -252,6 +254,29 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
     private func requestService(observation: ServiceObservation, registration: UARTRegistration) {
         observation.request?(registration.peripheral, registration.rx, registration.tx)
         observation.request = nil // clear to avoid double call
+        
+        if observation.serviceTimeout > 0 {
+            let serviceRequestDate = Date()
+            observation.timer?.cancel()
+            let timer = DispatchSource.makeTimerSource( queue: queue)
+            observation.timer = timer
+            timer.schedule(deadline: .now() + 1, repeating: .seconds(1))
+            timer.setEventHandler {
+                if observation.finished {
+                    timer.cancel()
+                    observation.timer = nil
+                } else {
+                    let now = Date()
+                    let elapsed = now.timeIntervalSince(serviceRequestDate)
+                    if elapsed > observation.serviceTimeout {
+                        observation.failure?(.logic(.serviceTimedOut))
+                        timer.cancel()
+                        observation.timer = nil
+                    }
+                }
+            }
+            timer.activate()
+        }
     }
 }
 
@@ -508,7 +533,7 @@ extension BTBackgroundScanneriOS {
     }
     
     @discardableResult
-    func serve<T: AnyObject>(_ observer: T, for uuid: String, _ type: BTServiceType, options: BTScannerOptionsInfo?, request: ((T, CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((T, Data?) -> Void)?, failure: ((T, BTError) -> Void)?) -> ObservationToken {
+    func serve<T: AnyObject>(_ observer: T, for uuid: String, _ type: BTServiceType, options: BTScannerOptionsInfo?, request: ((T, CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((T, Data?, ((Bool) -> Void)?) -> Void)?, failure: ((T, BTError) -> Void)?) -> ObservationToken {
         
         let options = currentDefaultOptions + (options ?? .empty)
         let info = BTKitParsedOptionsInfo(options)
@@ -532,7 +557,7 @@ extension BTBackgroundScanneriOS {
                     }
                     request?(observer, peripheral, rx, tx)
                 }
-            }, response: { [weak self, weak observer] (data) in
+            }, response: { [weak self, weak observer] (data, finished) in
                 guard let observer = observer else {
                     self?.observations.service.removeValue(forKey: id)
                     self?.stopIfNeeded()
@@ -546,7 +571,7 @@ extension BTBackgroundScanneriOS {
                         }
                         return
                     }
-                    response?(observer, data)
+                    response?(observer, data, finished)
                 }
             }, failure: { [weak self, weak observer] (error) in
                 guard let observer = observer else {
@@ -830,8 +855,13 @@ extension BTBackgroundScanneriOS: CBPeripheralDelegate {
                     $0.uuid == peripheral.identifier.uuidString &&
                     $0.type.uuid == characteristic.service.uuid
                 } )
-                .forEach( {
-                    $0.response?(characteristic.value)
+                .forEach( { observation in
+                    observation.response?(characteristic.value, { [weak self] finished in
+                        self?.queue.async {
+                            observation.finished = finished
+                        }
+                        
+                    })
                 } )
         }
     }

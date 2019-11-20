@@ -248,9 +248,10 @@ public struct BTKitRuuviNUSService {
                     result(observer, .failure(.unexpected(.characteristicIsNil)))
                 }
             }
-        }, response: { (observer, data) in
+        }, response: { (observer, data, finished) in
             if let data = data {
                 if service.isEndOfTransmissionFlag(data: data) {
+                    finished?(true)
                     info.callbackQueue.execute {
                         result(observer, .success(values))
                     }
@@ -297,9 +298,10 @@ public struct BTKitRuuviNUSService {
                     result(observer, .failure(.unexpected(.characteristicIsNil)))
                 }
             }
-        }, response: { (observer, data) in
+        }, response: { (observer, data, finished) in
             if let data = data {
                 if service.isEndOfTransmissionFlag(data: data) {
+                    finished?(true)
                     info.callbackQueue.execute {
                         result(observer, .success(values))
                     }
