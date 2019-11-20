@@ -80,7 +80,7 @@ BTForeground.shared.observe(self, uuid: ruuviTag.uuid, options: [.callbackQueue(
 
 ```swift
 if ruuviTag.isConnectable {
-    ruuviTag.connect(for: self, options: [.desiredConnectInterval(10)],  connected: { observer, result in
+    ruuviTag.connect(for: self, options: [.connectionTimeout(10)],  connected: { observer, result in
         switch result {
         case .just:
             print("just connected")
@@ -112,7 +112,7 @@ if ruuviTag.isConnectable {
 or use `uuid` 
 
 ```swift
-BTBackground.shared.connect(for: self, options: [.desiredConnectInterval(10)],  connected: { observer, result in
+BTBackground.shared.connect(for: self, options: [.connectionTimeout(10)],  connected: { observer, result in
     switch result {
     case .just:
         print("just connected")

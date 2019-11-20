@@ -38,12 +38,12 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
     private class ConnectObservation {
         var block: (BTError?) -> Void
         var uuid: String = ""
-        var desiredConnectInterval: TimeInterval
+        var connectionTimeout: TimeInterval
         
-        init(block: @escaping ((BTError?) -> Void), uuid: String, desiredConnectInterval: TimeInterval) {
+        init(block: @escaping ((BTError?) -> Void), uuid: String, connectionTimeout: TimeInterval) {
             self.block = block
             self.uuid = uuid
-            self.desiredConnectInterval = desiredConnectInterval
+            self.connectionTimeout = connectionTimeout
         }
     }
     
@@ -168,9 +168,9 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
     private func addConnecting(peripheral: CBPeripheral) {
         connectingPeripherals.update(with: peripheral)
         
-        // if desiredConnectInterval is set, notify listeners
+        // if connectionTimeout is set, notify listeners
         let uuid = peripheral.identifier.uuidString
-        if observations.connect.values.contains(where: { $0.uuid == peripheral.identifier.uuidString && $0.desiredConnectInterval > 0 }) {
+        if observations.connect.values.contains(where: { $0.uuid == peripheral.identifier.uuidString && $0.connectionTimeout > 0 }) {
                 let connectRequestDate = Date()
                 connectingTimers[uuid]?.cancel()
                 let timer = DispatchSource.makeTimerSource(queue: queue)
@@ -184,11 +184,11 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
                         sSelf.connectingTimers.removeValue(forKey: uuid)
                     } else {
                         sSelf.observations.connect.values
-                            .filter({ $0.uuid == peripheral.identifier.uuidString && $0.desiredConnectInterval > 0 })
+                            .filter({ $0.uuid == peripheral.identifier.uuidString && $0.connectionTimeout > 0 })
                             .forEach({
                                 let now = Date()
                                 let elapsed = now.timeIntervalSince(connectRequestDate)
-                                if elapsed > $0.desiredConnectInterval {
+                                if elapsed > $0.connectionTimeout {
                                     $0.block(.logic(.notConnectedInDesiredInterval))
                                     
                                     // cancel timer if no more observers
@@ -368,7 +368,7 @@ extension BTBackgroundScanneriOS {
                     }
                     connected(observer, error)
                 }
-                }, uuid: uuid, desiredConnectInterval: info.desiredConnectInterval)
+                }, uuid: uuid, connectionTimeout: info.connectionTimeout)
             
             self?.observations.disconnect[id] = DisconnectObservation(block: { [weak self, weak observer] error in
                 guard let observer = observer else {
