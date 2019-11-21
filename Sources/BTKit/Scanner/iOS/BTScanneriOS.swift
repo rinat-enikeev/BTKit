@@ -1,4 +1,7 @@
 import CoreBluetooth
+#if canImport(UIKit)
+import UIKit
+#endif
 
 class BTScanneriOS: NSObject, BTScanner {
     
