@@ -16,5 +16,5 @@ Pod::Spec.new do |spec|
   spec.source       = { :git => "https://github.com/rinat-enikeev/BTKit.git", :tag => spec.version.to_s }
 
   spec.source_files  = "Sources/**/*.{swift,h}"
-  spec.resource_bundle = { "BTKit" => ["Sources/*.lproj/*.strings"] }
+  spec.resource_bundle = { "BTKit" => ["Sources/BTKit/*.lproj/*.strings"] }
 end
