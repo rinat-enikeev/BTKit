@@ -54,8 +54,10 @@ class BTScanneriOS: NSObject, BTScanner {
     required init(decoders: [BTDecoder]) {
         self.decoders = decoders
         super.init()
+#if os(iOS) || os(watchOS) || os(tvOS)
         NotificationCenter.default.addObserver(self, selector: #selector(self.willResignActiveNotification(_:)), name: UIApplication.willResignActiveNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.didBecomeActiveNotification(_:)), name: UIApplication.didBecomeActiveNotification, object: nil)
+#endif
         queue.async { [weak self] in
             self?.setupRestartTimer()
         }

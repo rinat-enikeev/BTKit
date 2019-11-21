@@ -1,3 +1,5 @@
+import Foundation
+
 public protocol BTData {
     var uuid: String { get }
     var rssi: Int { get }

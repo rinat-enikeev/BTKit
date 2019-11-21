@@ -751,10 +751,6 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
                 })
         }
     }
-    
-    func centralManager(_ central: CBCentralManager, connectionEventDidOccur event: CBConnectionEvent, for peripheral: CBPeripheral) {
-        print(event)
-    }
       
     func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
         
