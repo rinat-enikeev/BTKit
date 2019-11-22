@@ -704,20 +704,15 @@ extension BTBackgroundScanneriOS: CBCentralManagerDelegate {
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
         guard RSSI.intValue != 127 else { return }
-        let uuid = peripheral.identifier.uuidString
-        let isConnectable = (advertisementData[CBAdvertisementDataIsConnectable] as? NSNumber)?.boolValue ?? false
         observations.connect.values
-            .filter({ $0.uuid == uuid })
+            .filter({ $0.uuid == peripheral.identifier.uuidString })
             .forEach( { connect in
-                if isConnectable
-                    && !connectingPeripherals.contains(peripheral)
+                if !connectingPeripherals.contains(peripheral)
                     && !connectedPeripherals.contains(peripheral)
                     && peripheral.state != .connected {
                     addConnecting(peripheral: peripheral)
                     peripheral.delegate = self
                     manager.connect(peripheral)
-                } else if !isConnectable {
-                    connect.block(.logic(.notConnectable))
                 }
             } )
     }
