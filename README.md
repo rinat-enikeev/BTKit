@@ -30,6 +30,10 @@ use_frameworks!
 pod 'BTKit'
 ```
 
+#### Swift Package Manager
+
+You can add link to this repo in XCode/File/Swift Packages/Add Package Dependency...
+
 ## Usage example
 
 To make it work import `BTKit` 
