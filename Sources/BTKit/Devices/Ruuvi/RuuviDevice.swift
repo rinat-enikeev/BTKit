@@ -251,6 +251,22 @@ public extension RuuviTag {
         }
     }
     
+    var inHg: Double? {
+        if let pressure = pressure {
+            return pressure / 33.86389
+        } else {
+            return nil
+        }
+    }
+    
+    var mmHg: Double? {
+        if let pressure = pressure {
+            return pressure / 1.333223684
+        } else {
+            return nil
+        }
+    }
+    
     var celsius: Double? {
         switch self {
         case .v2(let data):
