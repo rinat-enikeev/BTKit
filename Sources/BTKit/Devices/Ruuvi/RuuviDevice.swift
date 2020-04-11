@@ -168,7 +168,7 @@ public extension RuuviTag {
             return heartbeat.movementCounter
         case .n2:
             return nil
-        case .n3(let data):
+        case .n3:
             return nil
         case .n4:
             return nil
@@ -191,7 +191,7 @@ public extension RuuviTag {
             return heartbeat.measurementSequenceNumber
         case .n2:
             return nil
-        case .n3(let data):
+        case .n3:
             return nil
         case .n4:
             return nil
@@ -214,7 +214,7 @@ public extension RuuviTag {
             return heartbeat.txPower
         case .n2:
             return nil
-        case .n3(let data):
+        case .n3:
             return nil
         case .n4:
             return nil

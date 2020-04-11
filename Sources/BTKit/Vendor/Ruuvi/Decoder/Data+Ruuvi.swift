@@ -1,14 +1,14 @@
 import Foundation
 
 public extension Ruuvi {
-    public struct Data2 {
+    struct Data2 {
         public var version: Int
         public var humidity: Double
         public var temperature: Double
         public var pressure: Double
     }
 
-    public struct Data3 {
+    struct Data3 {
         public var humidity: Double
         public var temperature: Double
         public var pressure: Double
@@ -18,14 +18,14 @@ public extension Ruuvi {
         public var voltage: Double
     }
 
-    public struct Data4 {
+    struct Data4 {
         public var version: Int
         public var humidity: Double
         public var temperature: Double
         public var pressure: Double
     }
 
-    public struct Data5 {
+    struct Data5 {
         public var humidity: Double?
         public var temperature: Double?
         public var pressure: Double?
@@ -39,7 +39,7 @@ public extension Ruuvi {
         public var mac: String
     }
     
-    public struct Heartbeat1 {
+    struct Heartbeat1 {
         public var humidity: Double?
         public var temperature: Double?
         public var pressure: Double?
@@ -340,7 +340,7 @@ public extension Data {
         
         return Ruuvi.Heartbeat1(humidity: humidity, temperature: temperature, pressure: pressure, accelerationX: accelerationX, accelerationY: accelerationY, accelerationZ: accelerationZ, movementCounter: movementCounter, measurementSequenceNumber: measurementSequenceNumber, voltage: voltage, txPower: txPower)
     }
-    
+
     private func addColons(mac: String) -> String {
         let out = NSMutableString(string: mac)
         var i = mac.count - 2
