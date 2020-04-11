@@ -1,55 +1,55 @@
 import Foundation
 
 public extension Ruuvi {
-    struct Data2 {
-        var version: Int
-        var humidity: Double
-        var temperature: Double
-        var pressure: Double
+    public struct Data2 {
+        public var version: Int
+        public var humidity: Double
+        public var temperature: Double
+        public var pressure: Double
     }
 
-    struct Data3 {
-        var humidity: Double
-        var temperature: Double
-        var pressure: Double
-        var accelerationX: Double
-        var accelerationY: Double
-        var accelerationZ: Double
-        var voltage: Double
+    public struct Data3 {
+        public var humidity: Double
+        public var temperature: Double
+        public var pressure: Double
+        public var accelerationX: Double
+        public var accelerationY: Double
+        public var accelerationZ: Double
+        public var voltage: Double
     }
 
-    struct Data4 {
-        var version: Int
-        var humidity: Double
-        var temperature: Double
-        var pressure: Double
+    public struct Data4 {
+        public var version: Int
+        public var humidity: Double
+        public var temperature: Double
+        public var pressure: Double
     }
 
-    struct Data5 {
-        var humidity: Double?
-        var temperature: Double?
-        var pressure: Double?
-        var accelerationX: Double?
-        var accelerationY: Double?
-        var accelerationZ: Double?
-        var movementCounter: Int?
-        var measurementSequenceNumber: Int?
-        var voltage: Double?
-        var txPower: Int?
-        var mac: String
+    public struct Data5 {
+        public var humidity: Double?
+        public var temperature: Double?
+        public var pressure: Double?
+        public var accelerationX: Double?
+        public var accelerationY: Double?
+        public var accelerationZ: Double?
+        public var movementCounter: Int?
+        public var measurementSequenceNumber: Int?
+        public var voltage: Double?
+        public var txPower: Int?
+        public var mac: String
     }
     
-    struct Heartbeat1 {
-        var humidity: Double?
-        var temperature: Double?
-        var pressure: Double?
-        var accelerationX: Double?
-        var accelerationY: Double?
-        var accelerationZ: Double?
-        var movementCounter: Int?
-        var measurementSequenceNumber: Int?
-        var voltage: Double?
-        var txPower: Int?
+    public struct Heartbeat1 {
+        public var humidity: Double?
+        public var temperature: Double?
+        public var pressure: Double?
+        public var accelerationX: Double?
+        public var accelerationY: Double?
+        public var accelerationZ: Double?
+        public var movementCounter: Int?
+        public var measurementSequenceNumber: Int?
+        public var voltage: Double?
+        public var txPower: Int?
     }
 }
 
@@ -339,16 +339,6 @@ public extension Data {
         
         
         return Ruuvi.Heartbeat1(humidity: humidity, temperature: temperature, pressure: pressure, accelerationX: accelerationX, accelerationY: accelerationY, accelerationZ: accelerationZ, movementCounter: movementCounter, measurementSequenceNumber: measurementSequenceNumber, voltage: voltage, txPower: txPower)
-    }
-    
-    private struct HexEncodingOptions: OptionSet {
-        let rawValue: Int
-        static let upperCase = HexEncodingOptions(rawValue: 1 << 0)
-    }
-    
-    private func hexEncodedString(options: HexEncodingOptions = []) -> String {
-        let format = options.contains(.upperCase) ? "%02hhX" : "%02hhx"
-        return map { String(format: format, $0) }.joined()
     }
     
     private func addColons(mac: String) -> String {

@@ -1,6 +1,38 @@
 import CoreBluetooth
 
 public struct RuuviDecoderiOS: BTDecoder {
+
+    public init() {
+    }
+
+    public func decodeNetwork(uuid: String, rssi: Int, isConnectable: Bool, payload: String) -> BTDevice? {
+        guard let data = payload.hex else { return nil }
+        guard data.count > 30 else { return nil }
+        let versionOffset = 7
+        let version = Int(data[versionOffset])
+        let parsableOffset = 5
+        let parsable = Data(data[parsableOffset...data.count - parsableOffset])
+        switch version {
+        case 2:
+            let ruuvi = parsable.ruuvi2()
+            let tag = RuuviData2(uuid: uuid, rssi: rssi, isConnectable: isConnectable, version: ruuvi.version, temperature: ruuvi.temperature, humidity: ruuvi.humidity, pressure: ruuvi.pressure)
+            return .ruuvi(.tag(.n2(tag)))
+        case 3:
+            let ruuvi = parsable.ruuvi3()
+            let tag = RuuviData3(uuid: uuid, rssi: rssi, isConnectable: isConnectable, version: Int(version), humidity: ruuvi.humidity, temperature: ruuvi.temperature, pressure: ruuvi.pressure, accelerationX: ruuvi.accelerationX, accelerationY: ruuvi.accelerationY, accelerationZ: ruuvi.accelerationZ, voltage: ruuvi.voltage)
+            return .ruuvi(.tag(.n3(tag)))
+        case 4:
+            let ruuvi = parsable.ruuvi4()
+            let tag = RuuviData4(uuid: uuid, rssi: rssi, isConnectable: isConnectable, version: ruuvi.version, temperature: ruuvi.temperature, humidity: ruuvi.humidity, pressure: ruuvi.pressure)
+            return .ruuvi(.tag(.n4(tag)))
+        case 5:
+            let ruuvi = parsable.ruuvi5()
+            let tag = RuuviData5(uuid: uuid, rssi: rssi, isConnectable: isConnectable, version: Int(version), humidity: ruuvi.humidity, temperature: ruuvi.temperature, pressure: ruuvi.pressure, accelerationX: ruuvi.accelerationX, accelerationY: ruuvi.accelerationY, accelerationZ: ruuvi.accelerationZ, voltage: ruuvi.voltage, movementCounter: ruuvi.movementCounter, measurementSequenceNumber: ruuvi.measurementSequenceNumber, txPower: ruuvi.txPower, mac: ruuvi.mac)
+            return .ruuvi(.tag(.n5(tag)))
+        default:
+            return nil
+        }
+    }
     
     public func decodeHeartbeat(uuid: String, data: Data?) -> BTDevice? {
         guard let data = data else { return nil }
