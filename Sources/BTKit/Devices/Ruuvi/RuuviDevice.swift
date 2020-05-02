@@ -62,7 +62,7 @@ public extension RuuviTag {
         }
     }
     
-    var voltage: Double? {
+    var volts: Double? {
         switch self {
         case .v2:
             return nil
@@ -338,7 +338,7 @@ public extension RuuviTag {
         }
     }
     
-    var pressure: Double? {
+    var hectopascals: Double? {
         switch self {
         case .v2(let data):
             return data.pressure
@@ -362,7 +362,7 @@ public extension RuuviTag {
     }
     
     var inHg: Double? {
-        if let pressure = pressure {
+        if let pressure = hectopascals {
             return pressure / 33.86389
         } else {
             return nil
@@ -370,7 +370,7 @@ public extension RuuviTag {
     }
     
     var mmHg: Double? {
-        if let pressure = pressure {
+        if let pressure = hectopascals {
             return pressure / 1.333223684
         } else {
             return nil
