@@ -315,7 +315,7 @@ public extension RuuviTag {
         }
     }
     
-    var humidity: Double? {
+    var relativeHumidity: Double? {
         switch self {
         case .v2(let data):
             return data.humidity
