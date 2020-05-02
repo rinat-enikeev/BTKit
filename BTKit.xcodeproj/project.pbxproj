@@ -52,6 +52,8 @@
 		0E7E7B61235857A7009F24EE /* HeartbeatPersistenceUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E7E7B60235857A7009F24EE /* HeartbeatPersistenceUserDefaults.swift */; };
 		0E7E7B652358589F009F24EE /* HeartbeatService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E7E7B642358589F009F24EE /* HeartbeatService.swift */; };
 		0E7E7B6823585907009F24EE /* HeartbeatServiceBTKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E7E7B6723585907009F24EE /* HeartbeatServiceBTKit.swift */; };
+		0E8BACC8245D884500D380FB /* Data+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E8BACC6245D884500D380FB /* Data+Hex.swift */; };
+		0E8BACC9245D884500D380FB /* String+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E8BACC7245D884500D380FB /* String+Hex.swift */; };
 		0E9D5F502356E9940076FFD8 /* MainUnknownTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E9D5F4F2356E9940076FFD8 /* MainUnknownTableViewCell.swift */; };
 		0E9D5F532356EBED0076FFD8 /* Unknown.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0E9D5F522356EBED0076FFD8 /* Unknown.storyboard */; };
 		0E9D5F552356F9760076FFD8 /* UnknownViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E9D5F542356F9760076FFD8 /* UnknownViewController.swift */; };
@@ -149,6 +151,8 @@
 		0E7E7B60235857A7009F24EE /* HeartbeatPersistenceUserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartbeatPersistenceUserDefaults.swift; sourceTree = "<group>"; };
 		0E7E7B642358589F009F24EE /* HeartbeatService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartbeatService.swift; sourceTree = "<group>"; };
 		0E7E7B6723585907009F24EE /* HeartbeatServiceBTKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartbeatServiceBTKit.swift; sourceTree = "<group>"; };
+		0E8BACC6245D884500D380FB /* Data+Hex.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Data+Hex.swift"; sourceTree = "<group>"; };
+		0E8BACC7245D884500D380FB /* String+Hex.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "String+Hex.swift"; sourceTree = "<group>"; };
 		0E9D5F4F2356E9940076FFD8 /* MainUnknownTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainUnknownTableViewCell.swift; sourceTree = "<group>"; };
 		0E9D5F522356EBED0076FFD8 /* Unknown.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Unknown.storyboard; sourceTree = "<group>"; };
 		0E9D5F542356F9760076FFD8 /* UnknownViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnknownViewController.swift; sourceTree = "<group>"; };
@@ -262,9 +266,10 @@
 			isa = PBXGroup;
 			children = (
 				0E4EAE4B238640EB00BBDFBD /* Localizable.strings */,
+				0E4EAE5B238640EB00BBDFBD /* Devices */,
+				0E8BACC5245D884500D380FB /* Helpers */,
 				0E4EAE4E238640EB00BBDFBD /* Scanner */,
 				0E4EAE52238640EB00BBDFBD /* Vendor */,
-				0E4EAE5B238640EB00BBDFBD /* Devices */,
 			);
 			path = BTKit;
 			sourceTree = "<group>";
@@ -462,6 +467,15 @@
 				0E7E7B6723585907009F24EE /* HeartbeatServiceBTKit.swift */,
 			);
 			path = BTKit;
+			sourceTree = "<group>";
+		};
+		0E8BACC5245D884500D380FB /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				0E8BACC6245D884500D380FB /* Data+Hex.swift */,
+				0E8BACC7245D884500D380FB /* String+Hex.swift */,
+			);
+			path = Helpers;
 			sourceTree = "<group>";
 		};
 		0E9D5F512356EB780076FFD8 /* Unknown */ = {
@@ -750,6 +764,7 @@
 				0E4EAE8B238640EB00BBDFBD /* RuuviData2.swift in Sources */,
 				0E4EAE7D238640EB00BBDFBD /* RuuviDecoderiOS.swift in Sources */,
 				0E4EAE7B238640EB00BBDFBD /* BTBackgroundScanneriOS.swift in Sources */,
+				0E8BACC8245D884500D380FB /* Data+Hex.swift in Sources */,
 				0E4EAE81238640EB00BBDFBD /* BTBackgroundScanner.swift in Sources */,
 				0E4EAE8D238640EB00BBDFBD /* RuuviData3.swift in Sources */,
 				0E4EAE8E238640EB00BBDFBD /* RuuviData5.swift in Sources */,
@@ -757,6 +772,7 @@
 				0E4EAE7E238640EB00BBDFBD /* Ruuvi.swift in Sources */,
 				0E4EAE8A238640EB00BBDFBD /* RuuviHeartbeat1.swift in Sources */,
 				0E4EAE93238640EB00BBDFBD /* ObservationToken.swift in Sources */,
+				0E8BACC9245D884500D380FB /* String+Hex.swift in Sources */,
 				0E4EAE7A238640EB00BBDFBD /* BTScanneriOS.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -982,7 +998,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1.11;
+				MARKETING_VERSION = 0.1.12;
 				PRODUCT_BUNDLE_IDENTIFIER = io.btkit.BTKit;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
@@ -1011,7 +1027,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1.11;
+				MARKETING_VERSION = 0.1.12;
 				PRODUCT_BUNDLE_IDENTIFIER = io.btkit.BTKit;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
@@ -1073,7 +1089,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1.11;
+				MARKETING_VERSION = 0.1.12;
 				PRODUCT_BUNDLE_IDENTIFIER = io.btkit.BTKitTester;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -1094,7 +1110,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1.11;
+				MARKETING_VERSION = 0.1.12;
 				PRODUCT_BUNDLE_IDENTIFIER = io.btkit.BTKitTester;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
