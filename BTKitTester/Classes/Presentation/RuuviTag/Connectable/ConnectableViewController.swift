@@ -27,7 +27,8 @@ class ConnectableViewController: UITableViewController {
     @IBOutlet weak var allButton: UIButton!
     @IBOutlet weak var unsubscribeButton: UIButton!
     @IBOutlet weak var subscribeButton: UIButton!
-    
+    @IBOutlet weak var firmwareButton: UIButton!
+
     private var isConnected: Bool = false { didSet { updateUIIsConnected() } }
     private var isSubscribed: Bool = false { didSet { updateUIIsSubscribed() } }
     private var isReading: Bool = false { didSet { updateUIIsReading() } }
@@ -50,11 +51,15 @@ class ConnectableViewController: UITableViewController {
         connectToken?.invalidate()
         disconnectToken?.invalidate()
     }
-    
+
 }
 
 // MARK: - IBActions
 extension ConnectableViewController {
+    @IBAction func firmwareButtonTouchUpInside(_ sender: Any) {
+
+    }
+
     @IBAction func subscribeButtonTouchUpInside(_ sender: Any) {
         heartbeatService.subscribe(to: ruuviTag.uuid)
         isSubscribed = true
@@ -235,6 +240,7 @@ extension ConnectableViewController {
             humidityButton.isEnabled = isConnected
             pressureButton.isEnabled = isConnected
             allButton.isEnabled = isConnected
+            firmwareButton.isEnabled = isConnected
         }
     }
     
@@ -251,6 +257,7 @@ extension ConnectableViewController {
             humidityButton.isEnabled = !isReading && isConnected
             pressureButton.isEnabled = !isReading && isConnected
             allButton.isEnabled = !isReading && isConnected
+            firmwareButton.isEnabled = !isReading && isConnected
         }
     }
 }
