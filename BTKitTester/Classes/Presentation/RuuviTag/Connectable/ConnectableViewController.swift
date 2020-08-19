@@ -57,7 +57,14 @@ class ConnectableViewController: UITableViewController {
 // MARK: - IBActions
 extension ConnectableViewController {
     @IBAction func firmwareButtonTouchUpInside(_ sender: Any) {
-
+        BTKit.background.services.gatt.firmwareRevision(for: self, uuid: ruuviTag.uuid) { (observer, result) in
+            switch result {
+            case .success(let firmware):
+                print(firmware)
+            case .failure(let error):
+                print(error.localizedDescription)
+            }
+        }
     }
 
     @IBAction func subscribeButtonTouchUpInside(_ sender: Any) {
@@ -240,7 +247,6 @@ extension ConnectableViewController {
             humidityButton.isEnabled = isConnected
             pressureButton.isEnabled = isConnected
             allButton.isEnabled = isConnected
-            firmwareButton.isEnabled = isConnected
         }
     }
     
@@ -257,7 +263,6 @@ extension ConnectableViewController {
             humidityButton.isEnabled = !isReading && isConnected
             pressureButton.isEnabled = !isReading && isConnected
             allButton.isEnabled = !isReading && isConnected
-            firmwareButton.isEnabled = !isReading && isConnected
         }
     }
 }

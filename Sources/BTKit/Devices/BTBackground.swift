@@ -4,14 +4,17 @@ public struct BTBackground {
     
     public static let shared = BTBackground()
     
-    let scanner: BTBackgroundScanner = BTBackgroundScanneriOS(services: [RuuviNUSService()], decoders: [RuuviDecoderiOS()])
+    let scanner: BTBackgroundScanner
+        = BTBackgroundScanneriOS(services: [RuuviNUSService(),
+                                            DeviceInformationService()],
+                                 decoders: [RuuviDecoderiOS()])
     
     public let services: BTServices = BTServices()
     
     public func isConnected(uuid: String) -> Bool {
         return scanner.isConnected(uuid: uuid)
     }
-    
+
     @discardableResult
     public func readRSSI<T: AnyObject>(for observer: T, uuid: String, options: BTScannerOptionsInfo? = nil, result: @escaping (T, Result<Int,BTError>) -> Void) -> ObservationToken? {
         if scanner.isConnected(uuid: uuid) {

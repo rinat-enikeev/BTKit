@@ -11,7 +11,8 @@ public enum BTServiceProgress {
 
 public enum BTServiceType {
     case ruuvi(BTRuuviServiceType)
-    
+    case gatt(BTGATTServiceType)
+
     var uuid: CBUUID {
         switch self {
         case .ruuvi(let type):
@@ -19,6 +20,47 @@ public enum BTServiceType {
             case .nus(let service):
                 return service.uuid
             }
+        case .gatt(let type):
+            switch type {
+            case .deviceInformation(let service):
+                return service.uuid
+            }
+        }
+    }
+}
+
+public enum BTGATTDeviceInformationService {
+    case firmwareRevision(BTGATTDeviceInformationFirmwareRevisionService)
+
+    var uuid: CBUUID {
+        switch self {
+        case .firmwareRevision(let value):
+            return value.uuid
+        }
+    }
+
+    var characteristic: CBUUID {
+        switch self {
+        case .firmwareRevision(let value):
+            return value.characteristic
+        }
+    }
+}
+
+public enum BTGATTDeviceInformationFirmwareRevisionService {
+    case standard
+
+    var uuid: CBUUID {
+        switch self {
+        case .standard:
+            return CBUUID(string: "180a")
+        }
+    }
+
+    var characteristic: CBUUID {
+        switch self {
+        case .standard:
+            return CBUUID(string: "2a26")
         }
     }
 }
@@ -132,6 +174,24 @@ public enum BTRuuviServiceType {
     case nus(BTRuuviNUSService)
 }
 
+public enum BTGATTServiceType {
+    case deviceInformation(BTGATTDeviceInformationService)
+
+    var uuid: CBUUID {
+        switch self {
+        case .deviceInformation(let value):
+            return value.uuid
+        }
+    }
+
+    var characteristic: CBUUID {
+        switch self {
+        case .deviceInformation(let value):
+            return value.characteristic
+        }
+    }
+}
+
 public protocol BTService: class {
     var uuid: CBUUID { get }
 }
@@ -143,10 +203,114 @@ public protocol BTUARTService: BTService {
 
 public struct BTServices {
     public let ruuvi = BTRuuviServices()
+    public let gatt = BTGATTService()
 }
 
 public struct BTRuuviServices {
     public let nus = BTKitRuuviNUSService()
+}
+
+public struct BTGATTService {
+    public func firmwareRevision<T:AnyObject>(for observer: T, uuid: String, options: BTScannerOptionsInfo? = nil, progress: ((BTServiceProgress) -> Void)? = nil, result: @escaping (T, Result<String, BTError>) -> Void) {
+        var connectToken: ObservationToken?
+        progress?(.connecting)
+        connectToken = BTKit.background.connect(for: observer, uuid: uuid, options: options, connected: { (observer, connectResult) in
+            connectToken?.invalidate()
+            switch connectResult {
+            case .already:
+                var serveToken: ObservationToken?
+                progress?(.serving)
+                serveToken = self.serveFirmware(observer, uuid, options) { observer, serveResult in
+                    serveToken?.invalidate()
+                    var disconnectToken: ObservationToken?
+                    progress?(.disconnecting)
+                    disconnectToken = BTKit.background.disconnect(for: observer, uuid: uuid, options: options) { (observer, disconnectResult) in
+                        disconnectToken?.invalidate()
+                        switch disconnectResult {
+                        case .already:
+                            progress?(.success)
+                            result(observer, serveResult)
+                        case .just:
+                            progress?(.success)
+                            result(observer, serveResult)
+                        case .stillConnected:
+                            progress?(.success)
+                            result(observer, serveResult)
+                        case .bluetoothWasPoweredOff:
+                            progress?(.success)
+                            result(observer, serveResult)
+                        case .failure(let error):
+                            progress?(.failure(error))
+                            result(observer, .failure(error))
+                        }
+                    }
+                }
+            case .just:
+                var serveToken: ObservationToken?
+                progress?(.serving)
+                serveToken = self.serveFirmware(observer, uuid, options) { observer, serveResult in
+                    serveToken?.invalidate()
+                    var disconnectToken: ObservationToken?
+                    progress?(.disconnecting)
+                    disconnectToken = BTKit.background.disconnect(for: observer, uuid: uuid, options: options) { (observer, disconnectResult) in
+                        disconnectToken?.invalidate()
+                        switch disconnectResult {
+                        case .already:
+                            progress?(.success)
+                            result(observer, serveResult)
+                        case .just:
+                            progress?(.success)
+                            result(observer, serveResult)
+                        case .stillConnected:
+                            progress?(.success)
+                            result(observer, serveResult)
+                        case .bluetoothWasPoweredOff:
+                            progress?(.success)
+                            result(observer, serveResult)
+                        case .failure(let error):
+                            progress?(.failure(error))
+                            result(observer, .failure(error))
+                        }
+                    }
+                }
+            case .failure(let error):
+                progress?(.failure(error))
+                result(observer, .failure(error))
+            case .disconnected:
+                break // do nothing, it will reconnect
+            }
+        })
+    }
+
+    private func serveFirmware<T: AnyObject>(_ observer: T, _ uuid: String, _ options: BTScannerOptionsInfo?, _ result: @escaping (T, Result<String, BTError>) -> Void) -> ObservationToken? {
+        let info = BTKitParsedOptionsInfo(options)
+        let serveToken = BTKit.background.scanner.serveGATT(observer, for: uuid, .deviceInformation(.firmwareRevision(.standard)), options: options, request: { (observer, peripheral, characteristic) in
+            if let characteristic = characteristic {
+                peripheral?.readValue(for: characteristic)
+            } else {
+                info.callbackQueue.execute {
+                    result(observer, .failure(.unexpected(.characteristicIsNil)))
+                }
+            }
+        }, response: { (observer, data, finished) in
+            if let data = data {
+                if let firmwareRevisionString = String(data: data, encoding: .utf8) {
+                    result(observer, .success(firmwareRevisionString))
+                } else {
+                    result(observer, .failure(.unexpected(.dataIsNil)))
+                }
+            } else {
+                info.callbackQueue.execute {
+                    result(observer, .failure(.unexpected(.dataIsNil)))
+                }
+            }
+        }) { (observer, error) in
+            info.callbackQueue.execute {
+                result(observer, .failure(error))
+            }
+        }
+        return serveToken
+    }
 }
 
 public struct BTKitRuuviNUSService {
@@ -240,7 +404,7 @@ public struct BTKitRuuviNUSService {
         var values = [RuuviTagEnvLogFull]()
         var lastValue = RuuviTagEnvLogFullClass()
         let service: BTRuuviNUSService = .all
-        let serveToken = BTKit.background.scanner.serve(observer, for: uuid, .ruuvi(.nus(service)), options: options, request: { (observer, peripheral, rx, tx) in
+        let serveToken = BTKit.background.scanner.serveUART(observer, for: uuid, .ruuvi(.nus(service)), options: options, request: { (observer, peripheral, rx, tx) in
             if let rx = rx {
                 peripheral?.writeValue(service.request(from: date), for: rx, type: .withResponse)
             } else {
@@ -290,7 +454,7 @@ public struct BTKitRuuviNUSService {
     fileprivate func serveEnv<T: AnyObject>(_ observer: T, _ uuid: String, _ service: BTRuuviNUSService, _ options: BTScannerOptionsInfo?, _ date: Date, _ result: @escaping (T, Result<[RuuviTagEnvLog], BTError>) -> Void) -> ObservationToken? {
         let info = BTKitParsedOptionsInfo(options)
         var values = [RuuviTagEnvLog]()
-        let serveToken = BTKit.background.scanner.serve(observer, for: uuid, .ruuvi(.nus(service)), options: options, request: { (observer, peripheral, rx, tx) in
+        let serveToken = BTKit.background.scanner.serveUART(observer, for: uuid, .ruuvi(.nus(service)), options: options, request: { (observer, peripheral, rx, tx) in
             if let rx = rx {
                 peripheral?.writeValue(service.request(from: date), for: rx, type: .withResponse)
             } else {

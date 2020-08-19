@@ -27,11 +27,13 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
         connect: [UUID: ConnectObservation](),
         heartbeat: [UUID: HeartbeatObservation](),
         disconnect: [UUID: DisconnectObservation](),
-        service: [UUID: ServiceObservation](),
+        uartService: [UUID: UARTServiceObservation](),
+        gattService: [UUID: GATTServiceObservation](),
         observe: [UUID: ObserveObservation](),
         readRSSI: [UUID: ReadRSSIObservation]()
     )
     private var uartRegistrations = Set<UARTRegistration>()
+    private var gattRegistrations = Set<GATTRegistration>()
     private var isReady = false { didSet { startIfNeeded() } }
     private var restorePeripherals = Set<CBPeripheral>()
     private var connectingTimers = [String: DispatchSourceTimer]()
@@ -67,7 +69,7 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
         }
     }
     
-    private class ServiceObservation {
+    private class UARTServiceObservation {
         var request: ((CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?
         var response: ((Data?, ((Bool) -> Void)?) -> Void)?
         var failure: ((BTError) -> Void)?
@@ -86,6 +88,27 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
             self.failure = failure
         }
     }
+
+    private class GATTServiceObservation {
+        var request: ((CBPeripheral?, CBCharacteristic?) -> Void)?
+        var response: ((Data?, ((Bool) -> Void)?) -> Void)?
+        var failure: ((BTError) -> Void)?
+        var uuid: String = ""
+        var type: BTGATTServiceType
+        var serviceTimeout: TimeInterval
+        var timer: DispatchSourceTimer?
+        var finished: Bool = false
+
+        init(uuid: String, type: BTGATTServiceType, serviceTimeout: TimeInterval, request: ((CBPeripheral?, CBCharacteristic?) -> Void)?, response: ((Data?, ((Bool) -> Void)?) -> Void)?, failure: ((BTError) -> Void)?) {
+            self.uuid = uuid
+            self.type = type
+            self.serviceTimeout = serviceTimeout
+            self.request = request
+            self.response = response
+            self.failure = failure
+        }
+    }
+
     
     private class ObserveObservation {
         var block: (BTDevice) -> Void
@@ -104,6 +127,30 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
         init(block: @escaping ((NSNumber?, BTError?) -> Void), uuid: String) {
             self.block = block
             self.uuid = uuid
+        }
+    }
+
+    private class GATTRegistration: Hashable {
+        var service: CBService
+        var peripheral: CBPeripheral
+        var characteristic: CBCharacteristic
+        var isReady = false
+
+        init(service: CBService,
+             peripheral: CBPeripheral,
+             characteristic: CBCharacteristic) {
+            self.service = service
+            self.peripheral = peripheral
+            self.characteristic = characteristic
+        }
+
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(peripheral)
+            hasher.combine(service)
+        }
+
+        static func == (lhs: BTBackgroundScanneriOS.GATTRegistration, rhs: BTBackgroundScanneriOS.GATTRegistration) -> Bool {
+            return lhs.peripheral == rhs.peripheral && lhs.service == rhs.service
         }
     }
     
@@ -165,7 +212,8 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
         || observations.disconnect.count > 0
         || observations.heartbeat.count > 0
         || observations.state.count > 0
-        || observations.service.count > 0
+        || observations.uartService.count > 0
+        || observations.gattService.count > 0
         || observations.observe.count > 0
     }
     
@@ -233,8 +281,13 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
     
     private func removeConnected(peripheral: CBPeripheral) {
         connectedPeripherals.remove(peripheral)
-        let registrations = uartRegistrations.filter({ $0.peripheral == peripheral })
-        registrations.forEach({ uartRegistrations.remove($0) })
+        uartRegistrations
+            .filter({ $0.peripheral == peripheral })
+            .forEach({ uartRegistrations.remove($0) })
+        gattRegistrations
+            .filter({ $0.peripheral == peripheral })
+            .forEach({ gattRegistrations.remove($0) })
+
         let uuid = peripheral.identifier.uuidString
         observations.disconnect.values
             .filter({ $0.uuid == uuid })
@@ -249,9 +302,38 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
     private func removeAllConnectedPeripherals() {
         connectedPeripherals.removeAll()
         uartRegistrations.removeAll()
+        gattRegistrations.removeAll()
+    }
+
+    private func requestService(observation: GATTServiceObservation, registration: GATTRegistration) {
+        observation.request?(registration.peripheral, registration.characteristic)
+        observation.request = nil // clear to avoid double call
+
+        if observation.serviceTimeout > 0 {
+            let serviceRequestDate = Date()
+            observation.timer?.cancel()
+            let timer = DispatchSource.makeTimerSource( queue: queue)
+            observation.timer = timer
+            timer.schedule(deadline: .now() + 1, repeating: .seconds(1))
+            timer.setEventHandler {
+                if observation.finished {
+                    timer.cancel()
+                    observation.timer = nil
+                } else {
+                    let now = Date()
+                    let elapsed = now.timeIntervalSince(serviceRequestDate)
+                    if elapsed > observation.serviceTimeout {
+                        observation.failure?(.logic(.serviceTimedOut))
+                        timer.cancel()
+                        observation.timer = nil
+                    }
+                }
+            }
+            timer.activate()
+        }
     }
     
-    private func requestService(observation: ServiceObservation, registration: UARTRegistration) {
+    private func requestService(observation: UARTServiceObservation, registration: UARTRegistration) {
         observation.request?(registration.peripheral, registration.rx, registration.tx)
         observation.request = nil // clear to avoid double call
         
@@ -533,7 +615,7 @@ extension BTBackgroundScanneriOS {
     }
     
     @discardableResult
-    func serve<T: AnyObject>(_ observer: T, for uuid: String, _ type: BTServiceType, options: BTScannerOptionsInfo?, request: ((T, CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((T, Data?, ((Bool) -> Void)?) -> Void)?, failure: ((T, BTError) -> Void)?) -> ObservationToken {
+    func serveUART<T: AnyObject>(_ observer: T, for uuid: String, _ type: BTServiceType, options: BTScannerOptionsInfo?, request: ((T, CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((T, Data?, ((Bool) -> Void)?) -> Void)?, failure: ((T, BTError) -> Void)?) -> ObservationToken {
         
         let options = currentDefaultOptions + (options ?? .empty)
         let info = BTKitParsedOptionsInfo(options)
@@ -541,16 +623,16 @@ extension BTBackgroundScanneriOS {
         let id = UUID()
         
         queue.async { [weak self] in
-            let observation = ServiceObservation(uuid: uuid, type: type, serviceTimeout: info.serviceTimeout, request: { [weak self, weak observer] (peripheral, rx, tx) in
+            let observation = UARTServiceObservation(uuid: uuid, type: type, serviceTimeout: info.serviceTimeout, request: { [weak self, weak observer] (peripheral, rx, tx) in
                 guard let observer = observer else {
-                    self?.observations.service.removeValue(forKey: id)
+                    self?.observations.uartService.removeValue(forKey: id)
                     self?.stopIfNeeded()
                     return
                 }
                 info.callbackQueue.execute { [weak observer, weak self] in
                     guard let observer = observer else {
                         self?.queue.async { [weak self] in
-                            self?.observations.service.removeValue(forKey: id)
+                            self?.observations.uartService.removeValue(forKey: id)
                             self?.stopIfNeeded()
                         }
                         return
@@ -559,14 +641,14 @@ extension BTBackgroundScanneriOS {
                 }
             }, response: { [weak self, weak observer] (data, finished) in
                 guard let observer = observer else {
-                    self?.observations.service.removeValue(forKey: id)
+                    self?.observations.uartService.removeValue(forKey: id)
                     self?.stopIfNeeded()
                     return
                 }
                 info.callbackQueue.execute { [weak observer, weak self] in
                     guard let observer = observer else {
                         self?.queue.async { [weak self] in
-                            self?.observations.service.removeValue(forKey: id)
+                            self?.observations.uartService.removeValue(forKey: id)
                             self?.stopIfNeeded()
                         }
                         return
@@ -575,14 +657,14 @@ extension BTBackgroundScanneriOS {
                 }
             }, failure: { [weak self, weak observer] (error) in
                 guard let observer = observer else {
-                    self?.observations.service.removeValue(forKey: id)
+                    self?.observations.uartService.removeValue(forKey: id)
                     self?.stopIfNeeded()
                     return
                 }
                 info.callbackQueue.execute { [weak observer, weak self] in
                     guard let observer = observer else {
                         self?.queue.async { [weak self] in
-                            self?.observations.service.removeValue(forKey: id)
+                            self?.observations.uartService.removeValue(forKey: id)
                             self?.stopIfNeeded()
                         }
                         return
@@ -591,7 +673,7 @@ extension BTBackgroundScanneriOS {
                 }
             })
             
-            self?.observations.service[id] = observation
+            self?.observations.uartService[id] = observation
                 
             self?.startIfNeeded()
             
@@ -603,12 +685,89 @@ extension BTBackgroundScanneriOS {
         
         return ObservationToken { [weak self] in
             self?.queue.async { [weak self] in
-                self?.observations.service.removeValue(forKey: id)
+                self?.observations.uartService.removeValue(forKey: id)
                 self?.stopIfNeeded()
             }
         }
     }
-    
+
+    @discardableResult
+    func serveGATT<T: AnyObject>(_ observer: T, for uuid: String, _ type: BTGATTServiceType, options: BTScannerOptionsInfo?, request: ((T, CBPeripheral?, CBCharacteristic?) -> Void)?, response: ((T, Data?, ((Bool) -> Void)?) -> Void)?, failure: ((T, BTError) -> Void)?) -> ObservationToken {
+
+        let options = currentDefaultOptions + (options ?? .empty)
+        let info = BTKitParsedOptionsInfo(options)
+
+        let id = UUID()
+
+        queue.async { [weak self] in
+            let observation = GATTServiceObservation(uuid: uuid, type: type, serviceTimeout: info.serviceTimeout, request: { [weak self, weak observer] (peripheral, characteristic) in
+                guard let observer = observer else {
+                    self?.observations.gattService.removeValue(forKey: id)
+                    self?.stopIfNeeded()
+                    return
+                }
+                info.callbackQueue.execute { [weak observer, weak self] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.gattService.removeValue(forKey: id)
+                            self?.stopIfNeeded()
+                        }
+                        return
+                    }
+                    request?(observer, peripheral, characteristic)
+                }
+            }, response: { [weak self, weak observer] (data, finished) in
+                guard let observer = observer else {
+                    self?.observations.gattService.removeValue(forKey: id)
+                    self?.stopIfNeeded()
+                    return
+                }
+                info.callbackQueue.execute { [weak observer, weak self] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.gattService.removeValue(forKey: id)
+                            self?.stopIfNeeded()
+                        }
+                        return
+                    }
+                    response?(observer, data, finished)
+                }
+            }, failure: { [weak self, weak observer] (error) in
+                guard let observer = observer else {
+                    self?.observations.gattService.removeValue(forKey: id)
+                    self?.stopIfNeeded()
+                    return
+                }
+                info.callbackQueue.execute { [weak observer, weak self] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.gattService.removeValue(forKey: id)
+                            self?.stopIfNeeded()
+                        }
+                        return
+                    }
+                    failure?(observer, error)
+                }
+            })
+
+            self?.observations.gattService[id] = observation
+
+            self?.startIfNeeded()
+
+            // call request for already registered services
+            self?.gattRegistrations.filter({ $0.peripheral.identifier.uuidString == uuid}).forEach({ (registration) in
+                self?.requestService(observation: observation, registration: registration)
+            })
+        }
+
+        return ObservationToken { [weak self] in
+            self?.queue.async { [weak self] in
+                self?.observations.gattService.removeValue(forKey: id)
+                self?.stopIfNeeded()
+            }
+        }
+    }
+
     @discardableResult
     func observe<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, closure: @escaping (T, BTDevice) -> Void) -> ObservationToken {
         let options = currentDefaultOptions + (options ?? .empty)
@@ -786,6 +945,8 @@ extension BTBackgroundScanneriOS: CBPeripheralDelegate {
             if let service = services.first(where: { $0.uuid == d.uuid }) {
                 if let uart = service as? BTUARTService {
                     peripheral.discoverCharacteristics([uart.txUUID, uart.rxUUID], for: d)
+                } else if let deviceInformation = service as? DeviceInformationService {
+                    peripheral.discoverCharacteristics([deviceInformation.firmwareRevision], for: d)
                 }
             }
         }
@@ -804,6 +965,31 @@ extension BTBackgroundScanneriOS: CBPeripheralDelegate {
                     if tx.properties.contains(.notify) {
                         peripheral.setNotifyValue(true, for: tx)
                     }
+                }
+            }
+        services
+            .filter({ $0.uuid == service.uuid })
+            .compactMap({ handler -> DeviceInformationService? in
+                return handler as? DeviceInformationService
+            }).forEach { handler in
+                if let firmwareRevision = characteristics.first(where: { $0.uuid == handler.firmwareRevision }) {
+                    gattRegistrations.update(with: GATTRegistration(service: service, peripheral: peripheral, characteristic: firmwareRevision))
+                    gattRegistrations
+                    .filter({
+                        $0.peripheral == peripheral && $0.service == firmwareRevision.service
+                    }).forEach({ registration in
+                        registration.isReady = true
+                        observations.gattService.values
+                            .filter( {
+                                let isPeripheral = $0.uuid == peripheral.identifier.uuidString
+                                let isService = $0.type.uuid == registration.service.uuid
+                                let isCharacteristic = firmwareRevision.uuid == $0.type.characteristic
+                                return isPeripheral && isService && isCharacteristic
+                            } )
+                            .forEach( {
+                                requestService(observation: $0, registration: registration)
+                            } )
+                    })
                 }
             }
     }
@@ -841,7 +1027,7 @@ extension BTBackgroundScanneriOS: CBPeripheralDelegate {
                 $0.block(heartbeatDevice)
             } )
         } else {
-            observations.service.values
+            observations.uartService.values
                 .filter( {
                     $0.uuid == peripheral.identifier.uuidString &&
                     $0.type.uuid == characteristic.service.uuid
@@ -854,6 +1040,21 @@ extension BTBackgroundScanneriOS: CBPeripheralDelegate {
                         
                     })
                 } )
+
+            observations.gattService.values
+                .filter( {
+                    $0.uuid == peripheral.identifier.uuidString &&
+                    $0.type.uuid == characteristic.service.uuid &&
+                    characteristic.uuid == $0.type.characteristic
+                } )
+                .forEach( { observation in
+                    observation.response?(characteristic.value, { [weak self] finished in
+                        self?.queue.async {
+                            observation.finished = finished
+                        }
+
+                    })
+                } )
         }
     }
     
@@ -862,7 +1063,7 @@ extension BTBackgroundScanneriOS: CBPeripheralDelegate {
             .filter({ $0.peripheral == peripheral && $0.service == characteristic.service })
             .forEach({ registration in
                 registration.isReady = true
-                observations.service.values
+                observations.uartService.values
                     .filter( {
                         $0.uuid == peripheral.identifier.uuidString &&
                         $0.type.uuid == registration.service.uuid
