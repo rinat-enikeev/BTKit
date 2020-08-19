@@ -60,7 +60,9 @@ extension ConnectableViewController {
         BTKit.background.services.gatt.firmwareRevision(for: self, uuid: ruuviTag.uuid) { (observer, result) in
             switch result {
             case .success(let firmware):
-                print(firmware)
+                let controller = UIAlertController(title: "Firmware", message: firmware, preferredStyle: .alert)
+                controller.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+                observer.present(controller, animated: true)
             case .failure(let error):
                 print(error.localizedDescription)
             }
