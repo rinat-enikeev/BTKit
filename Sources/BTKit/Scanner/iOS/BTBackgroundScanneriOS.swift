@@ -194,6 +194,10 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
     func isConnected(uuid: String) -> Bool {
         return connectedPeripherals.contains(where: { $0.identifier.uuidString == uuid })
     }
+
+    func connectedPeripheral(uuid: String) -> CBPeripheral? {
+        return connectedPeripherals.first(where: { $0.identifier.uuidString == uuid })
+    }
     
     private func stopIfNeeded() {
         if !shouldBeRunning() && manager.isScanning {

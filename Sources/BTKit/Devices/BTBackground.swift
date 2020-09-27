@@ -1,4 +1,5 @@
 import Foundation
+import CoreBluetooth
 
 public struct BTBackground {
     
@@ -13,6 +14,10 @@ public struct BTBackground {
     
     public func isConnected(uuid: String) -> Bool {
         return scanner.isConnected(uuid: uuid)
+    }
+
+    public func connectedPeripheral(uuid: String) -> CBPeripheral? {
+        return scanner.connectedPeripheral(uuid: uuid)
     }
 
     @discardableResult

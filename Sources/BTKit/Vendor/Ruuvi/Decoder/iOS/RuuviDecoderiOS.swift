@@ -94,6 +94,13 @@ public struct RuuviDecoderiOS: BTDecoder {
             default:
                 return nil
             }
+        } else if let name = advertisementData[CBAdvertisementDataLocalNameKey] as? String,
+            name == "RuuviBoot" {
+            let isConnectable = (advertisementData[CBAdvertisementDataIsConnectable] as? NSNumber)?.boolValue ?? false
+            let tag = RuuviBoot1(uuid: uuid,
+                                 isConnectable: isConnectable,
+                                 rssi: rssi.intValue)
+            return .ruuvi(.tag(.boot1(tag)))
         } else {
             return nil
         }

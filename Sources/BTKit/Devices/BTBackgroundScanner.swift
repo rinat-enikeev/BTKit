@@ -3,6 +3,7 @@ import CoreBluetooth
 
 public protocol BTBackgroundScanner {
     func isConnected(uuid: String) -> Bool
+    func connectedPeripheral(uuid: String) -> CBPeripheral?
     
     @discardableResult
     func state<T: AnyObject>(_ observer: T, options: BTScannerOptionsInfo?, closure: @escaping (T, BTScannerState) -> Void) -> ObservationToken

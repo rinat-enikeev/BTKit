@@ -15,6 +15,7 @@ public extension RuuviDevice {
 }
 
 public enum RuuviTag {
+    case boot1(RuuviBoot1)
     case v2(RuuviData2)
     case v3(RuuviData3)
     case v4(RuuviData4)
@@ -61,9 +62,19 @@ public extension RuuviTag {
             return nil
         }
     }
+
+    var boot1: RuuviBoot1? {
+        if case let .boot1(data) = self {
+            return data
+        } else {
+            return nil
+        }
+    }
     
     var volts: Double? {
         switch self {
+        case .boot1:
+            return nil
         case .v2:
             return nil
         case .v3(let data):
@@ -87,6 +98,8 @@ public extension RuuviTag {
     
     var accelerationX: Double? {
         switch self {
+        case .boot1:
+            return nil
         case .v2:
             return nil
         case .v3(let data):
@@ -110,6 +123,8 @@ public extension RuuviTag {
     
     var accelerationY: Double? {
         switch self {
+        case .boot1:
+            return nil
         case .v2:
             return nil
         case .v3(let data):
@@ -133,6 +148,8 @@ public extension RuuviTag {
     
     var accelerationZ: Double? {
         switch self {
+        case .boot1:
+            return nil
         case .v2:
             return nil
         case .v3(let data):
@@ -156,6 +173,8 @@ public extension RuuviTag {
     
     var movementCounter: Int? {
         switch self {
+        case .boot1:
+            return nil
         case .v2:
             return nil
         case .v3:
@@ -179,6 +198,8 @@ public extension RuuviTag {
     
     var measurementSequenceNumber: Int? {
         switch self {
+        case .boot1:
+            return nil
         case .v2:
             return nil
         case .v3:
@@ -202,6 +223,8 @@ public extension RuuviTag {
     
     var txPower: Int? {
         switch self {
+        case .boot1:
+            return nil
         case .v2:
             return nil
         case .v3:
@@ -225,6 +248,8 @@ public extension RuuviTag {
     
     var uuid: String {
         switch self {
+        case .boot1(let data):
+            return data.uuid
         case .v2(let data):
             return data.uuid
         case .v3(let data):
@@ -248,6 +273,8 @@ public extension RuuviTag {
     
     var rssi: Int? {
         switch self {
+        case .boot1(let data):
+            return data.rssi
         case .v2(let data):
             return data.rssi
         case .v3(let data):
@@ -271,6 +298,8 @@ public extension RuuviTag {
     
     var isConnectable: Bool {
         switch self {
+        case .boot1(let data):
+            return data.isConnectable
         case .v2(let data):
             return data.isConnectable
         case .v3(let data):
@@ -294,6 +323,8 @@ public extension RuuviTag {
     
     var version: Int {
         switch self {
+        case .boot1:
+            return 0 // meaning not a data
         case .v2(let data):
             return data.version
         case .v3(let data):
@@ -317,6 +348,8 @@ public extension RuuviTag {
     
     var relativeHumidity: Double? {
         switch self {
+        case .boot1:
+            return nil
         case .v2(let data):
             return data.humidity
         case .v3(let data):
@@ -340,6 +373,8 @@ public extension RuuviTag {
     
     var hectopascals: Double? {
         switch self {
+        case .boot1:
+            return nil
         case .v2(let data):
             return data.pressure
         case .v3(let data):
@@ -379,6 +414,8 @@ public extension RuuviTag {
     
     var celsius: Double? {
         switch self {
+        case .boot1:
+            return nil
         case .v2(let data):
             return data.temperature
         case .v3(let data):
@@ -424,6 +461,9 @@ public extension RuuviTag {
 extension RuuviTag: Hashable {
     public func hash(into hasher: inout Hasher) {
         switch self {
+        case .boot1(let data):
+            hasher.combine(data.uuid)
+            hasher.combine("boot1")
         case .v2(let data):
             hasher.combine(data.uuid)
             hasher.combine("v2")
@@ -462,6 +502,12 @@ extension RuuviTag: Equatable {
         case let (.v3(l), .v3(r)): return l.uuid == r.uuid
         case let (.v4(l), .v4(r)): return l.uuid == r.uuid
         case let (.v5(l), .v5(r)): return l.uuid == r.uuid
+        case let (.n2(l), .n2(r)): return l.uuid == r.uuid
+        case let (.n3(l), .n3(r)): return l.uuid == r.uuid
+        case let (.n4(l), .n4(r)): return l.uuid == r.uuid
+        case let (.n5(l), .n5(r)): return l.uuid == r.uuid
+        case let (.h1(l), .h1(r)): return l.uuid == r.uuid
+        case let (.boot1(l), .boot1(r)): return l.uuid == r.uuid
         default: return false
         }
     }
