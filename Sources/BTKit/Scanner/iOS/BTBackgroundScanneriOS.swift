@@ -6,7 +6,13 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
     
     var bluetoothState: BTScannerState = .unknown
     
-    private let queue = DispatchQueue(label: "BTBackgroundScanneriOS", qos: .userInteractive)
+    private lazy var queue: DispatchQueue = {
+        var queue = DispatchQueue(label: "BTBackgroundScanneriOS", qos: .userInteractive)
+        queue.setSpecific(key: queueKey, value: queueId)
+        return queue
+    }()
+    private let queueKey = DispatchSpecificKey<String>()
+    private let queueId = "BTBackgroundScanneriOS.queue"
     private lazy var manager: CBCentralManager = {
         return CBCentralManager(delegate: self, queue: queue, options: [CBCentralManagerOptionRestoreIdentifierKey: restoreId])
     }()
@@ -192,7 +198,16 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
     }
     
     func isConnected(uuid: String) -> Bool {
-        return connectedPeripherals.contains(where: { $0.identifier.uuidString == uuid })
+        var isConnected: Bool = false
+        if DispatchQueue.getSpecific(key: queueKey) == queueId {
+            dispatchPrecondition(condition: .onQueue(queue))
+            isConnected = connectedPeripherals.contains(where: { $0.identifier.uuidString == uuid })
+        } else {
+            queue.sync {
+                isConnected = connectedPeripherals.contains(where: { $0.identifier.uuidString == uuid })
+            }
+        }
+        return isConnected
     }
     
     private func stopIfNeeded() {
@@ -437,12 +452,14 @@ extension BTBackgroundScanneriOS {
             }, uuid: uuid)
         }
         
-        if connectedPeripherals.contains(where: { $0.identifier.uuidString == uuid}) {
-            connectedPeripherals
-                .filter({ $0.identifier.uuidString == uuid })
-                .forEach({ (peripheral) in
-                    peripheral.readRSSI()
-                })
+        if isConnected(uuid: uuid) {
+            queue.async { [weak self] in
+                self?.connectedPeripherals
+                    .filter({ $0.identifier.uuidString == uuid })
+                    .forEach({ (peripheral) in
+                        peripheral.readRSSI()
+                    })
+            }
         } else {
             closure(observer, nil, .logic(.notConnected))
         }
@@ -528,9 +545,11 @@ extension BTBackgroundScanneriOS {
             let peripherals = manager.retrievePeripherals(withIdentifiers: [uuidObject])
             peripherals.filter( { $0.identifier.uuidString == uuid } ).forEach { (peripheral) in
                 if peripheral.state != .connected {
-                    addConnecting(peripheral: peripheral)
-                    peripheral.delegate = self
-                    manager.connect(peripheral)
+                    queue.async { [weak self] in
+                        self?.addConnecting(peripheral: peripheral)
+                        peripheral.delegate = self
+                        self?.manager.connect(peripheral)
+                    }
                 }
             }
         }
