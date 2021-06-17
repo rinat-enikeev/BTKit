@@ -192,7 +192,7 @@ public enum BTGATTServiceType {
     }
 }
 
-public protocol BTService: class {
+public protocol BTService: AnyObject {
     var uuid: CBUUID { get }
 }
 
