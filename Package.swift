@@ -6,17 +6,18 @@ import PackageDescription
 let package = Package(
     name: "BTKit",
     defaultLocalization: "en",
-    platforms: [
-       .macOS(.v10_15), .iOS(.v10),
-    ],
+    platforms: [.macOS(.v10_15), .iOS(.v10)],
     products: [
         .library(
             name: "BTKit",
-            targets: ["BTKit"])
+            targets: ["BTKit"]),
     ],
     targets: [
         .target(
             name: "BTKit",
-            dependencies: [])
+            dependencies: []),
+        .testTarget(
+            name: "BTKitTests",
+            dependencies: ["BTKit"]),
     ]
 )

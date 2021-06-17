@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name         = "BTKit"
-  spec.version      = "0.2.6"
+  spec.version      = "0.3.0"
   spec.summary      = "Hardcoded bluetooth devices API"
   spec.description  = <<-DESC
                         Use to scan for bluetooth devices. Very limited set of devices is available.
