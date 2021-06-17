@@ -7,9 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0E375F3022AD69DF0092D269 /* BTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E375EED22ACFB8F0092D269 /* BTKit.framework */; };
-		0E375F6222AD74880092D269 /* BTKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E375EED22ACFB8F0092D269 /* BTKit.framework */; };
-		0E375F6322AD74880092D269 /* BTKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 0E375EED22ACFB8F0092D269 /* BTKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		0E472EE224ECD17000C714D5 /* DeviceInformationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E472EE124ECD17000C714D5 /* DeviceInformationService.swift */; };
 		0E4EAE79238640EB00BBDFBD /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0E4EAE4B238640EB00BBDFBD /* Localizable.strings */; };
 		0E4EAE7A238640EB00BBDFBD /* BTScanneriOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E4EAE50238640EB00BBDFBD /* BTScanneriOS.swift */; };
@@ -44,48 +41,8 @@
 		0E8BACC9245D884500D380FB /* String+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E8BACC7245D884500D380FB /* String+Hex.swift */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		0E375F3122AD69DF0092D269 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0E375EE422ACFB8F0092D269 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 0E375EEC22ACFB8F0092D269;
-			remoteInfo = BTKit;
-		};
-		0E375F4F22AD6CE30092D269 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0E375EE422ACFB8F0092D269 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 0E375F3C22AD6CDB0092D269;
-			remoteInfo = BTKitTester;
-		};
-		0E375F6422AD74880092D269 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 0E375EE422ACFB8F0092D269 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 0E375EEC22ACFB8F0092D269;
-			remoteInfo = BTKit;
-		};
-/* End PBXContainerItemProxy section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		0E375F6622AD74890092D269 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				0E375F6322AD74880092D269 /* BTKit.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
-
 /* Begin PBXFileReference section */
 		0E375EED22ACFB8F0092D269 /* BTKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = BTKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		0E375F2B22AD69DF0092D269 /* BTKitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BTKitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		0E375F3D22AD6CDB0092D269 /* BTKitTester.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BTKitTester.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0E472EE124ECD17000C714D5 /* DeviceInformationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceInformationService.swift; sourceTree = "<group>"; };
 		0E4EAE4C238640EB00BBDFBD /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		0E4EAE4D238640EB00BBDFBD /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -130,22 +87,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		0E375F2822AD69DF0092D269 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				0E375F3022AD69DF0092D269 /* BTKit.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		0E375F3A22AD6CDB0092D269 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				0E375F6222AD74880092D269 /* BTKit.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -162,8 +103,6 @@
 			isa = PBXGroup;
 			children = (
 				0E375EED22ACFB8F0092D269 /* BTKit.framework */,
-				0E375F2B22AD69DF0092D269 /* BTKitTests.xctest */,
-				0E375F3D22AD6CDB0092D269 /* BTKitTester.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -391,44 +330,6 @@
 			productReference = 0E375EED22ACFB8F0092D269 /* BTKit.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		0E375F2A22AD69DF0092D269 /* BTKitTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 0E375F3322AD69DF0092D269 /* Build configuration list for PBXNativeTarget "BTKitTests" */;
-			buildPhases = (
-				0E375F2722AD69DF0092D269 /* Sources */,
-				0E375F2822AD69DF0092D269 /* Frameworks */,
-				0E375F2922AD69DF0092D269 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				0E375F3222AD69DF0092D269 /* PBXTargetDependency */,
-				0E375F5022AD6CE30092D269 /* PBXTargetDependency */,
-			);
-			name = BTKitTests;
-			productName = BTKitTests;
-			productReference = 0E375F2B22AD69DF0092D269 /* BTKitTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		0E375F3C22AD6CDB0092D269 /* BTKitTester */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 0E375F4C22AD6CDD0092D269 /* Build configuration list for PBXNativeTarget "BTKitTester" */;
-			buildPhases = (
-				0E375F3922AD6CDB0092D269 /* Sources */,
-				0E375F3A22AD6CDB0092D269 /* Frameworks */,
-				0E375F3B22AD6CDB0092D269 /* Resources */,
-				0E375F6622AD74890092D269 /* Embed Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				0E375F6522AD74880092D269 /* PBXTargetDependency */,
-			);
-			name = BTKitTester;
-			productName = BTKitTester;
-			productReference = 0E375F3D22AD6CDB0092D269 /* BTKitTester.app */;
-			productType = "com.apple.product-type.application";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -442,13 +343,6 @@
 					0E375EEC22ACFB8F0092D269 = {
 						CreatedOnToolsVersion = 10.2.1;
 						LastSwiftMigration = 1020;
-					};
-					0E375F2A22AD69DF0092D269 = {
-						CreatedOnToolsVersion = 10.2.1;
-						TestTargetID = 0E375F3C22AD6CDB0092D269;
-					};
-					0E375F3C22AD6CDB0092D269 = {
-						CreatedOnToolsVersion = 10.2.1;
 					};
 				};
 			};
@@ -467,8 +361,6 @@
 			projectRoot = "";
 			targets = (
 				0E375EEC22ACFB8F0092D269 /* BTKit */,
-				0E375F2A22AD69DF0092D269 /* BTKitTests */,
-				0E375F3C22AD6CDB0092D269 /* BTKitTester */,
 			);
 		};
 /* End PBXProject section */
@@ -479,20 +371,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				0E4EAE79238640EB00BBDFBD /* Localizable.strings in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		0E375F2922AD69DF0092D269 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		0E375F3B22AD6CDB0092D269 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -536,39 +414,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		0E375F2722AD69DF0092D269 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		0E375F3922AD6CDB0092D269 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		0E375F3222AD69DF0092D269 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 0E375EEC22ACFB8F0092D269 /* BTKit */;
-			targetProxy = 0E375F3122AD69DF0092D269 /* PBXContainerItemProxy */;
-		};
-		0E375F5022AD6CE30092D269 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 0E375F3C22AD6CDB0092D269 /* BTKitTester */;
-			targetProxy = 0E375F4F22AD6CE30092D269 /* PBXContainerItemProxy */;
-		};
-		0E375F6522AD74880092D269 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 0E375EEC22ACFB8F0092D269 /* BTKit */;
-			targetProxy = 0E375F6422AD74880092D269 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		0E4EAE4B238640EB00BBDFBD /* Localizable.strings */ = {
@@ -726,7 +572,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.2.1;
+				MARKETING_VERSION = 0.2.4;
 				PRODUCT_BUNDLE_IDENTIFIER = io.btkit.BTKit;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
@@ -755,90 +601,10 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.2.1;
+				MARKETING_VERSION = 0.2.4;
 				PRODUCT_BUNDLE_IDENTIFIER = io.btkit.BTKit;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		0E375F3422AD69DF0092D269 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 5V5EUT3ZXJ;
-				INFOPLIST_FILE = BTKitTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = io.btkit.BTKitTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BTKitTester.app/BTKitTester";
-			};
-			name = Debug;
-		};
-		0E375F3522AD69DF0092D269 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 5V5EUT3ZXJ;
-				INFOPLIST_FILE = BTKitTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = io.btkit.BTKitTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BTKitTester.app/BTKitTester";
-			};
-			name = Release;
-		};
-		0E375F4D22AD6CDD0092D269 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 5V5EUT3ZXJ;
-				INFOPLIST_FILE = "$(SRCROOT)/BTKitTester/Resources/Plists/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 0.2.1;
-				PRODUCT_BUNDLE_IDENTIFIER = io.btkit.BTKitTester;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		0E375F4E22AD6CDD0092D269 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 5V5EUT3ZXJ;
-				INFOPLIST_FILE = "$(SRCROOT)/BTKitTester/Resources/Plists/Info.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 0.2.1;
-				PRODUCT_BUNDLE_IDENTIFIER = io.btkit.BTKitTester;
-				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -861,24 +627,6 @@
 			buildConfigurations = (
 				0E375EF622ACFB8F0092D269 /* Debug */,
 				0E375EF722ACFB8F0092D269 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		0E375F3322AD69DF0092D269 /* Build configuration list for PBXNativeTarget "BTKitTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				0E375F3422AD69DF0092D269 /* Debug */,
-				0E375F3522AD69DF0092D269 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		0E375F4C22AD6CDD0092D269 /* Build configuration list for PBXNativeTarget "BTKitTester" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				0E375F4D22AD6CDD0092D269 /* Debug */,
-				0E375F4E22AD6CDD0092D269 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
