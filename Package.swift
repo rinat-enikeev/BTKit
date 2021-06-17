@@ -17,7 +17,6 @@ let package = Package(
     targets: [
         .target(
             name: "BTKit",
-            dependencies: [],
-            resources: [.process("Sources")])
+            dependencies: [])
     ]
 )
