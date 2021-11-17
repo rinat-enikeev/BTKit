@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name         = "BTKit"
-  spec.version      = "0.3.2"
+  spec.version      = "0.4.0"
   spec.summary      = "Hardcoded bluetooth devices API"
   spec.description  = <<-DESC
                         Use to scan for bluetooth devices. Very limited set of devices is available.
@@ -10,8 +10,8 @@ Pod::Spec.new do |spec|
   spec.license      = { :type => "BSD", :file => "LICENSE" }
   spec.author             = { "Rinat Enikeev" => "rinat.enikeev@gmail.com" }
   spec.social_media_url   = "http://facebook.com/enikeev"
-  spec.platform     = :ios, "10.0"
-  spec.swift_version = '5.0'
+  spec.platform     = :ios, "13.0"
+  spec.swift_version = '5.3'
 
   spec.source       = { :git => "https://github.com/rinat-enikeev/BTKit.git", :tag => spec.version.to_s }
 
