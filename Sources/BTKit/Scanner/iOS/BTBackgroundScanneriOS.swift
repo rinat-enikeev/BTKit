@@ -1049,7 +1049,7 @@ extension BTBackgroundScanneriOS: CBPeripheralDelegate {
             observations.uartService.values
                 .filter( {
                     $0.uuid == peripheral.identifier.uuidString &&
-                    $0.type.uuid == characteristic.service.uuid
+                    $0.type.uuid == characteristic.service?.uuid
                 } )
                 .forEach( { observation in
                     observation.response?(characteristic.value, { [weak self] finished in
@@ -1063,7 +1063,7 @@ extension BTBackgroundScanneriOS: CBPeripheralDelegate {
             observations.gattService.values
                 .filter( {
                     $0.uuid == peripheral.identifier.uuidString &&
-                    $0.type.uuid == characteristic.service.uuid &&
+                    $0.type.uuid == characteristic.service?.uuid &&
                     characteristic.uuid == $0.type.characteristic
                 } )
                 .forEach( { observation in
