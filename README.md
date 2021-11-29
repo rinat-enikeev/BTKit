@@ -16,7 +16,7 @@ Scan for Ruuvi BLE devices and access them with dot syntax. See [tutorial](https
 
 ## Requirements
 
-- iOS 13.0+
+- iOS 10.0+
 - Xcode 12.0+
 
 ## Installation

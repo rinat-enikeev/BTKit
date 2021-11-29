@@ -10,11 +10,11 @@ Pod::Spec.new do |spec|
   spec.license      = { :type => "BSD", :file => "LICENSE" }
   spec.author             = { "Rinat Enikeev" => "rinat.enikeev@gmail.com" }
   spec.social_media_url   = "http://facebook.com/enikeev"
-  spec.platform     = :ios, "13.0"
+  spec.platform     = :ios, "10.0"
   spec.swift_version = '5.3'
 
   spec.source       = { :git => "https://github.com/rinat-enikeev/BTKit.git", :tag => spec.version.to_s }
 
   spec.source_files  = "Sources/**/*.{swift,h}"
-  spec.resource_bundle = { "BTKit" => ["Sources/BTKit/*.lproj/*.strings"] }
+  spec.resource_bundle = { "BTKit" => ["Sources/BTKit/Resources/*.lproj/*.strings"] }
 end

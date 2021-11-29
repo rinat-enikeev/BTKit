@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "BTKit",
     defaultLocalization: "en",
-    platforms: [.macOS(.v10_15), .iOS(.v13)],
+    platforms: [.macOS(.v10_15), .iOS(.v10)],
     products: [
         .library(
             name: "BTKit",
