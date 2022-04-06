@@ -554,11 +554,11 @@ public extension RuuviTag {
         }
     }
     
-    func log<T: AnyObject>(for observer: T, from date: Date, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) {
+    func log<T: AnyObject>(for observer: T, from date: Date, result: @escaping (T, Result<Progressable, BTError>) -> Void) {
         log(for: observer, from: date, options: nil, result: result)
     }
     
-    func log<T: AnyObject>(for observer: T, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<[RuuviTagEnvLogFull], BTError>) -> Void) {
+    func log<T: AnyObject>(for observer: T, from date: Date, options: BTScannerOptionsInfo?, result: @escaping (T, Result<Progressable, BTError>) -> Void) {
         if !isConnectable {
             let info = BTKitParsedOptionsInfo(options)
             info.callbackQueue.execute {
