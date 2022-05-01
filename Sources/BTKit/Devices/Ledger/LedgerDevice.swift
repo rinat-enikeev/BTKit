@@ -38,8 +38,7 @@ extension LedgerNanoX {
         _ observer: T,
         path: String = "44'/60'/0'/0/0",
         verify: Bool = false,
-        options: BTScannerOptionsInfo? = nil,
-        timeout: TimeInterval = 10
+        options: BTScannerOptionsInfo? = [.serviceTimeout(10)]
     ) async throws -> LedgerAddressResult {
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<LedgerAddressResult, Error>) in
             if !isConnectable {
