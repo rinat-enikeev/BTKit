@@ -20,3 +20,17 @@ public struct LedgerNanoX: Hashable {
         self.isConnectable = isConnectable
     }
 }
+
+public extension LedgerNanoX {
+    func address<T: AnyObject>(for observer: T, options: BTScannerOptionsInfo? = nil, path: String, verify: Bool, result: @escaping (T, Result<LedgerAddressResult, BTError>) -> Void) {
+        if !isConnectable {
+            let info = BTKitParsedOptionsInfo(options)
+            info.callbackQueue.execute {
+                result(observer, .failure(.logic(.notConnectable)))
+            }
+        } else {
+            BTKit.background.services.ledger.fetchAddress(observer, uuid, options, path: path, verify, result)
+        }
+    }
+
+}

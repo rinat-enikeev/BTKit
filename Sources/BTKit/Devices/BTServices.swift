@@ -308,7 +308,7 @@ public struct BTRuuviServices {
 }
 
 public struct BTKitLedgerUARTService {
-    public func serveLedger<T: AnyObject>(
+    public func fetchAddress<T: AnyObject>(
         _ observer: T,
         _ uuid: String,
         _ options: BTScannerOptionsInfo?,
