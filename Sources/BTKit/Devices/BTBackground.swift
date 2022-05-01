@@ -6,8 +6,10 @@ public struct BTBackground {
     
     let scanner: BTBackgroundScanner
         = BTBackgroundScanneriOS(services: [RuuviNUSService(),
+                                            LedgerService(),
                                             DeviceInformationService()],
-                                 decoders: [RuuviDecoderiOS()])
+                                 decoders: [LedgerDecoderiOS(),
+                                            RuuviDecoderiOS()])
     
     public let services: BTServices = BTServices()
     

@@ -16,11 +16,14 @@ public enum Progressable {
 }
 
 public enum BTServiceType {
+    case ledger(LedgerServiceType)
     case ruuvi(BTRuuviServiceType)
     case gatt(BTGATTServiceType)
 
     var uuid: CBUUID {
         switch self {
+        case .ledger(let type):
+            return type.uuid
         case .ruuvi(let type):
             switch type {
             case .nus(let service):
@@ -33,6 +36,93 @@ public enum BTServiceType {
             }
         }
     }
+}
+
+public struct LedgerAddressResult {
+    public var publicKey: String
+    public var address: String
+}
+
+public enum LedgerServiceType {
+    case address
+
+    var uuid: CBUUID {
+        switch self {
+        case .address:
+            return CBUUID(string: "13d63400-2c97-0004-0000-4c6564676572")
+        }
+    }
+
+    public func decodeAddress(data: Data) -> LedgerAddressResult {
+        let offset = 6
+        let publicKeyLength: Int = Int(data[offset - 1])
+        let publicKey = Data(data[offset...offset + publicKeyLength - 1]).hexEncodedString()
+
+        let addressLength = Int(data[offset + publicKeyLength])
+        let addressData = Data(data[offset + publicKeyLength + 1...offset + publicKeyLength + 1 + addressLength])
+        guard let addressWithout0x = String(data: addressData, encoding: .ascii) else { fatalError() }
+        let address = "0x" + addressWithout0x
+        return LedgerAddressResult(publicKey: publicKey, address: address)
+    }
+
+    public func requestAddress(path: String, verify: Bool) -> Data {
+        var result = Data()
+        // TagId
+        result.append(0x05)
+        // chunk index
+        result.append(0x00)
+        result.append(0x00)
+
+        let request = addressRequest(verify: verify, apdu: addressAPDU(path: path, verify: verify))
+        guard let count = UInt16(exactly: request.count) else { fatalError() }
+        withUnsafeBytes(of: count.bigEndian) { result.append(contentsOf: $0) }
+
+        result.append(request)
+        return result
+    }
+
+    func addressRequest(verify: Bool, apdu: Data) -> Data {
+        var result = Data()
+        // cla
+        result.append(0xe0)
+        // ins
+        result.append(0x02)
+        // verify
+        result.append(verify ? 0x01 : 0x00)
+        // chainCode
+        result.append(0x00) // chain code not supported yet
+
+        guard let count = UInt8(exactly: apdu.count) else { fatalError() }
+        withUnsafeBytes(of: count.bigEndian) { result.append(contentsOf: $0) }
+
+        result.append(apdu)
+
+        return result
+    }
+
+    func addressAPDU(path: String, verify: Bool) -> Data {
+        var data = Data()
+        let paths = splitPath(path: path)
+        guard let count = UInt8(exactly: paths.count) else { fatalError() }
+        data.append(count)
+        paths.forEach {
+            withUnsafeBytes(of: $0.bigEndian) { data.append(contentsOf: $0) }
+        }
+        return data
+    }
+
+    func splitPath(path: String) -> [UInt32] {
+        var result = [UInt32]()
+        let components = path.components(separatedBy: "/")
+        components.forEach { element in
+            guard var number = UInt32(element.replacingOccurrences(of: "'", with: "")) else { fatalError() }
+            if element.count > 1 && element.last == "'" {
+                number += 0x80000000;
+            }
+            result.append(number)
+        }
+        return result
+      }
 }
 
 public enum BTGATTDeviceInformationService {
@@ -208,12 +298,142 @@ public protocol BTUARTService: BTService {
 }
 
 public struct BTServices {
+    public let ledger = BTKitLedgerUARTService()
     public let ruuvi = BTRuuviServices()
     public let gatt = BTGATTService()
 }
 
 public struct BTRuuviServices {
     public let nus = BTKitRuuviNUSService()
+}
+
+public struct BTKitLedgerUARTService {
+    public func serveLedger<T: AnyObject>(
+        _ observer: T,
+        _ uuid: String,
+        _ options: BTScannerOptionsInfo?,
+        path: String,
+        _ verify: Bool,
+        progress: ((BTServiceProgress) -> Void)? = nil,
+        _ result: @escaping (T, Result<LedgerAddressResult, BTError>
+    ) -> Void) {
+        var connectToken: ObservationToken?
+        progress?(.connecting)
+        connectToken = BTKit.background.connect(for: observer, uuid: uuid, options: options, connected: { (observer, connectResult) in
+            connectToken?.invalidate()
+            switch connectResult {
+            case .already:
+                var serveToken: ObservationToken?
+                progress?(.serving)
+                serveToken = self.serveLedgerAddress(observer, uuid, options, path: path, verify) { observer, serveResult in
+                    var disconnectToken: ObservationToken?
+                    switch serveResult {
+                    case .success:
+                        serveToken?.invalidate()
+                        progress?(.disconnecting)
+                        disconnectToken = BTKit.background.disconnect(for: observer, uuid: uuid, options: options) { (observer, disconnectResult) in
+                            disconnectToken?.invalidate()
+                            switch disconnectResult {
+                            case .already:
+                                progress?(.success)
+                                result(observer, serveResult)
+                            case .just:
+                                progress?(.success)
+                                result(observer, serveResult)
+                            case .stillConnected:
+                                result(observer, serveResult)
+                                progress?(.success)
+                            case .bluetoothWasPoweredOff:
+                                progress?(.success)
+                                result(observer, serveResult)
+                            case .failure(let error):
+                                progress?(.failure(error))
+                                result(observer, .failure(error))
+                            }
+                        }
+                    case .failure:
+                        break
+                    }
+
+                }
+            case .just:
+                var serveToken: ObservationToken?
+                progress?(.serving)
+                serveToken = self.serveLedgerAddress(observer, uuid, options, path: path, verify) { observer, serveResult in
+                    switch serveResult {
+                    case .success:
+                        serveToken?.invalidate()
+                        var disconnectToken: ObservationToken?
+                        progress?(.disconnecting)
+                        disconnectToken = BTKit.background.disconnect(for: observer, uuid: uuid, options: options) { (observer, disconnectResult) in
+                            disconnectToken?.invalidate()
+                            switch disconnectResult {
+                            case .already:
+                                progress?(.success)
+                                result(observer, serveResult)
+                            case .just:
+                                progress?(.success)
+                                result(observer, serveResult)
+                            case .stillConnected:
+                                progress?(.success)
+                                result(observer, serveResult)
+                            case .bluetoothWasPoweredOff:
+                                progress?(.success)
+                                result(observer, serveResult)
+                            case .failure(let error):
+                                progress?(.failure(error))
+                                result(observer, .failure(error))
+                            }
+                        }
+                    case .failure:
+                        break
+                    }
+                }
+            case .failure(let error):
+                progress?(.failure(error))
+                result(observer, .failure(error))
+            case .disconnected:
+                break // do nothing, it will reconnect
+            }
+        })
+    }
+
+    private func serveLedgerAddress<T: AnyObject>(_ observer: T, _ uuid: String, _ options: BTScannerOptionsInfo?, path: String, _ verify: Bool, _ result: @escaping (T, Result<LedgerAddressResult, BTError>) -> Void) -> ObservationToken? {
+        let info = BTKitParsedOptionsInfo(options)
+        let service: LedgerServiceType = .address
+        let serveToken = BTKit.background.scanner.serveLedger(
+            observer,
+            for: uuid,
+            .ledger(service),
+            options: options,
+            request: { (observer, peripheral, rx, tx) in
+                if let rx = rx {
+                    let data = Data(service.requestAddress(path: path, verify: verify))
+                    peripheral?.writeValue(data, for: rx, type: .withResponse)
+                } else {
+                    info.callbackQueue.execute {
+                        result(observer, .failure(.unexpected(.characteristicIsNil)))
+                    }
+                }
+
+            }, response: { (observer, data, finished) in
+                guard let data = data else {
+                    info.callbackQueue.execute {
+                        result(observer, .failure(.unexpected(.dataIsNil)))
+                    }
+                    return
+                }
+                info.callbackQueue.execute {
+                    finished?(true)
+                    result(observer, .success(service.decodeAddress(data: data)))
+                }
+            }) { (observer, error) in
+                info.callbackQueue.execute {
+                    result(observer, .failure(error))
+                }
+            }
+        return serveToken
+    }
 }
 
 public struct BTGATTService {

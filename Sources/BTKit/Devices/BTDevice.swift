@@ -1,4 +1,5 @@
 public enum BTDevice {
+    case ledger(LedgerDevice)
     case ruuvi(RuuviDevice)
     case unknown(BTUnknownDevice)
 }
@@ -32,6 +33,11 @@ public extension BTDevice {
             case .tag(let ruuviTag):
                 return ruuviTag.uuid
             }
+        case .ledger(let ledgerDevice):
+            switch ledgerDevice {
+            case .nanoX(let ledgerNanoX):
+                return ledgerNanoX.uuid
+            }
         case .unknown(let unknownDevice):
             return unknownDevice.uuid
         }
@@ -44,6 +50,11 @@ public extension BTDevice {
             case .tag(let ruuviTag):
                 return ruuviTag.rssi
             }
+        case .ledger(let ledgerDevice):
+            switch ledgerDevice {
+            case .nanoX(let ledgerNanoX):
+                return ledgerNanoX.rssi
+            }
         case .unknown(let unknownDevice):
             return unknownDevice.rssi
         }
@@ -55,6 +66,11 @@ public extension BTDevice {
             switch ruuviDevice {
             case .tag(let ruuviTag):
                 return ruuviTag.isConnectable
+            }
+        case .ledger(let ledgerDevice):
+            switch ledgerDevice {
+            case .nanoX(let ledgerNanoX):
+                return ledgerNanoX.isConnectable
             }
         case .unknown(let unknownDevice):
             return unknownDevice.isConnectable

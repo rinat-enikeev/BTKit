@@ -36,8 +36,10 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
         uartService: [UUID: UARTServiceObservation](),
         gattService: [UUID: GATTServiceObservation](),
         observe: [UUID: ObserveObservation](),
-        readRSSI: [UUID: ReadRSSIObservation]()
+        readRSSI: [UUID: ReadRSSIObservation](),
+        ledger: [UUID: UARTServiceObservation]()
     )
+    private var ledgerRegistrations = Set<UARTRegistration>()
     private var uartRegistrations = Set<UARTRegistration>()
     private var gattRegistrations = Set<GATTRegistration>()
     private var isReady = false { didSet { startIfNeeded() } }
@@ -228,6 +230,7 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
         || observations.heartbeat.count > 0
         || observations.state.count > 0
         || observations.uartService.count > 0
+        || observations.ledger.count > 0
         || observations.gattService.count > 0
         || observations.observe.count > 0
     }
@@ -296,6 +299,9 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
     
     private func removeConnected(peripheral: CBPeripheral) {
         connectedPeripherals.remove(peripheral)
+        ledgerRegistrations
+            .filter({ $0.peripheral == peripheral })
+            .forEach({ ledgerRegistrations.remove($0) })
         uartRegistrations
             .filter({ $0.peripheral == peripheral })
             .forEach({ uartRegistrations.remove($0) })
@@ -316,6 +322,7 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
     
     private func removeAllConnectedPeripherals() {
         connectedPeripherals.removeAll()
+        ledgerRegistrations.removeAll()
         uartRegistrations.removeAll()
         gattRegistrations.removeAll()
     }
@@ -711,6 +718,83 @@ extension BTBackgroundScanneriOS {
     }
 
     @discardableResult
+    func serveLedger<T: AnyObject>(_ observer: T, for uuid: String, _ type: BTServiceType, options: BTScannerOptionsInfo?, request: ((T, CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((T, Data?, ((Bool) -> Void)?) -> Void)?, failure: ((T, BTError) -> Void)?) -> ObservationToken {
+
+        let options = currentDefaultOptions + (options ?? .empty)
+        let info = BTKitParsedOptionsInfo(options)
+
+        let id = UUID()
+
+        queue.async { [weak self] in
+            let observation = UARTServiceObservation(uuid: uuid, type: type, serviceTimeout: info.serviceTimeout, request: { [weak self, weak observer] (peripheral, rx, tx) in
+                guard let observer = observer else {
+                    self?.observations.ledger.removeValue(forKey: id)
+                    self?.stopIfNeeded()
+                    return
+                }
+                info.callbackQueue.execute { [weak observer, weak self] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.ledger.removeValue(forKey: id)
+                            self?.stopIfNeeded()
+                        }
+                        return
+                    }
+                    request?(observer, peripheral, rx, tx)
+                }
+            }, response: { [weak self, weak observer] (data, finished) in
+                guard let observer = observer else {
+                    self?.observations.ledger.removeValue(forKey: id)
+                    self?.stopIfNeeded()
+                    return
+                }
+                info.callbackQueue.execute { [weak observer, weak self] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.ledger.removeValue(forKey: id)
+                            self?.stopIfNeeded()
+                        }
+                        return
+                    }
+                    response?(observer, data, finished)
+                }
+            }, failure: { [weak self, weak observer] (error) in
+                guard let observer = observer else {
+                    self?.observations.ledger.removeValue(forKey: id)
+                    self?.stopIfNeeded()
+                    return
+                }
+                info.callbackQueue.execute { [weak observer, weak self] in
+                    guard let observer = observer else {
+                        self?.queue.async { [weak self] in
+                            self?.observations.ledger.removeValue(forKey: id)
+                            self?.stopIfNeeded()
+                        }
+                        return
+                    }
+                    failure?(observer, error)
+                }
+            })
+
+            self?.observations.ledger[id] = observation
+
+            self?.startIfNeeded()
+
+            // call request for already registered services
+            self?.ledgerRegistrations.filter({ $0.peripheral.identifier.uuidString == uuid}).forEach({ (registration) in
+                self?.requestService(observation: observation, registration: registration)
+            })
+        }
+
+        return ObservationToken { [weak self] in
+            self?.queue.async { [weak self] in
+                self?.observations.ledger.removeValue(forKey: id)
+                self?.stopIfNeeded()
+            }
+        }
+    }
+
+    @discardableResult
     func serveGATT<T: AnyObject>(_ observer: T, for uuid: String, _ type: BTGATTServiceType, options: BTScannerOptionsInfo?, request: ((T, CBPeripheral?, CBCharacteristic?) -> Void)?, response: ((T, Data?, ((Bool) -> Void)?) -> Void)?, failure: ((T, BTError) -> Void)?) -> ObservationToken {
 
         let options = currentDefaultOptions + (options ?? .empty)
@@ -962,7 +1046,9 @@ extension BTBackgroundScanneriOS: CBPeripheralDelegate {
         guard let discovered = peripheral.services else { return }
         for d in discovered {
             if let service = services.first(where: { $0.uuid == d.uuid }) {
-                if let uart = service as? BTUARTService {
+                if let ledger = service as? LedgerService {
+                   peripheral.discoverCharacteristics([ledger.txUUID, ledger.rxUUID], for: d)
+               } else if let uart = service as? BTUARTService {
                     peripheral.discoverCharacteristics([uart.txUUID, uart.rxUUID], for: d)
                 } else if let deviceInformation = service as? DeviceInformationService {
                     peripheral.discoverCharacteristics([deviceInformation.firmwareRevision], for: d)
@@ -973,6 +1059,20 @@ extension BTBackgroundScanneriOS: CBPeripheralDelegate {
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         guard let characteristics = service.characteristics else { return }
+        services
+            .filter({ $0.uuid == service.uuid })
+            .compactMap({ handler -> LedgerService? in
+                return handler as? LedgerService
+            }).forEach { handler in
+                if let tx = characteristics.first(where: { $0.uuid == handler.txUUID }),
+                    let rx = characteristics.first(where: { $0.uuid == handler.rxUUID }) {
+                    ledgerRegistrations.update(with: UARTRegistration(service: service, peripheral: peripheral, tx: tx, rx: rx))
+                    if tx.properties.contains(.notify) {
+                        peripheral.setNotifyValue(true, for: tx)
+                    }
+                }
+            }
+
         services
             .filter({ $0.uuid == service.uuid })
             .compactMap({ (handler) -> BTUARTService? in
@@ -1045,39 +1145,67 @@ extension BTBackgroundScanneriOS: CBPeripheralDelegate {
             .forEach( {
                 $0.block(heartbeatDevice)
             } )
-        } else {
-            observations.uartService.values
-                .filter( {
-                    $0.uuid == peripheral.identifier.uuidString &&
-                    $0.type.uuid == characteristic.service?.uuid
-                } )
-                .forEach( { observation in
-                    observation.response?(characteristic.value, { [weak self] finished in
-                        self?.queue.async {
-                            observation.finished = finished
-                        }
-                        
-                    })
-                } )
-
-            observations.gattService.values
-                .filter( {
-                    $0.uuid == peripheral.identifier.uuidString &&
-                    $0.type.uuid == characteristic.service?.uuid &&
-                    characteristic.uuid == $0.type.characteristic
-                } )
-                .forEach( { observation in
-                    observation.response?(characteristic.value, { [weak self] finished in
-                        self?.queue.async {
-                            observation.finished = finished
-                        }
-
-                    })
-                } )
         }
+
+        observations.ledger.values
+            .filter( {
+                $0.uuid == peripheral.identifier.uuidString &&
+                $0.type.uuid == characteristic.service?.uuid
+            } )
+            .forEach( { observation in
+                observation.response?(characteristic.value, { [weak self] finished in
+                    self?.queue.async {
+                        observation.finished = finished
+                    }
+
+                })
+            } )
+
+        observations.uartService.values
+            .filter( {
+                $0.uuid == peripheral.identifier.uuidString &&
+                $0.type.uuid == characteristic.service?.uuid
+            } )
+            .forEach( { observation in
+                observation.response?(characteristic.value, { [weak self] finished in
+                    self?.queue.async {
+                        observation.finished = finished
+                    }
+
+                })
+            } )
+
+        observations.gattService.values
+            .filter( {
+                $0.uuid == peripheral.identifier.uuidString &&
+                $0.type.uuid == characteristic.service?.uuid &&
+                characteristic.uuid == $0.type.characteristic
+            } )
+            .forEach( { observation in
+                observation.response?(characteristic.value, { [weak self] finished in
+                    self?.queue.async {
+                        observation.finished = finished
+                    }
+
+                })
+            } )
     }
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+        ledgerRegistrations
+            .filter({ $0.peripheral == peripheral && $0.service == characteristic.service })
+            .forEach({ registration in
+                registration.isReady = true
+                observations.ledger.values
+                    .filter( {
+                        $0.uuid == peripheral.identifier.uuidString &&
+                        $0.type.uuid == registration.service.uuid
+                    } )
+                    .forEach( {
+                        requestService(observation: $0, registration: registration)
+                    } )
+            })
+
         uartRegistrations
             .filter({ $0.peripheral == peripheral && $0.service == characteristic.service })
             .forEach({ registration in
