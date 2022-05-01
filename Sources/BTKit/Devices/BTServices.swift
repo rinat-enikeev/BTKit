@@ -53,14 +53,15 @@ public enum LedgerServiceType {
         }
     }
 
-    public func decodeAddress(data: Data) -> LedgerAddressResult {
+    public func decodeAddress(data: Data) -> LedgerAddressResult? {
+        guard data.count > 113 else { return nil }
         let offset = 6
         let publicKeyLength: Int = Int(data[offset - 1])
         let publicKey = Data(data[offset...offset + publicKeyLength - 1]).hexEncodedString()
 
         let addressLength = Int(data[offset + publicKeyLength])
         let addressData = Data(data[offset + publicKeyLength + 1...offset + publicKeyLength + 1 + addressLength])
-        guard let addressWithout0x = String(data: addressData, encoding: .ascii) else { fatalError() }
+        guard let addressWithout0x = String(data: addressData, encoding: .ascii) else { return nil }
         let address = "0x" + addressWithout0x
         return LedgerAddressResult(publicKey: publicKey, address: address)
     }
@@ -305,135 +306,6 @@ public struct BTServices {
 
 public struct BTRuuviServices {
     public let nus = BTKitRuuviNUSService()
-}
-
-public struct BTKitLedgerUARTService {
-    public func fetchAddress<T: AnyObject>(
-        _ observer: T,
-        _ uuid: String,
-        _ options: BTScannerOptionsInfo?,
-        path: String,
-        _ verify: Bool,
-        progress: ((BTServiceProgress) -> Void)? = nil,
-        _ result: @escaping (T, Result<LedgerAddressResult, BTError>
-    ) -> Void) {
-        var connectToken: ObservationToken?
-        progress?(.connecting)
-        connectToken = BTKit.background.connect(for: observer, uuid: uuid, options: options, connected: { (observer, connectResult) in
-            connectToken?.invalidate()
-            switch connectResult {
-            case .already:
-                var serveToken: ObservationToken?
-                progress?(.serving)
-                serveToken = self.serveLedgerAddress(observer, uuid, options, path: path, verify) { observer, serveResult in
-                    var disconnectToken: ObservationToken?
-                    switch serveResult {
-                    case .success:
-                        serveToken?.invalidate()
-                        progress?(.disconnecting)
-                        disconnectToken = BTKit.background.disconnect(for: observer, uuid: uuid, options: options) { (observer, disconnectResult) in
-                            disconnectToken?.invalidate()
-                            switch disconnectResult {
-                            case .already:
-                                progress?(.success)
-                                result(observer, serveResult)
-                            case .just:
-                                progress?(.success)
-                                result(observer, serveResult)
-                            case .stillConnected:
-                                result(observer, serveResult)
-                                progress?(.success)
-                            case .bluetoothWasPoweredOff:
-                                progress?(.success)
-                                result(observer, serveResult)
-                            case .failure(let error):
-                                progress?(.failure(error))
-                                result(observer, .failure(error))
-                            }
-                        }
-                    case .failure:
-                        break
-                    }
-
-                }
-            case .just:
-                var serveToken: ObservationToken?
-                progress?(.serving)
-                serveToken = self.serveLedgerAddress(observer, uuid, options, path: path, verify) { observer, serveResult in
-                    switch serveResult {
-                    case .success:
-                        serveToken?.invalidate()
-                        var disconnectToken: ObservationToken?
-                        progress?(.disconnecting)
-                        disconnectToken = BTKit.background.disconnect(for: observer, uuid: uuid, options: options) { (observer, disconnectResult) in
-                            disconnectToken?.invalidate()
-                            switch disconnectResult {
-                            case .already:
-                                progress?(.success)
-                                result(observer, serveResult)
-                            case .just:
-                                progress?(.success)
-                                result(observer, serveResult)
-                            case .stillConnected:
-                                progress?(.success)
-                                result(observer, serveResult)
-                            case .bluetoothWasPoweredOff:
-                                progress?(.success)
-                                result(observer, serveResult)
-                            case .failure(let error):
-                                progress?(.failure(error))
-                                result(observer, .failure(error))
-                            }
-                        }
-                    case .failure:
-                        break
-                    }
-                }
-            case .failure(let error):
-                progress?(.failure(error))
-                result(observer, .failure(error))
-            case .disconnected:
-                break // do nothing, it will reconnect
-            }
-        })
-    }
-
-    private func serveLedgerAddress<T: AnyObject>(_ observer: T, _ uuid: String, _ options: BTScannerOptionsInfo?, path: String, _ verify: Bool, _ result: @escaping (T, Result<LedgerAddressResult, BTError>) -> Void) -> ObservationToken? {
-        let info = BTKitParsedOptionsInfo(options)
-        let service: LedgerServiceType = .address
-        let serveToken = BTKit.background.scanner.serveLedger(
-            observer,
-            for: uuid,
-            .ledger(service),
-            options: options,
-            request: { (observer, peripheral, rx, tx) in
-                if let rx = rx {
-                    let data = Data(service.requestAddress(path: path, verify: verify))
-                    peripheral?.writeValue(data, for: rx, type: .withResponse)
-                } else {
-                    info.callbackQueue.execute {
-                        result(observer, .failure(.unexpected(.characteristicIsNil)))
-                    }
-                }
-
-            }, response: { (observer, data, finished) in
-                guard let data = data else {
-                    info.callbackQueue.execute {
-                        result(observer, .failure(.unexpected(.dataIsNil)))
-                    }
-                    return
-                }
-                info.callbackQueue.execute {
-                    finished?(true)
-                    result(observer, .success(service.decodeAddress(data: data)))
-                }
-            }) { (observer, error) in
-                info.callbackQueue.execute {
-                    result(observer, .failure(error))
-                }
-            }
-        return serveToken
-    }
 }
 
 public struct BTGATTService {

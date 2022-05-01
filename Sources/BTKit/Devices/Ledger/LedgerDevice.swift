@@ -1,3 +1,5 @@
+import Foundation
+
 public enum LedgerDevice {
     case nanoX(LedgerNanoX)
 }
@@ -23,14 +25,37 @@ public struct LedgerNanoX: Hashable {
 
 public extension LedgerNanoX {
     func address<T: AnyObject>(for observer: T, options: BTScannerOptionsInfo? = nil, path: String, verify: Bool, result: @escaping (T, Result<LedgerAddressResult, BTError>) -> Void) {
-        if !isConnectable {
-            let info = BTKitParsedOptionsInfo(options)
-            info.callbackQueue.execute {
-                result(observer, .failure(.logic(.notConnectable)))
-            }
-        } else {
-            BTKit.background.services.ledger.fetchAddress(observer, uuid, options, path: path, verify, result)
-        }
+
     }
 
 }
+
+#if compiler(>=5.5) && canImport(_Concurrency)
+
+@available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, *)
+extension LedgerNanoX {
+    public func address<T: AnyObject>(
+        _ observer: T,
+        path: String = "44'/60'/0'/0/0",
+        verify: Bool = false,
+        options: BTScannerOptionsInfo? = nil,
+        timeout: TimeInterval = 10
+    ) async throws -> LedgerAddressResult {
+        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<LedgerAddressResult, Error>) in
+            if !isConnectable {
+                continuation.resume(throwing: BTLogicError.notConnectable)
+            } else {
+                BTKit.background.services.ledger.fetchAddress(observer, uuid, options, path: path, verify) { observer, result in
+                    switch result {
+                    case let .success(addressResult):
+                        continuation.resume(returning: addressResult)
+                    case let .failure(error):
+                        continuation.resume(throwing: error)
+                    }
+                }
+            }
+        }
+    }
+}
+#endif
+
