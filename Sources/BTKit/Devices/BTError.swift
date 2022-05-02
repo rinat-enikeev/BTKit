@@ -11,6 +11,8 @@ public enum BTUnexpectedError: Error {
     case characteristicIsNil
     case dataIsNil
     case bothResultAndErrorAreNil
+    case failedToParseResponse
+    case failedToParseRequest
 }
 
 extension BTError: LocalizedError {

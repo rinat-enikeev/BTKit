@@ -24,6 +24,9 @@ public protocol BTBackgroundScanner {
     func serveGATT<T: AnyObject>(_ observer: T, for uuid: String, _ type: BTGATTServiceType, options: BTScannerOptionsInfo?, request: ((T, CBPeripheral?, CBCharacteristic?) -> Void)?, response: ((T, Data?, ((Bool) -> Void)?) -> Void)?, failure: ((T, BTError) -> Void)?) -> ObservationToken
 
     @discardableResult
+    func serveLedger<T: AnyObject>(_ observer: T, for uuid: String, _ type: BTServiceType, options: BTScannerOptionsInfo?, request: ((T, CBPeripheral?, CBCharacteristic?, CBCharacteristic?) -> Void)?, response: ((T, Data?, ((Bool) -> Void)?) -> Void)?, failure: ((T, BTError) -> Void)?) -> ObservationToken
+
+    @discardableResult
     func observe<T: AnyObject>(_ observer: T, uuid: String, options: BTScannerOptionsInfo?, closure: @escaping (T, BTDevice) -> Void) -> ObservationToken
     
     @discardableResult
