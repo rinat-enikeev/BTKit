@@ -23,13 +23,6 @@ public struct LedgerNanoX: Hashable {
     }
 }
 
-public extension LedgerNanoX {
-    func address<T: AnyObject>(for observer: T, options: BTScannerOptionsInfo? = nil, path: String, verify: Bool, result: @escaping (T, Result<LedgerAddressResult, BTError>) -> Void) {
-
-    }
-
-}
-
 #if compiler(>=5.5) && canImport(_Concurrency)
 
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, *)

@@ -54,19 +54,25 @@ public enum LedgerServiceType {
     }
 
     public func decodeAddress(data: Data) -> LedgerAddressResult? {
-        guard data.count > 113 else { return nil }
         let offset = 6
+
+        guard data.count > offset - 1 else { return nil }
         let publicKeyLength: Int = Int(data[offset - 1])
+
+        guard data.count > offset + publicKeyLength - 1 else { return nil }
         let publicKey = Data(data[offset...offset + publicKeyLength - 1]).hexEncodedString()
 
+        guard data.count > offset + publicKeyLength else { return nil }
         let addressLength = Int(data[offset + publicKeyLength])
+
+        guard data.count > offset + publicKeyLength + 1 + addressLength else { return nil }
         let addressData = Data(data[offset + publicKeyLength + 1...offset + publicKeyLength + 1 + addressLength])
         guard let addressWithout0x = String(data: addressData, encoding: .ascii) else { return nil }
         let address = "0x" + addressWithout0x
         return LedgerAddressResult(publicKey: publicKey, address: address)
     }
 
-    public func requestAddress(path: String, verify: Bool) -> Data {
+    public func requestAddress(path: String, verify: Bool) -> Data? {
         var result = Data()
         // TagId
         result.append(0x05)
@@ -74,15 +80,16 @@ public enum LedgerServiceType {
         result.append(0x00)
         result.append(0x00)
 
-        let request = addressRequest(verify: verify, apdu: addressAPDU(path: path, verify: verify))
-        guard let count = UInt16(exactly: request.count) else { fatalError() }
+        guard let apdu = addressAPDU(path: path, verify: verify) else { return nil }
+        guard let request = addressRequest(verify: verify, apdu: apdu) else { return nil }
+        guard let count = UInt16(exactly: request.count) else { return nil }
         withUnsafeBytes(of: count.bigEndian) { result.append(contentsOf: $0) }
 
         result.append(request)
         return result
     }
 
-    func addressRequest(verify: Bool, apdu: Data) -> Data {
+    func addressRequest(verify: Bool, apdu: Data) -> Data? {
         var result = Data()
         // cla
         result.append(0xe0)
@@ -93,7 +100,7 @@ public enum LedgerServiceType {
         // chainCode
         result.append(0x00) // chain code not supported yet
 
-        guard let count = UInt8(exactly: apdu.count) else { fatalError() }
+        guard let count = UInt8(exactly: apdu.count) else { return nil }
         withUnsafeBytes(of: count.bigEndian) { result.append(contentsOf: $0) }
 
         result.append(apdu)
@@ -101,10 +108,10 @@ public enum LedgerServiceType {
         return result
     }
 
-    func addressAPDU(path: String, verify: Bool) -> Data {
+    func addressAPDU(path: String, verify: Bool) -> Data? {
         var data = Data()
-        let paths = splitPath(path: path)
-        guard let count = UInt8(exactly: paths.count) else { fatalError() }
+        guard let paths = splitPath(path: path) else { return nil }
+        guard let count = UInt8(exactly: paths.count) else { return nil }
         data.append(count)
         paths.forEach {
             withUnsafeBytes(of: $0.bigEndian) { data.append(contentsOf: $0) }
@@ -112,16 +119,17 @@ public enum LedgerServiceType {
         return data
     }
 
-    func splitPath(path: String) -> [UInt32] {
+    func splitPath(path: String) -> [UInt32]? {
         var result = [UInt32]()
         let components = path.components(separatedBy: "/")
         components.forEach { element in
-            guard var number = UInt32(element.replacingOccurrences(of: "'", with: "")) else { fatalError() }
+            guard var number = UInt32(element.replacingOccurrences(of: "'", with: "")) else { return }
             if element.count > 1 && element.last == "'" {
-                number += 0x80000000;
+                number += 0x80000000
             }
             result.append(number)
         }
+        guard result.count == components.count else { return nil }
         return result
       }
 }

@@ -123,8 +123,12 @@ public struct BTKitLedgerUARTService {
     }
 
     private func serveLedgerAddress<T: AnyObject>(_ observer: T, _ uuid: String, _ options: BTScannerOptionsInfo?, path: String, _ verify: Bool, _ result: @escaping (T, Result<LedgerAddressResult, BTError>) -> Void) -> ObservationToken? {
-        let info = BTKitParsedOptionsInfo(options)
         let service: LedgerServiceType = .address
+        guard let requestData = service.requestAddress(path: path, verify: verify) else {
+            result(observer, .failure(.unexpected(.failedToParseRequest)))
+            return nil
+        }
+        let info = BTKitParsedOptionsInfo(options)
         let serveToken = BTKit.background.scanner.serveLedger(
             observer,
             for: uuid,
@@ -132,8 +136,7 @@ public struct BTKitLedgerUARTService {
             options: options,
             request: { (observer, peripheral, rx, tx) in
                 if let rx = rx {
-                    let data = Data(service.requestAddress(path: path, verify: verify))
-                    peripheral?.writeValue(data, for: rx, type: .withResponse)
+                    peripheral?.writeValue(requestData, for: rx, type: .withResponse)
                 } else {
                     info.callbackQueue.execute {
                         result(observer, .failure(.unexpected(.characteristicIsNil)))
@@ -149,7 +152,7 @@ public struct BTKitLedgerUARTService {
                 }
                 guard let ledgerAddress = service.decodeAddress(data: data) else {
                     info.callbackQueue.execute {
-                        result(observer, .failure(.unexpected(.failedToParseDate)))
+                        result(observer, .failure(.unexpected(.failedToParseResponse)))
                     }
                     return
                 }
