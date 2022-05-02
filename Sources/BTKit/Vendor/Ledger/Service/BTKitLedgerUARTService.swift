@@ -73,8 +73,9 @@ public struct BTKitLedgerUARTService {
                                 result(observer, .failure(error))
                             }
                         }
-                    case .failure:
-                        break
+                    case .failure(let error):
+                        progress?(.failure(error))
+                        result(observer, .failure(error))
                     }
 
                 }
@@ -107,8 +108,9 @@ public struct BTKitLedgerUARTService {
                                 result(observer, .failure(error))
                             }
                         }
-                    case .failure:
-                        break
+                    case .failure(let error):
+                        progress?(.failure(error))
+                        result(observer, .failure(error))
                     }
                 }
             case .failure(let error):

@@ -356,6 +356,7 @@ class BTBackgroundScanneriOS: NSObject, BTBackgroundScanner {
     }
     
     private func requestService(observation: UARTServiceObservation, registration: UARTRegistration) {
+        guard observation.request != nil else { return }
         observation.request?(registration.peripheral, registration.rx, registration.tx)
         observation.request = nil // clear to avoid double call
         

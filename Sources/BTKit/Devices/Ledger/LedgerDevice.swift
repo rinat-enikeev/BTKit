@@ -38,13 +38,16 @@ extension LedgerNanoX {
         _ observer: T,
         path: String = "44'/60'/0'/0/0",
         verify: Bool = false,
-        options: BTScannerOptionsInfo? = [.connectionTimeout(10), .serviceTimeout(10)]
+        options: BTScannerOptionsInfo? = [.connectionTimeout(1), .serviceTimeout(1)]
     ) async throws -> LedgerAddressResult {
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<LedgerAddressResult, Error>) in
             if !isConnectable {
                 continuation.resume(throwing: BTLogicError.notConnectable)
             } else {
+                var alreadyCalled = false
                 BTKit.background.services.ledger.fetchAddress(observer, uuid, options, path: path, verify) { observer, result in
+                    guard !alreadyCalled else { return }
+                    alreadyCalled = true
                     switch result {
                     case let .success(addressResult):
                         continuation.resume(returning: addressResult)
