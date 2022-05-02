@@ -1,9 +1,9 @@
 Pod::Spec.new do |spec|
   spec.name         = "BTKit"
-  spec.version      = "0.4.1"
-  spec.summary      = "Hardcoded bluetooth devices API"
+  spec.version      = "0.5.0"
+  spec.summary      = "Ruuvi and Ledger Bluetooth API"
   spec.description  = <<-DESC
-                        Use to scan for bluetooth devices. Very limited set of devices is available.
+                        Very limited set of features is available.
                         DESC
 
   spec.homepage     = "https://github.com/rinat-enikeev/BTKit"
