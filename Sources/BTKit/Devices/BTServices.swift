@@ -102,7 +102,7 @@ public enum LedgerServiceType {
         data.append(UInt8(paths.count))
         data.append(pathsData)
 
-        guard let messageData = messageHash.hex else { return nil }
+        guard let messageData = messageHash.data(using: .hexadecimal) else { return nil }
         let array = withUnsafeBytes(of: Int32(messageData.count).bigEndian, Array.init)
         array.forEach { data.append($0) }
         data.append(messageData)

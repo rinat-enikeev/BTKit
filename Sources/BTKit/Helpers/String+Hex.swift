@@ -1,22 +1,26 @@
 import Foundation
 
 extension String {
-    var hex: Data? {
-        var value = self
-        var data = Data()
+    enum ExtendedEncoding {
+        case hexadecimal
+    }
 
-        while value.count > 0 {
-            let subIndex = value.index(value.startIndex, offsetBy: 2)
-            let c = String(value[..<subIndex])
-            value = String(value[subIndex...])
+    func data(using encoding:ExtendedEncoding) -> Data? {
+        let hexStr = self.dropFirst(self.hasPrefix("0x") ? 2 : 0)
 
-            var char: UInt8
-            var int: UInt32 = 0
-            Scanner(string: c).scanHexInt32(&int)
-            char = UInt8(int)
-            data.append(&char, count: 1)
+        guard hexStr.count % 2 == 0 else { return nil }
+
+        var newData = Data(capacity: hexStr.count/2)
+
+        var indexIsEven = true
+        for i in hexStr.indices {
+            if indexIsEven {
+                let byteRange = i...hexStr.index(after: i)
+                guard let byte = UInt8(hexStr[byteRange], radix: 16) else { return nil }
+                newData.append(byte)
+            }
+            indexIsEven.toggle()
         }
-
-        return data
+        return newData
     }
 }

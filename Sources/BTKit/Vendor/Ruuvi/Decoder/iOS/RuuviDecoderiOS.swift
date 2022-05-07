@@ -6,7 +6,7 @@ public struct RuuviDecoderiOS: BTDecoder {
     }
 
     public func decodeNetwork(uuid: String, rssi: Int, isConnectable: Bool, payload: String) -> BTDevice? {
-        guard let data = payload.hex else { return nil }
+        guard let data = payload.data(using: .hexadecimal) else { return nil }
         guard data.count > 30 else { return nil }
         let versionOffset = 7
         let version = Int(data[versionOffset])
