@@ -30,6 +30,151 @@ extension BTKitLedgerUARTService {
 #endif
 
 public struct BTKitLedgerUARTService {
+    public func signMessageHash<T: AnyObject>(
+        _ observer: T,
+        _ uuid: String,
+        messageHash: String,
+        path: String,
+        _ options: BTScannerOptionsInfo?,
+        progress: ((BTServiceProgress) -> Void)? = nil,
+        _ result: @escaping (T, Result<LedgerSignMessageResult, BTError>) -> Void
+    ) {
+        var connectToken: ObservationToken?
+        progress?(.connecting)
+        connectToken = BTKit.background.connect(for: observer, uuid: uuid, options: options, connected: { (observer, connectResult) in
+            connectToken?.invalidate()
+            switch connectResult {
+            case .already:
+                var serveToken: ObservationToken?
+                progress?(.serving)
+                serveToken = self.serveLedgerSignMessageHash(observer, uuid, messageHash: messageHash, path: path, options) { observer, serveResult in
+                    var disconnectToken: ObservationToken?
+                    switch serveResult {
+                    case .success:
+                        serveToken?.invalidate()
+                        progress?(.disconnecting)
+                        disconnectToken = BTKit.background.disconnect(for: observer, uuid: uuid, options: options) { (observer, disconnectResult) in
+                            disconnectToken?.invalidate()
+                            switch disconnectResult {
+                            case .already:
+                                progress?(.success)
+                                result(observer, serveResult)
+                            case .just:
+                                progress?(.success)
+                                result(observer, serveResult)
+                            case .stillConnected:
+                                result(observer, serveResult)
+                                progress?(.success)
+                            case .bluetoothWasPoweredOff:
+                                progress?(.success)
+                                result(observer, serveResult)
+                            case .failure(let error):
+                                progress?(.failure(error))
+                                result(observer, .failure(error))
+                            }
+                        }
+                    case .failure(let error):
+                        progress?(.failure(error))
+                        result(observer, .failure(error))
+                    }
+
+                }
+            case .just:
+                var serveToken: ObservationToken?
+                progress?(.serving)
+                serveToken = self.serveLedgerSignMessageHash(observer, uuid, messageHash: messageHash, path: path, options) { observer, serveResult in
+                    switch serveResult {
+                    case .success:
+                        serveToken?.invalidate()
+                        var disconnectToken: ObservationToken?
+                        progress?(.disconnecting)
+                        disconnectToken = BTKit.background.disconnect(for: observer, uuid: uuid, options: options) { (observer, disconnectResult) in
+                            disconnectToken?.invalidate()
+                            switch disconnectResult {
+                            case .already:
+                                progress?(.success)
+                                result(observer, serveResult)
+                            case .just:
+                                progress?(.success)
+                                result(observer, serveResult)
+                            case .stillConnected:
+                                progress?(.success)
+                                result(observer, serveResult)
+                            case .bluetoothWasPoweredOff:
+                                progress?(.success)
+                                result(observer, serveResult)
+                            case .failure(let error):
+                                progress?(.failure(error))
+                                result(observer, .failure(error))
+                            }
+                        }
+                    case .failure(let error):
+                        progress?(.failure(error))
+                        result(observer, .failure(error))
+                    }
+                }
+            case .failure(let error):
+                progress?(.failure(error))
+                result(observer, .failure(error))
+            case .disconnected:
+                break // do nothing, it will reconnect
+            }
+        })
+    }
+
+    private func serveLedgerSignMessageHash<T: AnyObject>(
+        _ observer: T,
+        _ uuid: String,
+        messageHash: String,
+        path: String,
+        _ options: BTScannerOptionsInfo?,
+        _ result: @escaping (T, Result<LedgerSignMessageResult, BTError>) -> Void
+    ) -> ObservationToken? {
+        let service: LedgerServiceType = .address
+        guard let requestData = service.requestSignMessageHash(path: path, messageHash: messageHash) else {
+            result(observer, .failure(.unexpected(.failedToParseRequest)))
+            return nil
+        }
+        let info = BTKitParsedOptionsInfo(options)
+        let serveToken = BTKit.background.scanner.serveLedger(
+            observer,
+            for: uuid,
+            .ledger(service),
+            options: options,
+            request: { (observer, peripheral, rx, tx) in
+                if let rx = rx {
+                    peripheral?.writeValue(requestData, for: rx, type: .withResponse)
+                } else {
+                    info.callbackQueue.execute {
+                        result(observer, .failure(.unexpected(.characteristicIsNil)))
+                    }
+                }
+
+            }, response: { (observer, data, finished) in
+                guard let data = data else {
+                    info.callbackQueue.execute {
+                        result(observer, .failure(.unexpected(.dataIsNil)))
+                    }
+                    return
+                }
+                guard let ledgerAddress = service.decodeSignMessage(data: data) else {
+                    info.callbackQueue.execute {
+                        result(observer, .failure(.unexpected(.failedToParseResponse)))
+                    }
+                    return
+                }
+                info.callbackQueue.execute {
+                    finished?(true)
+                    result(observer, .success(ledgerAddress))
+                }
+            }) { (observer, error) in
+                info.callbackQueue.execute {
+                    result(observer, .failure(error))
+                }
+            }
+        return serveToken
+    }
+
     public func fetchAddress<T: AnyObject>(
         _ observer: T,
         _ uuid: String,

@@ -52,6 +52,32 @@ extension LedgerNanoX {
             }
         }
     }
+
+    public func signMessageHash<T: AnyObject>(
+        _ observer: T,
+        messageHash: String,
+        path: String = "44'/60'/0'/0/0",
+        progress: ((BTServiceProgress) -> Void)? = nil,
+        options: BTScannerOptionsInfo? = [.connectionTimeout(10), .serviceTimeout(10)]
+    ) async throws -> LedgerSignMessageResult {
+        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<LedgerSignMessageResult, Error>) in
+            if !isConnectable {
+                continuation.resume(throwing: BTLogicError.notConnectable)
+            } else {
+                var alreadyCalled = false
+                BTKit.background.services.ledger.signMessageHash(observer, uuid, messageHash: messageHash, path: path, options, progress: progress) { observer, result in
+                    guard !alreadyCalled else { return }
+                    alreadyCalled = true
+                    switch result {
+                    case let .success(signMessageResult):
+                        continuation.resume(returning: signMessageResult)
+                    case let .failure(error):
+                        continuation.resume(throwing: error)
+                    }
+                }
+            }
+        }
+    }
 }
 #endif
 

@@ -38,6 +38,12 @@ public enum BTServiceType {
     }
 }
 
+public struct LedgerSignMessageResult {
+    public var v: UInt8
+    public var r: Data
+    public var s: Data
+}
+
 public struct LedgerAddressResult {
     public var publicKey: String
     public var address: String
@@ -45,12 +51,67 @@ public struct LedgerAddressResult {
 
 public enum LedgerServiceType {
     case address
+    case messageHash
 
     var uuid: CBUUID {
         switch self {
         case .address:
             return CBUUID(string: "13d63400-2c97-0004-0000-4c6564676572")
+        case .messageHash:
+            return CBUUID(string: "13d63400-2c97-0004-0000-4c6564676572")
         }
+    }
+
+    public func decodeSignMessage(data: Data) -> LedgerSignMessageResult? {
+        guard data.count >= 65 else { return nil }
+        return LedgerSignMessageResult(
+            v: data[0],
+            r: Data(data[1 ..< 1 + 32]),
+            s: Data(data[1 + 32 ..< 1 + 32 + 32])
+        )
+    }
+
+    public func requestSignMessageHash(path: String, messageHash: String) -> Data? {
+        guard let adpu = signMessageAPDU(path: path, messageHash: messageHash) else { return nil }
+        var result = Data()
+
+        // Tag Id
+        result.append(0x05)
+        // Index
+        result.append(0x00)
+        result.append(0x00)
+
+        // apdu length
+        guard let count = UInt16(exactly: adpu.count) else { return nil }
+        withUnsafeBytes(of: count.bigEndian) { result.append(contentsOf: $0) }
+
+        result.append(adpu)
+        return result
+    }
+
+    func signMessageAPDU(path: String, messageHash: String) -> Data? {
+        var result = Data()
+        result.append(0xe0)
+        result.append(0x08)
+        result.append(0x00)
+        result.append(0x00)
+        guard let paths = splitPath(path: path) else { return nil }
+        var pathsData = Data()
+        paths.forEach { withUnsafeBytes(of: $0.bigEndian) { pathsData.append(contentsOf: $0) } }
+        var data = Data()
+        data.append(UInt8(paths.count))
+        data.append(pathsData)
+
+        guard let messageData = messageHash.hex else { return nil }
+        let array = withUnsafeBytes(of: Int32(messageData.count).bigEndian, Array.init)
+        array.forEach { data.append($0) }
+        data.append(messageData)
+
+        result.append(UInt8(data.count))
+        result.append(data)
+
+        guard result.count <= 150 else { return nil }
+        return result
     }
 
     public func decodeAddress(data: Data) -> LedgerAddressResult? {
