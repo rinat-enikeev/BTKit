@@ -1,4 +1,25 @@
 import Foundation
+#if canImport(Combine)
+import Combine
+#endif
+
+#if canImport(Combine)
+@available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, *)
+extension BTKitLedgerUARTService {
+    public func nanoX<T: AnyObject>(_ observer: T) -> AnyPublisher<LedgerNanoX, Never> {
+        let subject = PassthroughSubject<LedgerNanoX, Never>()
+        BTKit.foreground.scan(observer) { observer, device in
+            if case let .ledger(ledgerDevice) = device {
+                switch ledgerDevice {
+                case let .nanoX(ledgerNanoX):
+                    subject.send(ledgerNanoX)
+                }
+            }
+        }
+        return subject.eraseToAnyPublisher()
+    }
+}
+#endif
 
 #if compiler(>=5.5) && canImport(_Concurrency)
 @available(macOS 10.15, iOS 13, watchOS 6, tvOS 13, *)

@@ -4,7 +4,7 @@ public enum LedgerDevice {
     case nanoX(LedgerNanoX)
 }
 
-public struct LedgerNanoX: Hashable {
+public struct LedgerNanoX {
     public var uuid: String
     public var name: String?
     public var rssi: Int?
@@ -20,6 +20,18 @@ public struct LedgerNanoX: Hashable {
         self.name = name
         self.rssi = rssi
         self.isConnectable = isConnectable
+    }
+}
+
+extension LedgerNanoX: Hashable {
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(uuid)
+    }
+}
+
+extension LedgerNanoX: Equatable {
+    public static func ==(lhs: LedgerNanoX, rhs: LedgerNanoX) -> Bool {
+        return lhs.uuid == rhs.uuid
     }
 }
 
